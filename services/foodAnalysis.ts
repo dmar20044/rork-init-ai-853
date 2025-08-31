@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserGoals } from '@/contexts/UserContext';
+import { trpcClient } from '@/lib/trpc';
 
 export interface NutritionInfo {
   name: string;
@@ -55,29 +56,17 @@ export interface FoodAnalysisResult {
 
 // Note: Using Anthropic's Claude API for food analysis
 
-// API Status Checker
+// API Status Checker - now checks backend connectivity
 export async function checkAPIStatus(): Promise<{ aiAPI: boolean; openFoodFacts: boolean }> {
   const results = { aiAPI: false, openFoodFacts: false };
   
-  // Test Anthropic API
+  // Test backend connectivity
   try {
-    const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 100,
-        messages: [{ role: 'user', content: 'test' }]
-      })
-    });
-    results.aiAPI = aiResponse.ok;
-    console.log('Anthropic API Status:', results.aiAPI ? 'Working' : 'Failed');
+    const testResult = await trpcClient.example.hi.mutate({ name: 'test' });
+    results.aiAPI = !!testResult;
+    console.log('Backend API Status:', results.aiAPI ? 'Working' : 'Failed');
   } catch (error) {
-    console.log('Anthropic API Status: Failed -', error);
+    console.log('Backend API Status: Failed -', error);
   }
   
   // Test OpenFoodFacts API
@@ -186,314 +175,50 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
       };
     }
     
-    console.log('No cached result found, proceeding with AI analysis');
+    console.log('No cached result found, proceeding with backend AI analysis');
     
-    const systemPrompt = `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
-
-1. FIRST: Identify if this is a packaged food with a nutrition label visible
-2. If nutrition label is visible: Read the exact values from the label
-3. If no label: Use your knowledge of the specific food item
-4. Always specify realistic serving sizes based on the actual food shown
-5. CRITICAL: Provide a COMPLETE and ACCURATE ingredient list - this is essential for user health
-6. LANGUAGE: Always respond in English, regardless of the language on the product packaging
-
-IMPORTANT GUIDELINES:
-- For packaged foods: Read nutrition facts panel exactly as printed
-- For fresh foods: Use USDA standard serving sizes (1 medium apple = 182g, 1 cup rice = 195g, etc.)
-- For restaurant/prepared foods: Estimate based on portion size visible
-- Be conservative with health claims - only mark as organic if clearly labeled
-- Include ALL visible ingredients from ingredient lists - READ EVERY SINGLE INGREDIENT
-- If ingredient list is partially visible, include what you can see and note "partial list"
-- For fresh foods, list the main components (e.g., apple = ["apples"])
-- Distinguish between natural sugars (fruit) vs added sugars (processed foods)
-- Identify ALL additives, preservatives, artificial colors, flavors, emulsifiers, stabilizers
-- TRANSLATE: If ingredients are in another language, translate them to English
-
-INGREDIENT ANALYSIS REQUIREMENTS:
-- Read ingredient lists character by character if visible
-- Include every single ingredient, even trace amounts
-- Separate ingredients properly (comma-separated typically)
-- Note if ingredients contain sub-ingredients (e.g., "enriched flour (wheat flour, niacin, iron)")
-- Identify all forms of sugar, oils, preservatives, and additives
-- For processed foods, expect 5-20+ ingredients typically
-
-You MUST respond with ONLY a valid JSON object, no additional text or formatting. The JSON should contain:
-- name: string (specific food item name, include brand if visible)
-- calories: number (per serving as defined below)
-- protein: number (grams per serving)
-- carbs: number (grams per serving)
-- fat: number (grams per serving)
-- saturatedFat: number (grams per serving)
-- fiber: number (grams per serving)
-- sugar: number (grams per serving)
-- sodium: number (milligrams per serving)
-- servingSize: string (be specific: "1 medium apple (182g)", "2 slices (57g)", "1 cup cooked (195g)")
-- servingsPerContainer: number (only for packaged foods, omit for fresh foods)
-- healthScore: number (1-100, be realistic - most processed foods should be 30-60)
-- ingredients: string[] (COMPLETE list - every single ingredient visible or commonly found)
-- allergens: string[] (milk, eggs, fish, shellfish, tree nuts, peanuts, wheat, soybeans)
-- additives: string[] (preservatives, artificial colors, flavors, emulsifiers, etc.)
-- isOrganic: boolean (only true if "USDA Organic" or "Certified Organic" is clearly visible)
-- recommendations: string[] (specific, actionable health tips)
-- warnings: string[] (specific health concerns for this food)
-
-Example response format:
-{
-  "name": "Apple",
-  "calories": 95,
-  "protein": 0.5,
-  "carbs": 25,
-  "fat": 0.3,
-  "saturatedFat": 0.1,
-  "fiber": 4.4,
-  "sugar": 19,
-  "sodium": 2,
-  "servingSize": "1 medium apple (182g)",
-  "healthScore": 85,
-  "ingredients": [],
-  "allergens": [],
-  "additives": [],
-  "isOrganic": false,
-  "recommendations": ["Great source of fiber", "Natural antioxidants"],
-  "warnings": []
-}
-
-If you cannot identify the food clearly, respond with:
-{
-  "name": "Unknown Food Item",
-  "calories": 0,
-  "protein": 0,
-  "carbs": 0,
-  "fat": 0,
-  "saturatedFat": 0,
-  "fiber": 0,
-  "sugar": 0,
-  "sodium": 0,
-  "servingSize": "1 serving",
-  "healthScore": 0,
-  "ingredients": [],
-  "allergens": [],
-  "additives": [],
-  "isOrganic": false,
-  "recommendations": [],
-  "warnings": ["Could not identify food item from image"]
-}`;
-
-    const userMessage = 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.';
-
-    console.log('Making request to AI API...');
+    // Use backend for AI analysis (secure)
+    const result = await trpcClient.food.analyze.mutate({
+      base64Image,
+    });
     
-    let response;
-    try {
-      // Add timeout and retry logic with longer timeout for image analysis
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        console.log('Request timeout after 45 seconds');
-        controller.abort();
-      }, 45000); // 45 second timeout for image analysis
-      
-      console.log('Making request to Anthropic API for food analysis...');
-      
-      response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
-          max_tokens: 4000,
-          system: systemPrompt,
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: userMessage
-                },
-                {
-                  type: 'image',
-                  source: {
-                    type: 'base64',
-                    media_type: 'image/jpeg',
-                    data: base64Image
-                  }
-                }
-              ]
-            }
-          ]
-        }),
-        signal: controller.signal,
-      });
-      
-      clearTimeout(timeoutId);
-      console.log('Anthropic API response received - status:', response.status);
-      console.log('Anthropic API response ok:', response.ok);
-      
-    } catch (fetchError) {
-      console.error('Network fetch error:', fetchError);
-      
-      // Check for specific error types
-      if (fetchError instanceof Error) {
-        if (fetchError.name === 'AbortError') {
-          console.log('Request was aborted due to timeout');
-          throw new Error('Request timed out - please check your internet connection and try again');
-        }
-        if (fetchError.message.includes('Network request failed') || fetchError.message.includes('fetch')) {
-          console.log('Network connection failed');
-          throw new Error('Network connection failed - please check your internet connection');
-        }
-        console.log('Other network error:', fetchError.message);
-        throw new Error(`Network request failed: ${fetchError.message}`);
-      }
-      
-      console.log('Unknown network error type:', typeof fetchError);
-      throw new Error('Unknown network error occurred');
-    }
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unable to read error response');
-      console.error('API error response:', errorText);
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    console.log('Anthropic Analysis result:', result);
-    
-    // Parse the Anthropic response
-    try {
-      const completion = result.content?.[0]?.text || '';
-      console.log('Raw Anthropic response:', completion);
-      
-      // Clean the response - remove any markdown formatting or extra text
-      let cleanedResponse = completion.trim();
-      
-      // Look for JSON content between ```json and ``` or just find the JSON object
-      const jsonMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
-                       cleanedResponse.match(/```\s*([\s\S]*?)\s*```/) ||
-                       cleanedResponse.match(/({[\s\S]*})/);
-      
-      if (jsonMatch) {
-        cleanedResponse = jsonMatch[1].trim();
-      }
-      
-      // If it doesn't start with {, try to find the JSON object
-      if (!cleanedResponse.startsWith('{')) {
-        const startIndex = cleanedResponse.indexOf('{');
-        const endIndex = cleanedResponse.lastIndexOf('}');
-        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-          cleanedResponse = cleanedResponse.substring(startIndex, endIndex + 1);
-        }
-      }
-      
-      console.log('Cleaned response for parsing:', cleanedResponse);
-      
-      const nutritionData = JSON.parse(cleanedResponse);
-      
-      // Validate the response structure
-      if (!nutritionData.name || typeof nutritionData.healthScore !== 'number') {
-        console.error('Invalid response structure:', nutritionData);
-        throw new Error('Invalid response format from AI');
-      }
-      
-      // Ensure all required numeric fields are present and valid
-      const requiredFields = ['calories', 'protein', 'carbs', 'fat', 'saturatedFat', 'fiber', 'sugar', 'sodium'];
-      for (const field of requiredFields) {
-        if (typeof nutritionData[field] !== 'number') {
-          nutritionData[field] = 0; // Default to 0 if missing or invalid
-        }
-      }
-      
-      // Ensure arrays are present
-      nutritionData.ingredients = nutritionData.ingredients || [];
-      nutritionData.additives = nutritionData.additives || [];
-      nutritionData.allergens = nutritionData.allergens || [];
-      nutritionData.recommendations = nutritionData.recommendations || [];
-      nutritionData.warnings = nutritionData.warnings || [];
-      
-      // Ensure boolean fields
-      nutritionData.isOrganic = nutritionData.isOrganic || false;
-      
-      // Ensure serving size is present
-      nutritionData.servingSize = nutritionData.servingSize || '1 serving';
-      nutritionData.servingsPerContainer = nutritionData.servingsPerContainer;
-      
-      // Calculate comprehensive score using our scoring function
-      const scoringResult = calculateFoodScore({
-        nutrition: {
-          calories: nutritionData.calories,
-          protein: nutritionData.protein,
-          saturatedFat: nutritionData.saturatedFat,
-          sodium: nutritionData.sodium,
-          sugar: nutritionData.sugar,
-          fiber: nutritionData.fiber
-        },
-        ingredients: nutritionData.ingredients,
-        additives: nutritionData.additives,
-        isOrganic: nutritionData.isOrganic
-      });
-      
-      // Update nutrition data with scoring results
-      nutritionData.healthScore = scoringResult.score;
-      nutritionData.grade = scoringResult.grade;
-      nutritionData.scoreBreakdown = scoringResult.breakdown;
-      nutritionData.reasons = scoringResult.reasons;
-      nutritionData.flags = scoringResult.flags;
-      
-      // Cache the result for future scans of the same product
-      analysisCache.set(imageHash, nutritionData);
-      console.log('Cached analysis result for future use');
-      
-      // Save cache to persistent storage
-      await saveCacheToStorage();
-      
+    if (!result.success) {
       return {
-        success: true,
-        data: nutritionData
-      };
-    } catch (parseError) {
-      console.error('Error parsing Anthropic response:', parseError);
-      console.error('Failed to parse response:', result.content?.[0]?.text || 'No content');
-      
-      // Try to provide a fallback response if parsing fails
-      return {
-        success: true,
-        data: {
-          name: 'Food Item (Analysis Incomplete)',
-          calories: 0,
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-          saturatedFat: 0,
-          fiber: 0,
-          sugar: 0,
-          sodium: 0,
-          servingSize: '1 serving',
-          healthScore: 50,
-          ingredients: [],
-          allergens: [],
-          additives: [],
-          isOrganic: false,
-          grade: 'mediocre' as const,
-          recommendations: ['Unable to analyze nutritional content', 'Please try scanning again with better lighting'],
-          warnings: ['Analysis failed - nutritional data unavailable'],
-          reasons: ['Analysis incomplete'],
-          flags: ['analysis_failed']
-        }
+        success: false,
+        error: result.error || 'Analysis failed'
       };
     }
+    
+    const nutritionData = result.data;
+    
+    if (!nutritionData) {
+      return {
+        success: false,
+        error: 'No data returned from analysis'
+      };
+    }
+    
+    // Cache the result for future scans of the same product
+    analysisCache.set(imageHash, nutritionData);
+    console.log('Cached analysis result for future use');
+    
+    // Save cache to persistent storage
+    await saveCacheToStorage();
+    
+    return {
+      success: true,
+      data: nutritionData
+    };
     
   } catch (error) {
     console.error('Food analysis error:', error);
     
-    // Provide a fallback mock analysis if network fails
-    if (error instanceof Error && error.message.includes('Network request failed')) {
-      console.log('Network failed, providing fallback analysis');
+    // Provide a fallback mock analysis if backend fails
+    if (error instanceof Error && (error.message.includes('Network request failed') || error.message.includes('fetch'))) {
+      console.log('Backend failed, providing fallback analysis');
       
       const fallbackData: NutritionInfo = {
-        name: 'Food Item (Network Error)',
+        name: 'Food Item (Backend Error)',
         calories: 150,
         protein: 3,
         carbs: 20,
@@ -504,19 +229,19 @@ If you cannot identify the food clearly, respond with:
         sodium: 200,
         servingSize: '1 serving',
         healthScore: 45,
-        ingredients: ['Unable to analyze - network error'],
+        ingredients: ['Unable to analyze - backend error'],
         allergens: [],
         additives: [],
         isOrganic: false,
         grade: 'mediocre' as const,
         recommendations: [
-          'Network connection failed during analysis',
+          'Backend connection failed during analysis',
           'Please check your internet connection and try again',
           'This is a placeholder analysis'
         ],
-        warnings: ['Analysis unavailable due to network error'],
-        reasons: ['Network connectivity issue'],
-        flags: ['network_error'],
+        warnings: ['Analysis unavailable due to backend error'],
+        reasons: ['Backend connectivity issue'],
+        flags: ['backend_error'],
         scoreBreakdown: {
           nutritionScore: 40,
           additivesScore: 0,
@@ -1330,30 +1055,159 @@ export async function analyzeFoodImageWithPersonalization(
   imageUri: string, 
   userGoals?: UserGoals
 ): Promise<FoodAnalysisResult> {
-  const baseResult = await analyzeFoodImage(imageUri);
-  
-  if (!baseResult.success || !baseResult.data || !userGoals) {
-    return baseResult;
-  }
-  
-  // Apply personalization
-  const personalResult = personalScore(baseResult.data, userGoals);
-  
-  // Update the nutrition info with personal scores
-  const enhancedData: NutritionInfo = {
-    ...baseResult.data,
-    personalScore: personalResult.score,
-    personalReasons: personalResult.reasons,
-    personalGrade: personalResult.personalGrade,
-    scoreBreakdown: {
-      ...baseResult.data.scoreBreakdown!,
-      personalAdjustment: personalResult.personalAdjustment,
-      personalTotal: personalResult.score
+  try {
+    console.log('Starting personalized food analysis for image:', imageUri);
+    
+    // Load cache from storage if not already loaded
+    await loadCacheFromStorage();
+    
+    // Convert image to base64
+    const base64Image = await convertImageToBase64(imageUri);
+    
+    // Generate hash for caching
+    const imageHash = await generateImageHash(base64Image);
+    console.log('Generated image hash for caching:', imageHash, 'for image size:', base64Image.length);
+    
+    // Check if we have a cached result for this image
+    if (analysisCache.has(imageHash)) {
+      console.log('Found cached analysis result for this image');
+      const cachedData = analysisCache.get(imageHash)!;
+      console.log('Returning cached data for:', cachedData.name);
+      
+      // Apply personalization to cached data if user goals provided
+      if (userGoals) {
+        const personalResult = personalScore(cachedData, userGoals);
+        const enhancedData: NutritionInfo = {
+          ...cachedData,
+          personalScore: personalResult.score,
+          personalReasons: personalResult.reasons,
+          personalGrade: personalResult.personalGrade,
+          scoreBreakdown: {
+            ...cachedData.scoreBreakdown!,
+            personalAdjustment: personalResult.personalAdjustment,
+            personalTotal: personalResult.score
+          }
+        };
+        
+        return {
+          success: true,
+          data: enhancedData
+        };
+      }
+      
+      return {
+        success: true,
+        data: cachedData
+      };
     }
-  };
-  
-  return {
-    success: true,
-    data: enhancedData
-  };
+    
+    console.log('No cached result found, proceeding with backend AI analysis with personalization');
+    
+    // Use backend for AI analysis with personalization (secure)
+    const result = await trpcClient.food.analyze.mutate({
+      base64Image,
+      userGoals: userGoals ? {
+        bodyGoal: userGoals.bodyGoal || undefined,
+        healthGoal: userGoals.healthGoal || undefined,
+        dietGoal: userGoals.dietGoal || undefined,
+        lifeGoal: userGoals.lifeGoal || undefined,
+        motivation: userGoals.motivation || undefined,
+      } : undefined,
+    });
+    
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error || 'Analysis failed'
+      };
+    }
+    
+    const nutritionData = result.data;
+    
+    if (!nutritionData) {
+      return {
+        success: false,
+        error: 'No data returned from analysis'
+      };
+    }
+    
+    // Cache the result for future scans of the same product
+    analysisCache.set(imageHash, nutritionData);
+    console.log('Cached analysis result for future use');
+    
+    // Save cache to persistent storage
+    await saveCacheToStorage();
+    
+    return {
+      success: true,
+      data: nutritionData
+    };
+    
+  } catch (error) {
+    console.error('Personalized food analysis error:', error);
+    
+    // Provide a fallback mock analysis if backend fails
+    if (error instanceof Error && (error.message.includes('Network request failed') || error.message.includes('fetch'))) {
+      console.log('Backend failed, providing fallback analysis');
+      
+      const fallbackData: NutritionInfo = {
+        name: 'Food Item (Backend Error)',
+        calories: 150,
+        protein: 3,
+        carbs: 20,
+        fat: 5,
+        saturatedFat: 2,
+        fiber: 2,
+        sugar: 8,
+        sodium: 200,
+        servingSize: '1 serving',
+        healthScore: 45,
+        ingredients: ['Unable to analyze - backend error'],
+        allergens: [],
+        additives: [],
+        isOrganic: false,
+        grade: 'mediocre' as const,
+        recommendations: [
+          'Backend connection failed during analysis',
+          'Please check your internet connection and try again',
+          'This is a placeholder analysis'
+        ],
+        warnings: ['Analysis unavailable due to backend error'],
+        reasons: ['Backend connectivity issue'],
+        flags: ['backend_error'],
+        scoreBreakdown: {
+          nutritionScore: 40,
+          additivesScore: 0,
+          organicScore: 0,
+          totalScore: 45
+        }
+      };
+      
+      // Apply personalization to fallback data if user goals provided
+      if (userGoals) {
+        const personalResult = personalScore(fallbackData, userGoals);
+        fallbackData.personalScore = personalResult.score;
+        fallbackData.personalReasons = personalResult.reasons;
+        fallbackData.personalGrade = personalResult.personalGrade;
+        fallbackData.scoreBreakdown = {
+          nutritionScore: fallbackData.scoreBreakdown?.nutritionScore || 40,
+          additivesScore: fallbackData.scoreBreakdown?.additivesScore || 0,
+          organicScore: fallbackData.scoreBreakdown?.organicScore || 0,
+          totalScore: fallbackData.scoreBreakdown?.totalScore || 45,
+          personalAdjustment: personalResult.personalAdjustment,
+          personalTotal: personalResult.score
+        };
+      }
+      
+      return {
+        success: true,
+        data: fallbackData
+      };
+    }
+    
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred'
+    };
+  }
 }

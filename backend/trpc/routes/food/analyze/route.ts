@@ -1,0 +1,612 @@
+import { z } from "zod";
+import { publicProcedure } from "../../../create-context";
+
+const FoodAnalysisInput = z.object({
+  base64Image: z.string(),
+  userGoals: z.object({
+    bodyGoal: z.string().optional(),
+    healthGoal: z.string().optional(),
+    dietGoal: z.string().optional(),
+    lifeGoal: z.string().optional(),
+    motivation: z.string().optional(),
+  }).optional(),
+});
+
+const NutritionInfo = z.object({
+  name: z.string(),
+  calories: z.number(),
+  protein: z.number(),
+  carbs: z.number(),
+  fat: z.number(),
+  saturatedFat: z.number(),
+  fiber: z.number(),
+  sugar: z.number(),
+  sodium: z.number(),
+  servingSize: z.string().optional(),
+  servingsPerContainer: z.number().optional(),
+  healthScore: z.number(),
+  personalScore: z.number().optional(),
+  personalReasons: z.array(z.string()).optional(),
+  ingredients: z.array(z.string()).optional(),
+  allergens: z.array(z.string()).optional(),
+  recommendations: z.array(z.string()).optional(),
+  warnings: z.array(z.string()).optional(),
+  additives: z.array(z.string()).optional(),
+  isOrganic: z.boolean().optional(),
+  grade: z.enum(['poor', 'mediocre', 'good', 'excellent']).optional(),
+  personalGrade: z.enum(['poor', 'mediocre', 'good', 'excellent']).optional(),
+  scoreBreakdown: z.object({
+    nutritionScore: z.number(),
+    additivesScore: z.number(),
+    organicScore: z.number(),
+    totalScore: z.number(),
+    personalAdjustment: z.number().optional(),
+    personalTotal: z.number().optional(),
+  }).optional(),
+  reasons: z.array(z.string()).optional(),
+  flags: z.array(z.string()).optional(),
+  imageUrl: z.string().optional(),
+});
+
+export const analyzeFoodProcedure = publicProcedure
+  .input(FoodAnalysisInput)
+  .mutation(async ({ input }) => {
+    try {
+      console.log('Starting food analysis on backend...');
+      
+      const systemPrompt = `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
+
+1. FIRST: Identify if this is a packaged food with a nutrition label visible
+2. If nutrition label is visible: Read the exact values from the label
+3. If no label: Use your knowledge of the specific food item
+4. Always specify realistic serving sizes based on the actual food shown
+5. CRITICAL: Provide a COMPLETE and ACCURATE ingredient list - this is essential for user health
+6. LANGUAGE: Always respond in English, regardless of the language on the product packaging
+
+IMPORTANT GUIDELINES:
+- For packaged foods: Read nutrition facts panel exactly as printed
+- For fresh foods: Use USDA standard serving sizes (1 medium apple = 182g, 1 cup rice = 195g, etc.)
+- For restaurant/prepared foods: Estimate based on portion size visible
+- Be conservative with health claims - only mark as organic if clearly labeled
+- Include ALL visible ingredients from ingredient lists - READ EVERY SINGLE INGREDIENT
+- If ingredient list is partially visible, include what you can see and note "partial list"
+- For fresh foods, list the main components (e.g., apple = ["apples"])
+- Distinguish between natural sugars (fruit) vs added sugars (processed foods)
+- Identify ALL additives, preservatives, artificial colors, flavors, emulsifiers, stabilizers
+- TRANSLATE: If ingredients are in another language, translate them to English
+
+INGREDIENT ANALYSIS REQUIREMENTS:
+- Read ingredient lists character by character if visible
+- Include every single ingredient, even trace amounts
+- Separate ingredients properly (comma-separated typically)
+- Note if ingredients contain sub-ingredients (e.g., "enriched flour (wheat flour, niacin, iron)")
+- Identify all forms of sugar, oils, preservatives, and additives
+- For processed foods, expect 5-20+ ingredients typically
+
+You MUST respond with ONLY a valid JSON object, no additional text or formatting. The JSON should contain:
+- name: string (specific food item name, include brand if visible)
+- calories: number (per serving as defined below)
+- protein: number (grams per serving)
+- carbs: number (grams per serving)
+- fat: number (grams per serving)
+- saturatedFat: number (grams per serving)
+- fiber: number (grams per serving)
+- sugar: number (grams per serving)
+- sodium: number (milligrams per serving)
+- servingSize: string (be specific: "1 medium apple (182g)", "2 slices (57g)", "1 cup cooked (195g)")
+- servingsPerContainer: number (only for packaged foods, omit for fresh foods)
+- healthScore: number (1-100, be realistic - most processed foods should be 30-60)
+- ingredients: string[] (COMPLETE list - every single ingredient visible or commonly found)
+- allergens: string[] (milk, eggs, fish, shellfish, tree nuts, peanuts, wheat, soybeans)
+- additives: string[] (preservatives, artificial colors, flavors, emulsifiers, etc.)
+- isOrganic: boolean (only true if "USDA Organic" or "Certified Organic" is clearly visible)
+- recommendations: string[] (specific, actionable health tips)
+- warnings: string[] (specific health concerns for this food)
+
+Example response format:
+{
+  "name": "Apple",
+  "calories": 95,
+  "protein": 0.5,
+  "carbs": 25,
+  "fat": 0.3,
+  "saturatedFat": 0.1,
+  "fiber": 4.4,
+  "sugar": 19,
+  "sodium": 2,
+  "servingSize": "1 medium apple (182g)",
+  "healthScore": 85,
+  "ingredients": [],
+  "allergens": [],
+  "additives": [],
+  "isOrganic": false,
+  "recommendations": ["Great source of fiber", "Natural antioxidants"],
+  "warnings": []
+}
+
+If you cannot identify the food clearly, respond with:
+{
+  "name": "Unknown Food Item",
+  "calories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0,
+  "saturatedFat": 0,
+  "fiber": 0,
+  "sugar": 0,
+  "sodium": 0,
+  "servingSize": "1 serving",
+  "healthScore": 0,
+  "ingredients": [],
+  "allergens": [],
+  "additives": [],
+  "isOrganic": false,
+  "recommendations": [],
+  "warnings": ["Could not identify food item from image"]
+}`;
+
+      const userMessage = 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.';
+
+      console.log('Making request to Anthropic API...');
+      
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 4000,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: userMessage
+                },
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: 'image/jpeg',
+                    data: input.base64Image
+                  }
+                }
+              ]
+            }
+          ]
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unable to read error response');
+        console.error('Anthropic API error:', errorText);
+        throw new Error(`API request failed: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('Anthropic Analysis result received');
+      
+      // Parse the Anthropic response
+      const completion = result.content?.[0]?.text || '';
+      console.log('Raw Anthropic response length:', completion.length);
+      
+      // Clean the response - remove any markdown formatting or extra text
+      let cleanedResponse = completion.trim();
+      
+      // Look for JSON content between ```json and ``` or just find the JSON object
+      const jsonMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
+                       cleanedResponse.match(/```\s*([\s\S]*?)\s*```/) ||
+                       cleanedResponse.match(/({[\s\S]*})/);
+      
+      if (jsonMatch) {
+        cleanedResponse = jsonMatch[1].trim();
+      }
+      
+      // If it doesn't start with {, try to find the JSON object
+      if (!cleanedResponse.startsWith('{')) {
+        const startIndex = cleanedResponse.indexOf('{');
+        const endIndex = cleanedResponse.lastIndexOf('}');
+        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+          cleanedResponse = cleanedResponse.substring(startIndex, endIndex + 1);
+        }
+      }
+      
+      console.log('Cleaned response for parsing');
+      
+      const nutritionData = JSON.parse(cleanedResponse);
+      
+      // Validate the response structure
+      if (!nutritionData.name || typeof nutritionData.healthScore !== 'number') {
+        console.error('Invalid response structure:', nutritionData);
+        throw new Error('Invalid response format from AI');
+      }
+      
+      // Ensure all required numeric fields are present and valid
+      const requiredFields = ['calories', 'protein', 'carbs', 'fat', 'saturatedFat', 'fiber', 'sugar', 'sodium'];
+      for (const field of requiredFields) {
+        if (typeof nutritionData[field] !== 'number') {
+          nutritionData[field] = 0; // Default to 0 if missing or invalid
+        }
+      }
+      
+      // Ensure arrays are present
+      nutritionData.ingredients = nutritionData.ingredients || [];
+      nutritionData.additives = nutritionData.additives || [];
+      nutritionData.allergens = nutritionData.allergens || [];
+      nutritionData.recommendations = nutritionData.recommendations || [];
+      nutritionData.warnings = nutritionData.warnings || [];
+      
+      // Ensure boolean fields
+      nutritionData.isOrganic = nutritionData.isOrganic || false;
+      
+      // Ensure serving size is present
+      nutritionData.servingSize = nutritionData.servingSize || '1 serving';
+      nutritionData.servingsPerContainer = nutritionData.servingsPerContainer;
+      
+      // Calculate comprehensive score using our scoring function
+      const scoringResult = calculateFoodScore({
+        nutrition: {
+          calories: nutritionData.calories,
+          protein: nutritionData.protein,
+          saturatedFat: nutritionData.saturatedFat,
+          sodium: nutritionData.sodium,
+          sugar: nutritionData.sugar,
+          fiber: nutritionData.fiber
+        },
+        ingredients: nutritionData.ingredients,
+        additives: nutritionData.additives,
+        isOrganic: nutritionData.isOrganic
+      });
+      
+      // Update nutrition data with scoring results
+      nutritionData.healthScore = scoringResult.score;
+      nutritionData.grade = scoringResult.grade;
+      nutritionData.scoreBreakdown = scoringResult.breakdown;
+      nutritionData.reasons = scoringResult.reasons;
+      nutritionData.flags = scoringResult.flags;
+      
+      // Apply personalization if user goals are provided
+      if (input.userGoals) {
+        const personalResult = personalScore(nutritionData, input.userGoals);
+        
+        nutritionData.personalScore = personalResult.score;
+        nutritionData.personalReasons = personalResult.reasons;
+        nutritionData.personalGrade = personalResult.personalGrade;
+        nutritionData.scoreBreakdown = {
+          ...nutritionData.scoreBreakdown,
+          personalAdjustment: personalResult.personalAdjustment,
+          personalTotal: personalResult.score
+        };
+      }
+      
+      return {
+        success: true,
+        data: nutritionData
+      };
+      
+    } catch (error) {
+      console.error('Food analysis error:', error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
+    }
+  });
+
+// Helper functions (copied from the original service)
+interface FoodScoringInput {
+  nutrition: {
+    calories: number;
+    protein: number;
+    saturatedFat: number;
+    sodium: number;
+    sugar: number;
+    fiber: number;
+  };
+  ingredients: string[];
+  additives: string[];
+  isOrganic: boolean;
+}
+
+interface ScoringResult {
+  score: number;
+  grade: 'poor' | 'mediocre' | 'good' | 'excellent';
+  reasons: string[];
+  flags: string[];
+  breakdown: {
+    nutritionScore: number;
+    additivesScore: number;
+    organicScore: number;
+    totalScore: number;
+  };
+}
+
+interface UserGoals {
+  bodyGoal?: string;
+  healthGoal?: string;
+  dietGoal?: string;
+  lifeGoal?: string;
+  motivation?: string;
+}
+
+// High-risk additives that significantly impact health score
+const HIGH_RISK_ADDITIVES = [
+  'aspartame', 'sucralose', 'acesulfame potassium', 'sodium benzoate',
+  'potassium sorbate', 'bha', 'bht', 'tbhq', 'propyl gallate',
+  'sodium nitrite', 'sodium nitrate', 'monosodium glutamate', 'msg',
+  'red dye 40', 'yellow dye 5', 'blue dye 1', 'caramel color',
+  'phosphoric acid', 'sodium phosphate', 'calcium phosphate'
+];
+
+// Moderate-risk additives
+const MODERATE_RISK_ADDITIVES = [
+  'citric acid', 'ascorbic acid', 'tocopherols', 'lecithin',
+  'carrageenan', 'xanthan gum', 'guar gum', 'locust bean gum',
+  'natural flavors', 'artificial flavors', 'modified corn starch',
+  'maltodextrin', 'dextrose', 'corn syrup', 'high fructose corn syrup'
+];
+
+// Whole foods that should be first ingredients
+const WHOLE_FOODS = [
+  'milk', 'water', 'oats', 'wheat', 'rice', 'quinoa', 'beef', 'chicken',
+  'turkey', 'fish', 'salmon', 'tuna', 'eggs', 'beans', 'lentils',
+  'chickpeas', 'almonds', 'walnuts', 'cashews', 'peanuts', 'coconut',
+  'olive oil', 'avocado oil', 'butter', 'cheese', 'yogurt', 'tomatoes',
+  'spinach', 'kale', 'broccoli', 'carrots', 'sweet potato', 'apple',
+  'banana', 'berries', 'strawberries', 'blueberries'
+];
+
+// Emulsifiers, sweeteners, and dyes
+const PROCESSING_INDICATORS = [
+  'polysorbate', 'mono- and diglycerides', 'sodium stearoyl lactylate',
+  'lecithin', 'carrageenan', 'aspartame', 'sucralose', 'stevia',
+  'erythritol', 'xylitol', 'red dye', 'yellow dye', 'blue dye',
+  'caramel color', 'annatto', 'turmeric color'
+];
+
+function calculateFoodScore(input: FoodScoringInput): ScoringResult {
+  console.log('Calculating food score for:', input);
+  
+  let nutritionScore = 60; // Start with base score
+  let additivesScore = 0;
+  let organicScore = 0;
+  const reasons: string[] = [];
+  const flags: string[] = [];
+  
+  // NUTRITION SCORING (0-60 points base, can go higher with bonuses)
+  // Adjusted thresholds for per-serving measurements
+  
+  // Sugar scoring based on new categorization
+  if (input.nutrition.sugar > 10.5) {
+    // Bad - heavily penalized (up to -35 points)
+    const penalty = Math.min(35, (input.nutrition.sugar - 10.5) * 3);
+    nutritionScore -= penalty;
+    reasons.push(`High sugar content (${input.nutrition.sugar}g per serving) - heavily penalized`);
+    flags.push('high_sugar');
+  } else if (input.nutrition.sugar > 6) {
+    // Mid - moderate penalty (up to -10 points)
+    const penalty = Math.min(10, (input.nutrition.sugar - 6) * 2.2);
+    nutritionScore -= penalty;
+    reasons.push(`Moderate sugar content (${input.nutrition.sugar}g per serving)`);
+    flags.push('moderate_sugar');
+  } else if (input.nutrition.sugar > 3) {
+    // Good - small bonus (+3 points)
+    nutritionScore += 3;
+    reasons.push(`Good sugar level (${input.nutrition.sugar}g per serving)`);
+    flags.push('good_sugar');
+  } else {
+    // Really good - larger bonus (+8 points)
+    nutritionScore += 8;
+    reasons.push(`Excellent low sugar content (${input.nutrition.sugar}g per serving)`);
+    flags.push('excellent_sugar');
+  }
+  
+  // Saturated fat penalty (up to -15 points) - adjusted for serving
+  if (input.nutrition.saturatedFat >= 5) {
+    const penalty = Math.min(15, (input.nutrition.saturatedFat - 5) * 3);
+    nutritionScore -= penalty;
+    reasons.push(`High saturated fat (${input.nutrition.saturatedFat}g per serving)`);
+    flags.push('high_saturated_fat');
+  }
+  
+  // Sodium penalty (up to -12 points) - adjusted for serving
+  if (input.nutrition.sodium >= 400) {
+    const penalty = Math.min(12, (input.nutrition.sodium - 400) / 50);
+    nutritionScore -= penalty;
+    reasons.push(`High sodium content (${input.nutrition.sodium}mg per serving)`);
+    flags.push('high_sodium');
+  } else if (input.nutrition.sodium <= 140) {
+    reasons.push('Low sodium content');
+  }
+  
+  // Calories penalty (up to -10 points) - adjusted for serving
+  if (input.nutrition.calories >= 300) {
+    const penalty = Math.min(10, (input.nutrition.calories - 300) / 30);
+    nutritionScore -= penalty;
+    reasons.push(`High calorie content (${input.nutrition.calories} kcal per serving)`);
+    flags.push('high_calories');
+  }
+  
+  // Protein bonus (up to +20 points) - adjusted for serving
+  if (input.nutrition.protein >= 8) {
+    const bonus = Math.min(20, (input.nutrition.protein - 8) * 2.5);
+    nutritionScore += bonus;
+    reasons.push(`Good protein content (${input.nutrition.protein}g per serving)`);
+    flags.push('high_protein');
+  }
+  
+  // Fiber bonus (up to +10 points) - adjusted for serving
+  if (input.nutrition.fiber >= 4) {
+    const bonus = Math.min(10, (input.nutrition.fiber - 4) * 2.5);
+    nutritionScore += bonus;
+    reasons.push(`High fiber content (${input.nutrition.fiber}g per serving)`);
+    flags.push('high_fiber');
+  }
+  
+  // First ingredient bonus (+6 if whole food)
+  if (input.ingredients.length > 0) {
+    const firstIngredient = input.ingredients[0].toLowerCase();
+    const isWholeFood = WHOLE_FOODS.some(food => 
+      firstIngredient.includes(food) || food.includes(firstIngredient)
+    );
+    
+    if (isWholeFood) {
+      nutritionScore += 6;
+      reasons.push('First ingredient is a whole food');
+      flags.push('whole_food_first');
+    }
+  }
+  
+  // Processing penalty (-8 if >12 ingredients and contains processing indicators)
+  if (input.ingredients.length > 12) {
+    const hasProcessingIndicators = input.ingredients.some(ingredient => 
+      PROCESSING_INDICATORS.some(indicator => 
+        ingredient.toLowerCase().includes(indicator.toLowerCase())
+      )
+    );
+    
+    if (hasProcessingIndicators) {
+      nutritionScore -= 8;
+      reasons.push('Highly processed with many ingredients and additives');
+      flags.push('highly_processed');
+    }
+  }
+  
+  // ADDITIVES SCORING (0 to -30 points)
+  let additivesPenalty = 0;
+  
+  // Check for high-risk additives
+  const highRiskFound = input.additives.filter(additive => 
+    HIGH_RISK_ADDITIVES.some(risk => 
+      additive.toLowerCase().includes(risk.toLowerCase())
+    )
+  );
+  
+  if (highRiskFound.length > 0) {
+    additivesPenalty += Math.min(30, highRiskFound.length * 15);
+    reasons.push(`Contains ${highRiskFound.length} high-risk additive(s)`);
+    flags.push('high_risk_additives');
+  }
+  
+  // Check for moderate-risk additives
+  const moderateRiskFound = input.additives.filter(additive => 
+    MODERATE_RISK_ADDITIVES.some(risk => 
+      additive.toLowerCase().includes(risk.toLowerCase())
+    )
+  );
+  
+  if (moderateRiskFound.length > 0) {
+    additivesPenalty += Math.min(24, moderateRiskFound.length * 8);
+    reasons.push(`Contains ${moderateRiskFound.length} moderate-risk additive(s)`);
+    flags.push('moderate_risk_additives');
+  }
+  
+  // Check for seed oils
+  const seedOils = ['soybean oil', 'canola oil', 'corn oil', 'sunflower oil', 'safflower oil', 'cottonseed oil'];
+  const hasSeedOils = input.ingredients.some(ingredient => 
+    seedOils.some(oil => ingredient.toLowerCase().includes(oil))
+  );
+  
+  if (hasSeedOils) {
+    additivesPenalty += 5;
+    reasons.push('Contains seed oils');
+    flags.push('seed_oil');
+  }
+  
+  // Check for added sugars
+  const addedSugars = ['corn syrup', 'high fructose corn syrup', 'cane sugar', 'brown sugar', 'dextrose', 'maltose', 'sucrose'];
+  const hasAddedSugars = input.ingredients.some(ingredient => 
+    addedSugars.some(sugar => ingredient.toLowerCase().includes(sugar))
+  );
+  
+  if (hasAddedSugars) {
+    reasons.push('Contains added sugars');
+    flags.push('added_sugar');
+  }
+  
+  additivesScore = -additivesPenalty;
+  
+  // ORGANIC SCORING (0-10 points)
+  if (input.isOrganic) {
+    organicScore = 10;
+    reasons.push('Certified organic product');
+    flags.push('organic');
+  }
+  
+  // Calculate final score and round to nearest 0.5 interval
+  const rawScore = nutritionScore + additivesScore + organicScore;
+  const totalScore = Math.max(0, Math.min(100, Math.round(rawScore * 2) / 2));
+  
+  // Determine grade
+  let grade: 'poor' | 'mediocre' | 'good' | 'excellent';
+  if (totalScore >= 75) {
+    grade = 'excellent';
+  } else if (totalScore >= 50) {
+    grade = 'good';
+  } else if (totalScore >= 25) {
+    grade = 'mediocre';
+  } else {
+    grade = 'poor';
+  }
+  
+  const breakdown = {
+    nutritionScore,
+    additivesScore,
+    organicScore,
+    totalScore
+  };
+  
+  return {
+    score: totalScore,
+    grade,
+    reasons,
+    flags,
+    breakdown
+  };
+}
+
+// Personalization function (simplified version)
+function personalScore(nutritionInfo: any, userGoals: UserGoals) {
+  // This is a simplified version - you can expand this based on your needs
+  let adjustmentScore = 0;
+  const reasons: string[] = [];
+  
+  // Basic personalization logic
+  if (userGoals.healthGoal === 'low-sugar' && nutritionInfo.sugar > 10) {
+    adjustmentScore -= 15;
+    reasons.push('High sugar conflicts with your low-sugar goal');
+  }
+  
+  if (userGoals.healthGoal === 'high-protein' && nutritionInfo.protein >= 15) {
+    adjustmentScore += 10;
+    reasons.push('High protein supports your protein goal');
+  }
+  
+  const finalScore = Math.max(0, Math.min(100, nutritionInfo.healthScore + adjustmentScore));
+  
+  let personalGrade: 'poor' | 'mediocre' | 'good' | 'excellent';
+  if (finalScore >= 75) {
+    personalGrade = 'excellent';
+  } else if (finalScore >= 50) {
+    personalGrade = 'good';
+  } else if (finalScore >= 25) {
+    personalGrade = 'mediocre';
+  } else {
+    personalGrade = 'poor';
+  }
+  
+  return {
+    score: finalScore,
+    reasons,
+    personalGrade,
+    personalAdjustment: adjustmentScore
+  };
+}
+
+export default analyzeFoodProcedure;
