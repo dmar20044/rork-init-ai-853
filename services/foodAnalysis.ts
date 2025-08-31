@@ -53,23 +53,31 @@ export interface FoodAnalysisResult {
   error?: string;
 }
 
-// Note: Using Rork's AI API instead of direct OpenAI integration
+// Note: Using Anthropic's Claude API for food analysis
 
 // API Status Checker
 export async function checkAPIStatus(): Promise<{ aiAPI: boolean; openFoodFacts: boolean }> {
   const results = { aiAPI: false, openFoodFacts: false };
   
-  // Test AI API
+  // Test Anthropic API
   try {
-    const aiResponse = await fetch('https://toolkit.rork.com/text/llm/', {
+    const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: 'test' }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-haiku-20240307',
+        max_tokens: 100,
+        messages: [{ role: 'user', content: 'test' }]
+      })
     });
     results.aiAPI = aiResponse.ok;
-    console.log('AI API Status:', results.aiAPI ? 'Working' : 'Failed');
+    console.log('Anthropic API Status:', results.aiAPI ? 'Working' : 'Failed');
   } catch (error) {
-    console.log('AI API Status: Failed -', error);
+    console.log('Anthropic API Status: Failed -', error);
   }
   
   // Test OpenFoodFacts API
@@ -180,10 +188,7 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
     
     console.log('No cached result found, proceeding with AI analysis');
     
-    const messages = [
-      {
-        role: 'system' as const,
-        content: `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
+    const systemPrompt = `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
 
 1. FIRST: Identify if this is a packaged food with a nutrition label visible
 2. If nutrition label is visible: Read the exact values from the label
@@ -272,22 +277,9 @@ If you cannot identify the food clearly, respond with:
   "isOrganic": false,
   "recommendations": [],
   "warnings": ["Could not identify food item from image"]
-}`
-      },
-      {
-        role: 'user' as const,
-        content: [
-          {
-            type: 'text' as const,
-            text: 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.'
-          },
-          {
-            type: 'image' as const,
-            image: base64Image
-          }
-        ]
-      }
-    ];
+}`;
+
+    const userMessage = 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.';
 
     console.log('Making request to AI API...');
     
@@ -300,20 +292,45 @@ If you cannot identify the food clearly, respond with:
         controller.abort();
       }, 45000); // 45 second timeout for image analysis
       
-      console.log('Making request to AI API for food analysis...');
+      console.log('Making request to Anthropic API for food analysis...');
       
-      response = await fetch('https://toolkit.rork.com/text/llm/', {
+      response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': process.env.EXPO_PUBLIC_ANTHROPIC_API_KEY || '',
+          'anthropic-version': '2023-06-01'
         },
-        body: JSON.stringify({ messages }),
+        body: JSON.stringify({
+          model: 'claude-3-sonnet-20240229',
+          max_tokens: 4000,
+          system: systemPrompt,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: userMessage
+                },
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: 'image/jpeg',
+                    data: base64Image
+                  }
+                }
+              ]
+            }
+          ]
+        }),
         signal: controller.signal,
       });
       
       clearTimeout(timeoutId);
-      console.log('AI API response received - status:', response.status);
-      console.log('AI API response ok:', response.ok);
+      console.log('Anthropic API response received - status:', response.status);
+      console.log('Anthropic API response ok:', response.ok);
       
     } catch (fetchError) {
       console.error('Network fetch error:', fetchError);
@@ -343,14 +360,15 @@ If you cannot identify the food clearly, respond with:
     }
 
     const result = await response.json();
-    console.log('AI Analysis result:', result);
+    console.log('Anthropic Analysis result:', result);
     
-    // Parse the AI response
+    // Parse the Anthropic response
     try {
-      console.log('Raw AI response:', result.completion);
+      const completion = result.content?.[0]?.text || '';
+      console.log('Raw Anthropic response:', completion);
       
       // Clean the response - remove any markdown formatting or extra text
-      let cleanedResponse = result.completion.trim();
+      let cleanedResponse = completion.trim();
       
       // Look for JSON content between ```json and ``` or just find the JSON object
       const jsonMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
@@ -436,8 +454,8 @@ If you cannot identify the food clearly, respond with:
         data: nutritionData
       };
     } catch (parseError) {
-      console.error('Error parsing AI response:', parseError);
-      console.error('Failed to parse response:', result.completion);
+      console.error('Error parsing Anthropic response:', parseError);
+      console.error('Failed to parse response:', result.content?.[0]?.text || 'No content');
       
       // Try to provide a fallback response if parsing fails
       return {
