@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { trpc, trpcClient } from "@/lib/trpc";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, Component, ReactNode, useState, memo } from "react";
@@ -149,8 +150,9 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
+      <trpc.Provider client={trpcClient} queryClient={queryClient}>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
           <UserProvider>
             <ScanHistoryProvider>
               <GroceryListProvider>
@@ -160,8 +162,9 @@ export default function RootLayout() {
               </GroceryListProvider>
             </ScanHistoryProvider>
           </UserProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
     </ErrorBoundary>
   );
 }
