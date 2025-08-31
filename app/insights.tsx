@@ -535,7 +535,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'transparent',
     opacity: 0.03,
-    background: 'linear-gradient(180deg, rgba(255, 107, 107, 0.05) 0%, rgba(255, 107, 107, 0.15) 100%)',
+
   },
   safeArea: {
     flex: 1,
