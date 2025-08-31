@@ -817,13 +817,13 @@ export function calculateFoodScore(input: FoodScoringInput): ScoringResult {
     totalScore
   };
   
-  console.log('Food scoring result:', {
-    score: totalScore,
-    grade,
-    breakdown,
-    reasons,
-    flags
-  });
+  // console.log('Food scoring result:', {
+  //   score: totalScore,
+  //   grade,
+  //   breakdown,
+  //   reasons,
+  //   flags
+  // });
   
   return {
     score: totalScore,
