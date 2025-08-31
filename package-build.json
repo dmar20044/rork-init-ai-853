@@ -1,0 +1,7 @@
+{
+  "name": "vercel-build",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "echo 'Build complete - no build needed for serverless functions'"
+  }
+}
