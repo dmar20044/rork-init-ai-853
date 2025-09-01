@@ -741,7 +741,7 @@ export default function ScannerScreen() {
               // Always show PremiumScanFeedback for both photo and barcode scans
               <PremiumScanFeedback
                 nutrition={nutritionData}
-                imageUri={capturedImage === 'barcode-scan' ? undefined : capturedImage}
+                imageUri={capturedImage === 'barcode-scan' ? nutritionData.imageUrl : capturedImage}
                 onScanAnother={handleScanAnother}
                 onSaveToHistory={handleSaveToHistory}
                 isLoading={false}
