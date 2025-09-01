@@ -742,7 +742,7 @@ export default function ScannerScreen() {
               // Show the full PremiumScanFeedback component with base vs personalized score comparison
               <PremiumScanFeedback
                 nutrition={nutritionData}
-                imageUri={capturedImage === 'barcode-scan' ? nutritionData.imageUrl : capturedImage}
+                imageUri={capturedImage === 'barcode-scan' ? nutritionData.imageUrl || undefined : capturedImage || undefined}
                 onScanAnother={handleScanAnother}
                 onSaveToHistory={handleSaveToHistory}
                 isLoading={false}

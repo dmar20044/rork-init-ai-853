@@ -756,7 +756,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             {/* Always show product header for consistency */}
             <View style={styles.productHeader}>
               <View style={styles.productImageContainer}>
-                {(nutrition.imageUrl || (imageUri && imageUri !== 'barcode-scan')) ? (
+                {(nutrition.imageUrl || imageUri) ? (
                   <Image source={{ uri: nutrition.imageUrl || imageUri }} style={styles.productImage} />
                 ) : (
                   <View style={[styles.productImagePlaceholder, { backgroundColor: colors.textSecondary + '10' }]}>
