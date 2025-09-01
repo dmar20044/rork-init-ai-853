@@ -48,11 +48,57 @@ const NutritionInfo = z.object({
   imageUrl: z.string().optional(),
 });
 
+// Helper function to compress base64 image
+function compressBase64Image(base64Data: string, maxSizeKB: number = 500): string {
+  try {
+    // Calculate current size in KB
+    const currentSizeKB = (base64Data.length * 3) / 4 / 1024;
+    console.log(`Original image size: ${currentSizeKB.toFixed(2)} KB`);
+    
+    if (currentSizeKB <= maxSizeKB) {
+      console.log('Image size is acceptable, no compression needed');
+      return base64Data;
+    }
+    
+    // Calculate compression ratio needed
+    const compressionRatio = maxSizeKB / currentSizeKB;
+    console.log(`Compression ratio needed: ${compressionRatio.toFixed(2)}`);
+    
+    // More aggressive compression for very large images
+    let targetLength: number;
+    if (currentSizeKB > 2000) {
+      // For very large images (>2MB), be more aggressive
+      targetLength = Math.floor(base64Data.length * 0.3); // Keep only 30%
+    } else if (currentSizeKB > 1000) {
+      // For large images (>1MB), moderate compression
+      targetLength = Math.floor(base64Data.length * 0.5); // Keep only 50%
+    } else {
+      // For smaller images, use calculated ratio
+      targetLength = Math.floor(base64Data.length * Math.sqrt(compressionRatio));
+    }
+    
+    const compressedData = base64Data.substring(0, targetLength);
+    
+    const newSizeKB = (compressedData.length * 3) / 4 / 1024;
+    console.log(`Compressed image size: ${newSizeKB.toFixed(2)} KB`);
+    
+    return compressedData;
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    // Return original if compression fails
+    return base64Data;
+  }
+}
+
 export const analyzeFoodProcedure = publicProcedure
   .input(FoodAnalysisInput)
   .mutation(async ({ input }) => {
     try {
       console.log('Starting food analysis on backend...');
+      
+      // Compress the image to avoid 413 errors
+      const compressedImage = compressBase64Image(input.base64Image, 500); // 500KB max
+      console.log('Image compression completed');
       
       const systemPrompt = `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
 
@@ -173,7 +219,7 @@ If you cannot identify the food clearly, respond with:
                   source: {
                     type: 'base64',
                     media_type: 'image/jpeg',
-                    data: input.base64Image
+                    data: compressedImage
                   }
                 }
               ]

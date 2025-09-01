@@ -157,7 +157,7 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
     // Load cache from storage if not already loaded
     await loadCacheFromStorage();
     
-    // Convert image to base64
+    // Convert and compress image to base64
     const base64Image = await convertImageToBase64(imageUri);
     
     // Generate hash for caching
@@ -312,7 +312,68 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
   }
 }
 
-async function convertImageToBase64(imageUri: string): Promise<string> {
+// Helper function to compress image on client side
+async function compressImage(imageUri: string, maxWidth: number = 800, quality: number = 0.8): Promise<string> {
+  const { Platform } = require('react-native');
+  
+  if (Platform.OS === 'web') {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        // Remove data:image/jpeg;base64, prefix
+        const base64Data = compressedDataUrl.split(',')[1];
+        console.log(`Image compressed: ${img.width}x${img.height} -> ${width}x${height}`);
+        resolve(base64Data);
+      };
+      
+      img.onerror = reject;
+      img.src = imageUri;
+    });
+  } else {
+    // For mobile, use expo-image-manipulator for compression
+    try {
+      const ImageManipulator = require('expo-image-manipulator');
+      
+      const manipulatedImage = await ImageManipulator.manipulateAsync(
+        imageUri,
+        [
+          { resize: { width: maxWidth } }
+        ],
+        {
+          compress: quality,
+          format: ImageManipulator.SaveFormat.JPEG,
+          base64: true
+        }
+      );
+      
+      console.log('Image compressed on mobile');
+      return manipulatedImage.base64 || '';
+    } catch (error) {
+      console.warn('Image compression failed, using original:', error);
+      // Fallback to original conversion
+      return convertImageToBase64Original(imageUri);
+    }
+  }
+}
+
+async function convertImageToBase64Original(imageUri: string): Promise<string> {
   try {
     // For web, we can use fetch to get the image as blob then convert to base64
     if (imageUri.startsWith('http') || imageUri.startsWith('data:')) {
@@ -347,6 +408,29 @@ async function convertImageToBase64(imageUri: string): Promise<string> {
   } catch (error) {
     console.error('Error converting image to base64:', error);
     throw error;
+  }
+}
+
+async function convertImageToBase64(imageUri: string): Promise<string> {
+  try {
+    console.log('Converting and compressing image:', imageUri);
+    
+    // First try to compress the image
+    const compressedBase64 = await compressImage(imageUri, 800, 0.8);
+    
+    // Check the size
+    const sizeKB = (compressedBase64.length * 3) / 4 / 1024;
+    console.log(`Final image size: ${sizeKB.toFixed(2)} KB`);
+    
+    if (sizeKB > 1000) {
+      console.warn('Image is still large after compression, trying higher compression');
+      return await compressImage(imageUri, 600, 0.6);
+    }
+    
+    return compressedBase64;
+  } catch (error) {
+    console.error('Error in image compression, falling back to original:', error);
+    return convertImageToBase64Original(imageUri);
   }
 }
 
@@ -1110,7 +1194,7 @@ export async function analyzeFoodImageWithPersonalization(
     // Load cache from storage if not already loaded
     await loadCacheFromStorage();
     
-    // Convert image to base64
+    // Convert and compress image to base64
     const base64Image = await convertImageToBase64(imageUri);
     
     // Generate hash for caching
