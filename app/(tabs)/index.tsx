@@ -15,6 +15,7 @@ import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } f
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon, X, Upload, Scan, ImageIcon as LibraryIcon, Zap, ZapOff, QrCode, CheckCircle, XCircle } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import { router } from "expo-router";
 import { Colors } from "@/constants/colors";
 import { analyzeFoodImageWithPersonalization, NutritionInfo, clearAnalysisCache, checkAPIStatus } from "@/services/foodAnalysis";
 import { scanBarcodeFromImage, convertBarcodeToNutrition, showBarcodeScanningInstructions, lookupProductByBarcode } from "@/services/barcodeScanner";
@@ -738,7 +739,7 @@ export default function ScannerScreen() {
                 </TouchableOpacity>
               </View>
             ) : nutritionData ? (
-              // Always show PremiumScanFeedback for both photo and barcode scans
+              // Show the full PremiumScanFeedback component with base vs personalized score comparison
               <PremiumScanFeedback
                 nutrition={nutritionData}
                 imageUri={capturedImage === 'barcode-scan' ? nutritionData.imageUrl : capturedImage}
