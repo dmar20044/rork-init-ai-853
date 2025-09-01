@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -71,30 +71,58 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
   );
   
   // Initialize all animated values as refs to avoid re-creation
-  const loadingAnimations = useRef<Animated.Value[]>(
-    Array.from({ length: 8 }, () => new Animated.Value(0))
-  );
-  const progressBarWidth = useRef(new Animated.Value(0)).current;
-  const messageOpacity = useRef(new Animated.Value(1)).current;
-  const messageTranslateY = useRef(new Animated.Value(0)).current;
+  const animatedValues = useMemo(() => ({
+    loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
+    progressBarWidth: new Animated.Value(0),
+    messageOpacity: new Animated.Value(1),
+    messageTranslateY: new Animated.Value(0),
+    slideUpValue: new Animated.Value(screenHeight),
+    cardScale: new Animated.Value(0.8),
+    cardOpacity: new Animated.Value(0),
+    ripple1Scale: new Animated.Value(0),
+    ripple2Scale: new Animated.Value(0),
+    ripple3Scale: new Animated.Value(0),
+    ripple1Opacity: new Animated.Value(0.8),
+    ripple2Opacity: new Animated.Value(0.8),
+    ripple3Opacity: new Animated.Value(0.8),
+    centerPulse: new Animated.Value(1),
+    centerGlow: new Animated.Value(0.5),
+    gradientAnimation: new Animated.Value(0),
+  }), []);
   
-  const slideUpValue = useRef(new Animated.Value(screenHeight)).current;
-  const cardScale = useRef(new Animated.Value(0.8)).current;
-  const cardOpacity = useRef(new Animated.Value(0)).current;
-  
-  // Hero animation values - Ripple effects
-  const ripple1Scale = useRef(new Animated.Value(0)).current;
-  const ripple2Scale = useRef(new Animated.Value(0)).current;
-  const ripple3Scale = useRef(new Animated.Value(0)).current;
-  const ripple1Opacity = useRef(new Animated.Value(0.8)).current;
-  const ripple2Opacity = useRef(new Animated.Value(0.8)).current;
-  const ripple3Opacity = useRef(new Animated.Value(0.8)).current;
-  const centerPulse = useRef(new Animated.Value(1)).current;
-  const centerGlow = useRef(new Animated.Value(0.5)).current;
-  
-  // Background gradient animation
-  const gradientAnimation = useRef(new Animated.Value(0)).current;
-  
+  // Create ripple animation function
+  const createRippleAnimation = useCallback((scale: Animated.Value, opacity: Animated.Value, delay: number) => {
+    return Animated.loop(
+      Animated.sequence([
+        Animated.delay(delay),
+        Animated.parallel([
+          Animated.timing(scale, {
+            toValue: 2.5,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(scale, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0.8,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ])
+    );
+  }, []);
+
   // Initialize animations once when component mounts
   useEffect(() => {
     if (!isVisible) return;
@@ -102,7 +130,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     const animations: Animated.CompositeAnimation[] = [];
     
     // Start continuous loading animations
-    loadingAnimations.current.forEach((anim, index) => {
+    animatedValues.loadingAnimations.forEach((anim, index) => {
       const animation = Animated.loop(
         Animated.sequence([
           Animated.delay(index * 200),
@@ -122,43 +150,10 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       animation.start();
     });
     
-    // Hero animation - Ripple effects with staggered timing
-    const createRippleAnimation = (scale: Animated.Value, opacity: Animated.Value, delay: number) => {
-      return Animated.loop(
-        Animated.sequence([
-          Animated.delay(delay),
-          Animated.parallel([
-            Animated.timing(scale, {
-              toValue: 2.5,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0,
-              duration: 2000,
-              useNativeDriver: true,
-            }),
-          ]),
-          Animated.parallel([
-            Animated.timing(scale, {
-              toValue: 0,
-              duration: 0,
-              useNativeDriver: true,
-            }),
-            Animated.timing(opacity, {
-              toValue: 0.8,
-              duration: 0,
-              useNativeDriver: true,
-            }),
-          ]),
-        ])
-      );
-    };
-    
     // Start ripple animations with staggered delays
-    const ripple1Animation = createRippleAnimation(ripple1Scale, ripple1Opacity, 0);
-    const ripple2Animation = createRippleAnimation(ripple2Scale, ripple2Opacity, 600);
-    const ripple3Animation = createRippleAnimation(ripple3Scale, ripple3Opacity, 1200);
+    const ripple1Animation = createRippleAnimation(animatedValues.ripple1Scale, animatedValues.ripple1Opacity, 0);
+    const ripple2Animation = createRippleAnimation(animatedValues.ripple2Scale, animatedValues.ripple2Opacity, 600);
+    const ripple3Animation = createRippleAnimation(animatedValues.ripple3Scale, animatedValues.ripple3Opacity, 1200);
     
     animations.push(ripple1Animation, ripple2Animation, ripple3Animation);
     ripple1Animation.start();
@@ -168,12 +163,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Center pulse animation
     const centerPulseAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(centerPulse, {
+        Animated.timing(animatedValues.centerPulse, {
           toValue: 1.2,
           duration: 1000,
           useNativeDriver: true,
         }),
-        Animated.timing(centerPulse, {
+        Animated.timing(animatedValues.centerPulse, {
           toValue: 1,
           duration: 1000,
           useNativeDriver: true,
@@ -184,12 +179,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Center glow animation
     const centerGlowAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(centerGlow, {
+        Animated.timing(animatedValues.centerGlow, {
           toValue: 1,
           duration: 1500,
           useNativeDriver: true,
         }),
-        Animated.timing(centerGlow, {
+        Animated.timing(animatedValues.centerGlow, {
           toValue: 0.3,
           duration: 1500,
           useNativeDriver: true,
@@ -204,12 +199,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Background gradient animation
     const backgroundGradientAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(gradientAnimation, {
+        Animated.timing(animatedValues.gradientAnimation, {
           toValue: 1,
           duration: 4000,
           useNativeDriver: false,
         }),
-        Animated.timing(gradientAnimation, {
+        Animated.timing(animatedValues.gradientAnimation, {
           toValue: 0,
           duration: 4000,
           useNativeDriver: false,
@@ -220,22 +215,20 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     animations.push(backgroundGradientAnimation);
     backgroundGradientAnimation.start();
     
-
-    
     // Animate card entrance
     const entranceAnimation = Animated.parallel([
-      Animated.spring(slideUpValue, {
+      Animated.spring(animatedValues.slideUpValue, {
         toValue: 0,
         tension: 50,
         friction: 8,
         useNativeDriver: true,
       }),
-      Animated.timing(cardScale, {
+      Animated.timing(animatedValues.cardScale, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
       }),
-      Animated.timing(cardOpacity, {
+      Animated.timing(animatedValues.cardOpacity, {
         toValue: 1,
         duration: 400,
         useNativeDriver: true,
@@ -247,7 +240,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     return () => {
       animations.forEach(animation => animation.stop());
     };
-  }, [isVisible, slideUpValue, cardScale, cardOpacity, ripple1Scale, ripple2Scale, ripple3Scale, ripple1Opacity, ripple2Opacity, ripple3Opacity, centerPulse, centerGlow, gradientAnimation]);
+  }, [isVisible, animatedValues, createRippleAnimation]);
   
 
   
@@ -265,12 +258,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     const messageInterval = setInterval(() => {
       // Fade out current message
       Animated.parallel([
-        Animated.timing(messageOpacity, {
+        Animated.timing(animatedValues.messageOpacity, {
           toValue: 0,
           duration: 300,
           useNativeDriver: true,
         }),
-        Animated.timing(messageTranslateY, {
+        Animated.timing(animatedValues.messageTranslateY, {
           toValue: -20,
           duration: 300,
           useNativeDriver: true,
@@ -286,14 +279,14 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
         });
         
         // Reset position and fade in new message
-        messageTranslateY.setValue(20);
+        animatedValues.messageTranslateY.setValue(20);
         Animated.parallel([
-          Animated.timing(messageOpacity, {
+          Animated.timing(animatedValues.messageOpacity, {
             toValue: 1,
             duration: 300,
             useNativeDriver: true,
           }),
-          Animated.timing(messageTranslateY, {
+          Animated.timing(animatedValues.messageTranslateY, {
             toValue: 0,
             duration: 300,
             useNativeDriver: true,
@@ -303,7 +296,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     }, 2000);
     
     return () => clearInterval(messageInterval);
-  }, [isVisible, messageOpacity, messageTranslateY]);
+  }, [isVisible, animatedValues]);
   
   // Handle external progress or 3-step progress with minimum timing
   useEffect(() => {
@@ -313,7 +306,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       setCompletedSteps(new Set());
       setShowProductNotFound(false);
       progressBarValueRef.current = 0;
-      progressBarWidth.setValue(0);
+      animatedValues.progressBarWidth.setValue(0);
       return;
     }
     
@@ -321,7 +314,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     startTimeRef.current = Date.now();
     
     // Always reset progress bar when becoming visible
-    progressBarWidth.setValue(0);
+    animatedValues.progressBarWidth.setValue(0);
     progressBarValueRef.current = 0;
     setCurrentStep(0);
     setCompletedSteps(new Set());
@@ -393,7 +386,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       setCurrentStep(targetStepIndex);
       
       // Animate progress bar to match external progress smoothly
-      Animated.timing(progressBarWidth, {
+      Animated.timing(animatedValues.progressBarWidth, {
         toValue: clampedProgress,
         duration: 300,
         useNativeDriver: false,
@@ -414,7 +407,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     setCurrentStep(0);
     
     // Animate progress bar to 33% over 0.6 seconds, then pause
-    Animated.timing(progressBarWidth, {
+    Animated.timing(animatedValues.progressBarWidth, {
       toValue: 33.33,
       duration: 600,
       useNativeDriver: false,
@@ -455,7 +448,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       }
       
       // Animate progress bar to 66% over 0.6 seconds, then pause
-      Animated.timing(progressBarWidth, {
+      Animated.timing(animatedValues.progressBarWidth, {
         toValue: 66.66,
         duration: 600,
         useNativeDriver: false,
@@ -497,7 +490,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       }
       
       // Animate progress bar to 100% over 0.6 seconds, then pause
-      Animated.timing(progressBarWidth, {
+      Animated.timing(animatedValues.progressBarWidth, {
         toValue: 100,
         duration: 600,
         useNativeDriver: false,
@@ -553,7 +546,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       clearTimeout(fallbackTimeout);
       clearTimeout(productNotFoundTimeout);
     };
-  }, [isVisible, progressBarWidth, progress, onComplete]);
+  }, [isVisible, animatedValues.progressBarWidth, progress, onComplete, onCancel, onProductNotFound]);
   
   // Separate effect to handle progress updates when progress prop changes
   useEffect(() => {
@@ -572,14 +565,14 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     setCurrentStep(targetStepIndex);
     
     // Animate progress bar to match external progress smoothly
-    Animated.timing(progressBarWidth, {
+    Animated.timing(animatedValues.progressBarWidth, {
       toValue: clampedProgress,
       duration: 300,
       useNativeDriver: false,
     }).start(() => {
       console.log('LoadingScreen: Progress bar updated to', clampedProgress + '%');
     });
-  }, [progress, isVisible, progressBarWidth]);
+  }, [progress, isVisible, animatedValues.progressBarWidth]);
   
   if (!isVisible) {
     return null;
@@ -593,12 +586,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       <Animated.View style={[
         styles.gradientBackground,
         {
-          opacity: gradientAnimation.interpolate({
+          opacity: animatedValues.gradientAnimation.interpolate({
             inputRange: [0, 1],
             outputRange: [0.3, 0.7],
           }),
           transform: [{
-            translateX: gradientAnimation.interpolate({
+            translateX: animatedValues.gradientAnimation.interpolate({
               inputRange: [0, 1],
               outputRange: [-100, 100],
             }),
@@ -614,10 +607,10 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           backgroundColor: colors.surface,
           borderColor: colors.textTertiary,
           transform: [
-            { translateY: slideUpValue },
-            { scale: cardScale },
+            { translateY: animatedValues.slideUpValue },
+            { scale: animatedValues.cardScale },
           ],
-          opacity: cardOpacity,
+          opacity: animatedValues.cardOpacity,
         },
       ]}>
         {/* Minimal Branding - Init AI Logo */}
@@ -631,8 +624,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
             styles.rippleRing,
             styles.ripple1,
             {
-              transform: [{ scale: ripple1Scale }],
-              opacity: ripple1Opacity,
+              transform: [{ scale: animatedValues.ripple1Scale }],
+              opacity: animatedValues.ripple1Opacity,
             },
           ]} />
           
@@ -641,8 +634,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
             styles.rippleRing,
             styles.ripple2,
             {
-              transform: [{ scale: ripple2Scale }],
-              opacity: ripple2Opacity,
+              transform: [{ scale: animatedValues.ripple2Scale }],
+              opacity: animatedValues.ripple2Opacity,
             },
           ]} />
           
@@ -651,8 +644,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
             styles.rippleRing,
             styles.ripple3,
             {
-              transform: [{ scale: ripple3Scale }],
-              opacity: ripple3Opacity,
+              transform: [{ scale: animatedValues.ripple3Scale }],
+              opacity: animatedValues.ripple3Opacity,
             },
           ]} />
           
@@ -660,8 +653,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           <Animated.View style={[
             styles.centerGlow,
             {
-              opacity: centerGlow,
-              transform: [{ scale: centerPulse }],
+              opacity: animatedValues.centerGlow,
+              transform: [{ scale: animatedValues.centerPulse }],
             },
           ]} />
           
@@ -669,7 +662,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           <Animated.View style={[
             styles.centerIcon,
             {
-              transform: [{ scale: centerPulse }],
+              transform: [{ scale: animatedValues.centerPulse }],
             },
           ]}>
             <Target size={24} color={colors.white} strokeWidth={1.5} />
@@ -695,8 +688,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
         <Animated.View style={[
           styles.loadingTextContainer,
           {
-            opacity: messageOpacity,
-            transform: [{ translateY: messageTranslateY }],
+            opacity: animatedValues.messageOpacity,
+            transform: [{ translateY: animatedValues.messageTranslateY }],
           },
         ]}>
           {showProductNotFound ? (
@@ -808,7 +801,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                 styles.progressBarFill,
                 {
                   backgroundColor: colors.primary,
-                  width: progressBarWidth.interpolate({
+                  width: animatedValues.progressBarWidth.interpolate({
                     inputRange: [0, 100],
                     outputRange: ['0%', '100%'],
                     extrapolate: 'clamp',
