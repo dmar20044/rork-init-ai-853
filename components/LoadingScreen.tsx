@@ -315,13 +315,15 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Record start time for minimum display duration
     startTimeRef.current = Date.now();
     
-    // Always reset progress bar when becoming visible
-    animatedValues.progressBarWidth.setValue(0);
-    progressBarValueRef.current = 0;
-    setCurrentProgress(0);
-    setCurrentStep(0);
-    setCompletedSteps(new Set());
-    setShowProductNotFound(false);
+    // Only reset progress bar when becoming visible if no external progress is provided
+    if (typeof progress !== 'number') {
+      animatedValues.progressBarWidth.setValue(0);
+      progressBarValueRef.current = 0;
+      setCurrentProgress(0);
+      setCurrentStep(0);
+      setCompletedSteps(new Set());
+      setShowProductNotFound(false);
+    }
     
     // Minimum display duration of 3 seconds
     const MINIMUM_DURATION = 3000;
@@ -354,9 +356,30 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       console.log('LoadingScreen: External progress received:', progress);
       const clampedProgress = Math.max(0, Math.min(100, progress));
       
-      console.log('LoadingScreen: Updating progress from', progressBarValueRef.current, 'to', clampedProgress);
-      progressBarValueRef.current = clampedProgress;
-      setCurrentProgress(clampedProgress);
+      // Only update if progress is actually increasing to prevent resets
+      if (clampedProgress >= progressBarValueRef.current) {
+        console.log('LoadingScreen: Updating progress from', progressBarValueRef.current, 'to', clampedProgress);
+        progressBarValueRef.current = clampedProgress;
+        setCurrentProgress(clampedProgress);
+        
+        // Calculate which step we should be on based on progress
+        const targetStepIndex = Math.min(
+          Math.floor((clampedProgress / 100) * progressSteps.length),
+          progressSteps.length - 1
+        );
+        
+        console.log('LoadingScreen: Setting current step to', targetStepIndex, 'based on progress', clampedProgress);
+        setCurrentStep(targetStepIndex);
+        
+        // Animate progress bar to match external progress smoothly
+        Animated.timing(animatedValues.progressBarWidth, {
+          toValue: clampedProgress,
+          duration: 500, // Slightly longer duration for smoother animation
+          useNativeDriver: false,
+        }).start(() => {
+          console.log('LoadingScreen: Progress bar animation completed for', clampedProgress + '%');
+        });
+      }
       
       // When progress reaches 100%, ensure minimum duration before completing
       if (clampedProgress >= 100) {
@@ -379,24 +402,6 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           clearTimeout(productNotFoundTimeout);
         };
       }
-      
-      // Calculate which step we should be on based on progress
-      const targetStepIndex = Math.min(
-        Math.floor((clampedProgress / 100) * progressSteps.length),
-        progressSteps.length - 1
-      );
-      
-      console.log('LoadingScreen: Setting current step to', targetStepIndex, 'based on progress', clampedProgress);
-      setCurrentStep(targetStepIndex);
-      
-      // Animate progress bar to match external progress smoothly
-      Animated.timing(animatedValues.progressBarWidth, {
-        toValue: clampedProgress,
-        duration: 300,
-        useNativeDriver: false,
-      }).start(() => {
-        console.log('LoadingScreen: Progress bar animation completed for', clampedProgress + '%');
-      });
       
       return () => {
         clearTimeout(fallbackTimeout);
@@ -562,24 +567,31 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     console.log('LoadingScreen: Progress prop changed to:', progress);
     const clampedProgress = Math.max(0, Math.min(100, progress));
     
-    // Calculate which step we should be on based on progress
-    const targetStepIndex = Math.min(
-      Math.floor((clampedProgress / 100) * progressSteps.length),
-      progressSteps.length - 1
-    );
-    
-    console.log('LoadingScreen: Updating step to', targetStepIndex, 'for progress', clampedProgress);
-    setCurrentStep(targetStepIndex);
-    setCurrentProgress(clampedProgress);
-    
-    // Animate progress bar to match external progress smoothly
-    Animated.timing(animatedValues.progressBarWidth, {
-      toValue: clampedProgress,
-      duration: 300,
-      useNativeDriver: false,
-    }).start(() => {
-      console.log('LoadingScreen: Progress bar updated to', clampedProgress + '%');
-    });
+    // Only update if progress is actually increasing to prevent resets
+    if (clampedProgress >= progressBarValueRef.current) {
+      console.log('LoadingScreen: Updating step and progress for', clampedProgress);
+      
+      // Calculate which step we should be on based on progress
+      const targetStepIndex = Math.min(
+        Math.floor((clampedProgress / 100) * progressSteps.length),
+        progressSteps.length - 1
+      );
+      
+      setCurrentStep(targetStepIndex);
+      setCurrentProgress(clampedProgress);
+      progressBarValueRef.current = clampedProgress;
+      
+      // Animate progress bar to match external progress smoothly
+      Animated.timing(animatedValues.progressBarWidth, {
+        toValue: clampedProgress,
+        duration: 500, // Slightly longer duration for smoother animation
+        useNativeDriver: false,
+      }).start(() => {
+        console.log('LoadingScreen: Progress bar updated to', clampedProgress + '%');
+      });
+    } else {
+      console.log('LoadingScreen: Ignoring progress update as it would decrease from', progressBarValueRef.current, 'to', clampedProgress);
+    }
   }, [progress, isVisible, animatedValues.progressBarWidth]);
   
   if (!isVisible) {
