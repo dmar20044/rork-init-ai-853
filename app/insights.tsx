@@ -166,53 +166,71 @@ export default function InsightsScreen() {
     }).filter(goal => goal.value); // Only show goals that are set
   }, [last30Days, profile.goals]);
   
-  // Calculate streak info
+  // Calculate streak info using proper logic
   const streakInfo = useMemo(() => {
-    const scanDates = history.map(item => new Date(item.timestamp).toISOString().split('T')[0]);
+    // Convert history timestamps to PST date strings
+    const scanDates = history.map(item => {
+      const date = new Date(item.timestamp);
+      // Convert to PST (UTC-8)
+      const pstOffset = -8 * 60; // PST is UTC-8 (in minutes)
+      const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+      const pstTime = new Date(utc + (pstOffset * 60000));
+      return pstTime.toISOString().split('T')[0];
+    });
+    
     const uniqueDates = [...new Set(scanDates)].sort();
     
-    let bestStreak = 0;
-    let currentStreak = 0;
+    if (uniqueDates.length === 0) {
+      return { bestStreak: 0, currentStreak: 0 };
+    }
     
-    if (uniqueDates.length > 0) {
-      let tempStreak = 1;
+    // Calculate current streak using PST timezone
+    let currentStreak = 0;
+    const now = new Date();
+    const pstOffset = -8 * 60; // PST is UTC-8 (in minutes)
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const pstTime = new Date(utc + (pstOffset * 60000));
+    const todayStr = pstTime.toISOString().split('T')[0];
+    const yesterdayStr = new Date(pstTime.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Sort dates in descending order (most recent first)
+    const sortedDates = [...uniqueDates].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    
+    // Check if user scanned today or yesterday to maintain streak
+    if (sortedDates[0] === todayStr || sortedDates[0] === yesterdayStr) {
+      currentStreak = 1;
+      let checkDate = new Date(sortedDates[0]);
       
-      for (let i = 1; i < uniqueDates.length; i++) {
-        const prevDate = new Date(uniqueDates[i - 1]);
-        const currentDate = new Date(uniqueDates[i]);
-        const daysDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      for (let i = 1; i < sortedDates.length; i++) {
+        const prevDate = new Date(checkDate.getTime() - 24 * 60 * 60 * 1000);
+        const prevDateStr = prevDate.toISOString().split('T')[0];
         
-        if (daysDiff === 1) {
-          tempStreak++;
+        if (sortedDates[i] === prevDateStr) {
+          currentStreak++;
+          checkDate = prevDate;
         } else {
-          bestStreak = Math.max(bestStreak, tempStreak);
-          tempStreak = 1;
-        }
-      }
-      bestStreak = Math.max(bestStreak, tempStreak);
-      
-      // Calculate current streak
-      const today = new Date().toISOString().split('T')[0];
-      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      if (uniqueDates.includes(today) || uniqueDates.includes(yesterday)) {
-        currentStreak = 1;
-        let checkDate = uniqueDates.includes(today) ? today : yesterday;
-        let checkIndex = uniqueDates.indexOf(checkDate);
-        
-        for (let i = checkIndex - 1; i >= 0; i--) {
-          const prevDate = new Date(uniqueDates[i]);
-          const currentDate = new Date(uniqueDates[i + 1]);
-          const daysDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 1000));
-          
-          if (daysDiff === 1) {
-            currentStreak++;
-          } else {
-            break;
-          }
+          break;
         }
       }
     }
+    
+    // Calculate longest streak
+    let bestStreak = 0;
+    let tempStreak = 1;
+    
+    for (let i = 1; i < sortedDates.length; i++) {
+      const currentDate = new Date(sortedDates[i]);
+      const prevDate = new Date(sortedDates[i - 1]);
+      const daysDiff = Math.floor((prevDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff === 1) {
+        tempStreak++;
+      } else {
+        bestStreak = Math.max(bestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    bestStreak = Math.max(bestStreak, tempStreak);
     
     return { bestStreak, currentStreak };
   }, [history]);
