@@ -296,8 +296,6 @@ export default function InsightsScreen() {
               </View>
               <View style={styles.chartLineContainer}>
                 {scoreTrends.trends7Days.map((day, index) => {
-                  const nextDay = scoreTrends.trends7Days[index + 1];
-                  const hasNext = index < scoreTrends.trends7Days.length - 1;
                   return (
                     <View key={index} style={styles.chartPoint}>
                       <View 
@@ -309,21 +307,6 @@ export default function InsightsScreen() {
                           }
                         ]} 
                       />
-                      {hasNext && (
-                        <View 
-                          style={[
-                            styles.chartLine,
-                            {
-                              height: Math.abs(nextDay.score - day.score) * 0.8,
-                              backgroundColor: colors.primary + '60',
-                              transform: [
-                                { translateY: -(Math.max(day.score, nextDay.score) * 0.8) },
-                                { rotate: nextDay.score > day.score ? '-45deg' : '45deg' }
-                              ]
-                            }
-                          ]}
-                        />
-                      )}
                       <Text style={[styles.modernChartLabel, { color: colors.textSecondary }]}>{day.date}</Text>
                       <Text style={[styles.modernChartScore, { color: colors.textPrimary }]}>{day.score > 0 ? day.score : '-'}</Text>
                     </View>
