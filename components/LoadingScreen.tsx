@@ -59,6 +59,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [showProductNotFound, setShowProductNotFound] = useState<boolean>(false);
+  const [currentProgress, setCurrentProgress] = useState<number>(0);
   const startTimeRef = useRef<number>(0);
   const progressBarValueRef = useRef<number>(0);
   
@@ -305,6 +306,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       setCurrentStep(0);
       setCompletedSteps(new Set());
       setShowProductNotFound(false);
+      setCurrentProgress(0);
       progressBarValueRef.current = 0;
       animatedValues.progressBarWidth.setValue(0);
       return;
@@ -316,6 +318,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Always reset progress bar when becoming visible
     animatedValues.progressBarWidth.setValue(0);
     progressBarValueRef.current = 0;
+    setCurrentProgress(0);
     setCurrentStep(0);
     setCompletedSteps(new Set());
     setShowProductNotFound(false);
@@ -353,6 +356,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       
       console.log('LoadingScreen: Updating progress from', progressBarValueRef.current, 'to', clampedProgress);
       progressBarValueRef.current = clampedProgress;
+      setCurrentProgress(clampedProgress);
       
       // When progress reaches 100%, ensure minimum duration before completing
       if (clampedProgress >= 100) {
@@ -412,6 +416,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       duration: 600,
       useNativeDriver: false,
     }).start();
+    setCurrentProgress(33.33);
     
     // After 1 second (0.6s animation + 0.4s pause): Move to step 1 (Analyzing)
     timeouts.push(setTimeout(() => {
@@ -453,6 +458,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
         duration: 600,
         useNativeDriver: false,
       }).start();
+      setCurrentProgress(66.66);
     }, 1000));
     
     // After 2 seconds (1s + 0.6s animation + 0.4s pause): Move to step 2 (Personalizing)
@@ -495,6 +501,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
         duration: 600,
         useNativeDriver: false,
       }).start();
+      setCurrentProgress(100);
     }, 2000));
     
     // After 3 seconds (2s + 0.6s animation + 0.4s pause): Complete step 2 and finish
@@ -563,6 +570,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     
     console.log('LoadingScreen: Updating step to', targetStepIndex, 'for progress', clampedProgress);
     setCurrentStep(targetStepIndex);
+    setCurrentProgress(clampedProgress);
     
     // Animate progress bar to match external progress smoothly
     Animated.timing(animatedValues.progressBarWidth, {
@@ -794,21 +802,26 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
             })}
           </View>
           
-          {/* Thin progress bar at bottom */}
-          <View style={[styles.progressBarBackground, { backgroundColor: colors.textTertiary }]}>
-            <Animated.View
-              style={[
-                styles.progressBarFill,
-                {
-                  backgroundColor: colors.primary,
-                  width: animatedValues.progressBarWidth.interpolate({
-                    inputRange: [0, 100],
-                    outputRange: ['0%', '100%'],
-                    extrapolate: 'clamp',
-                  }),
-                },
-              ]}
-            />
+          {/* Percentage-style progress bar */}
+          <View style={styles.percentageProgressContainer}>
+            <View style={[styles.percentageProgressBar, { backgroundColor: colors.textTertiary }]}>
+              <Animated.View
+                style={[
+                  styles.percentageProgressFill,
+                  {
+                    backgroundColor: colors.primary,
+                    width: animatedValues.progressBarWidth.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: ['0%', '100%'],
+                      extrapolate: 'clamp',
+                    }),
+                  },
+                ]}
+              />
+            </View>
+            <Text style={[styles.percentageText, { color: colors.primary }]}>
+              {Math.round(currentProgress)}%
+            </Text>
           </View>
         </View>
       </Animated.View>
@@ -1037,6 +1050,26 @@ const styles = StyleSheet.create({
   progressBarFill: {
     height: '100%',
     borderRadius: 2,
+  },
+  percentageProgressContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  percentageProgressBar: {
+    width: '80%',
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 12,
+    overflow: 'hidden',
+  },
+  percentageProgressFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  percentageText: {
+    fontSize: 18,
+    fontWeight: '600' as const,
   },
   cancelScanButton: {
     position: 'absolute',
