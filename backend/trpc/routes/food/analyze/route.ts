@@ -195,11 +195,25 @@ If you cannot identify the food clearly, respond with:
 
       console.log('Making request to Anthropic API...');
       
+      // Check if API key is available
+      if (!process.env.ANTHROPIC_API_KEY) {
+        console.error('ANTHROPIC_API_KEY environment variable is not set');
+        throw new Error('API key not configured. Please set ANTHROPIC_API_KEY in Vercel environment variables.');
+      }
+      
+      if (process.env.ANTHROPIC_API_KEY.length < 50) {
+        console.error('ANTHROPIC_API_KEY appears to be invalid (too short)');
+        throw new Error('API key appears to be invalid. Please check your ANTHROPIC_API_KEY in Vercel environment variables.');
+      }
+      
+      console.log('API Key length:', process.env.ANTHROPIC_API_KEY.length);
+      console.log('API Key prefix:', process.env.ANTHROPIC_API_KEY.substring(0, 15) + '...');
+      
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+          'x-api-key': process.env.ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({

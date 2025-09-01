@@ -25,6 +25,25 @@ app.get("/", (c) => {
   return c.json({ status: "ok", message: "API is running" });
 });
 
+// Debug endpoint to check environment variables
+app.get("/debug", (c) => {
+  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+  const keyLength = process.env.ANTHROPIC_API_KEY?.length || 0;
+  const keyPrefix = process.env.ANTHROPIC_API_KEY?.substring(0, 10) || 'none';
+  
+  return c.json({
+    status: "debug",
+    environment: {
+      hasAnthropicKey,
+      keyLength,
+      keyPrefix: keyPrefix === 'none' ? 'none' : keyPrefix + '...',
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Test Anthropic API endpoint
 app.post("/test-anthropic", async (c) => {
   try {
