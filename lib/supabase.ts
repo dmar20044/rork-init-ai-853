@@ -33,6 +33,7 @@ export interface Database {
           user_id: string;
           name: string;
           email: string;
+          profile_picture_uri: string | null;
           body_goal: string | null;
           health_goal: string | null;
           diet_goal: string | null;
@@ -56,6 +57,7 @@ export interface Database {
           user_id: string;
           name: string;
           email?: string;
+          profile_picture_uri?: string | null;
           body_goal?: string | null;
           health_goal?: string | null;
           diet_goal?: string | null;
@@ -79,6 +81,7 @@ export interface Database {
           user_id?: string;
           name?: string;
           email?: string;
+          profile_picture_uri?: string | null;
           body_goal?: string | null;
           health_goal?: string | null;
           diet_goal?: string | null;
@@ -195,6 +198,7 @@ export const createUserProfile = async (userId: string, profileData: any) => {
     user_id: userId,
     name: profileData.name,
     email: profileData.email || '',
+    profile_picture_uri: profileData.profilePictureUri || null,
     body_goal: profileData.goals?.bodyGoal,
     health_goal: profileData.goals?.healthGoal,
     diet_goal: profileData.goals?.dietGoal,
