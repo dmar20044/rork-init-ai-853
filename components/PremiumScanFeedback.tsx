@@ -753,9 +753,10 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Hero Score Section */}
           <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
+            {/* Always show product header for consistency */}
             <View style={styles.productHeader}>
               <View style={styles.productImageContainer}>
-                {(nutrition.imageUrl || imageUri) ? (
+                {(nutrition.imageUrl || (imageUri && imageUri !== 'barcode-scan')) ? (
                   <Image source={{ uri: nutrition.imageUrl || imageUri }} style={styles.productImage} />
                 ) : (
                   <View style={[styles.productImagePlaceholder, { backgroundColor: colors.textSecondary + '10' }]}>
@@ -764,10 +765,12 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 )}
               </View>
               <View style={styles.productInfo}>
-                <Text style={[styles.productName, { color: colors.textPrimary }]}>{nutrition.name}</Text>
-                {nutrition.servingSize && (
-                  <Text style={[styles.servingSize, { color: colors.textSecondary }]}>Serving: {nutrition.servingSize}</Text>
-                )}
+                <Text style={[styles.productName, { color: colors.textPrimary }]}>
+                  {nutrition.name || 'Food Item'}
+                </Text>
+                <Text style={[styles.servingSize, { color: colors.textSecondary }]}>
+                  Serving: {nutrition.servingSize || '1 portion'}
+                </Text>
               </View>
             </View>
             
