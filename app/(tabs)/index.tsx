@@ -62,7 +62,7 @@ export default function ScannerScreen() {
   };
 
   const handleBarcodeScanned = async ({ type, data }: BarcodeScanningResult) => {
-    if (isScanning || scanCooldown) return; // Prevent multiple scans
+    if (isScanning || scanCooldown || isProcessing) return; // Prevent multiple scans
     
     console.log('Barcode scanned:', { type, data });
     
@@ -89,16 +89,20 @@ export default function ScannerScreen() {
       return;
     }
     
+    // Set all blocking states immediately to prevent duplicate scans
     setIsScanning(true);
     setIsProcessing(true);
     setScanProgress(0);
     setLastScannedBarcode(cleanBarcode);
     setScanCooldown(true);
     
+    console.log('Barcode scan started for:', cleanBarcode);
+    
     // Set a cooldown period to prevent rapid re-scanning
     setTimeout(() => {
       setScanCooldown(false);
-    }, 3000); // 3 second cooldown
+      console.log('Barcode scan cooldown ended');
+    }, 5000); // 5 second cooldown (increased from 3)
     
     try {
       if (Platform.OS !== "web") {

@@ -108,6 +108,20 @@ export function ScanHistoryProvider({ children }: { children: React.ReactNode })
     const timestamp = Date.now();
     const localId = timestamp.toString() + Math.random().toString(36).substr(2, 9);
     
+    // Check for duplicate entries (same product name within last 10 seconds)
+    const recentDuplicate = history.find(historyItem => 
+      historyItem.nutrition.name === item.nutrition.name && 
+      (timestamp - historyItem.timestamp) < 10000 // 10 seconds
+    );
+    
+    if (recentDuplicate) {
+      console.log('[ScanHistory] Duplicate entry detected, skipping:', {
+        productName: item.nutrition.name,
+        timeDiff: timestamp - recentDuplicate.timestamp
+      });
+      return;
+    }
+    
     const newItem: ScanHistoryItem = {
       ...item,
       id: localId,
