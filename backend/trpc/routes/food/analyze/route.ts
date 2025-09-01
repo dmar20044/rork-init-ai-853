@@ -656,3 +656,4 @@ function personalScore(nutritionInfo: any, userGoals: UserGoals) {
 }
 
 export default analyzeFoodProcedure;
+export { analyzeFoodProcedure as analyzeFoodRoute };
