@@ -658,6 +658,14 @@ export default function GoalsScreen() {
                 </View>
               </TouchableOpacity>
               
+              {/* App Version */}
+              <View style={[styles.settingsModalItem, styles.versionItem]}>
+                <View style={styles.settingsModalItemLeft}>
+                  <Text style={styles.versionText}>App Version</Text>
+                </View>
+                <Text style={styles.versionNumber}>1.0.0</Text>
+              </View>
+              
               <TouchableOpacity 
                 style={[styles.settingsModalItem, styles.logoutItem]}
                 onPress={async () => {
@@ -1854,6 +1862,24 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   logoutText: {
     color: colors.error,
+  },
+  
+  // Version Item Styles
+  versionItem: {
+    borderTopWidth: 1,
+    borderTopColor: colors.textTertiary + '30',
+    marginTop: 8,
+    paddingVertical: 12,
+  },
+  versionText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  versionNumber: {
+    fontSize: 16,
+    color: colors.textTertiary,
+    fontWeight: '400',
   },
   
   // Goals Modal
