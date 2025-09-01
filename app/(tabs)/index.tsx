@@ -165,6 +165,9 @@ export default function ScannerScreen() {
               console.error('Error updating scan streak:', streakError);
             }
           }
+          
+          // Live barcode scan completed successfully - the LoadingScreen onComplete will handle UI transition
+          console.log('Live barcode scan completed successfully, waiting for LoadingScreen onComplete');
         } else {
           // Failed to process barcode data - stay on camera
           setAnalysisError('Failed to process barcode data');
@@ -371,6 +374,9 @@ export default function ScannerScreen() {
                 console.error('Error updating scan streak:', streakError);
               }
             }
+            
+            // Barcode scan from image completed successfully - the LoadingScreen onComplete will handle UI transition
+            console.log('Barcode scan from image completed successfully, waiting for LoadingScreen onComplete');
           } else {
             setAnalysisError('Failed to process barcode data');
             setScanProgress(0);
@@ -440,6 +446,9 @@ export default function ScannerScreen() {
               console.error('Error updating scan streak:', streakError);
             }
           }
+          
+          // AI analysis completed successfully - the LoadingScreen onComplete will handle UI transition
+          console.log('AI analysis completed successfully, waiting for LoadingScreen onComplete');
         } else {
           setAnalysisError(result.error || 'Failed to analyze image');
           console.error('Analysis failed:', result.error);

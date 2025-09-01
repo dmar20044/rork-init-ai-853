@@ -330,9 +330,9 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Minimum display duration of 3 seconds
     const MINIMUM_DURATION = 3000;
     
-    // Product not found timeout (5 seconds)
+    // Product not found timeout (8 seconds) - increased to give more time for analysis
     const productNotFoundTimeout = setTimeout(() => {
-      console.log('LoadingScreen: Product not found timeout triggered');
+      console.log('LoadingScreen: Product not found timeout triggered after 8 seconds');
       setShowProductNotFound(true);
       
       // Wait 2 more seconds to show the message, then go back
@@ -343,15 +343,15 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           onCancel();
         }
       }, 2000);
-    }, 5000);
+    }, 8000);
     
-    // Fallback timeout to prevent infinite loading (10 seconds max)
+    // Fallback timeout to prevent infinite loading (12 seconds max)
     const fallbackTimeout = setTimeout(() => {
-      console.log('LoadingScreen: Fallback timeout triggered, calling onComplete');
+      console.log('LoadingScreen: Fallback timeout triggered after 12 seconds, calling onComplete');
       if (onComplete) {
         onComplete();
       }
-    }, 10000);
+    }, 12000);
     
     // If external progress is provided, use controlled timing
     if (typeof progress === 'number') {
@@ -363,13 +363,14 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       
       // When progress reaches 100%, ensure minimum duration before completing
       if (clampedProgress >= 100) {
+        console.log('LoadingScreen: Progress reached 100%, clearing timeouts and completing');
         clearTimeout(productNotFoundTimeout);
+        clearTimeout(fallbackTimeout);
         const elapsedTime = Date.now() - startTimeRef.current;
         const remainingTime = Math.max(0, MINIMUM_DURATION - elapsedTime);
         
         const completeTimeout = setTimeout(() => {
-          console.log('LoadingScreen: Progress reached 100%, calling onComplete');
-          clearTimeout(fallbackTimeout);
+          console.log('LoadingScreen: Progress 100% completion timeout, calling onComplete');
           if (onComplete) {
             onComplete();
           }
@@ -538,10 +539,10 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       
       // Complete after a short delay
       timeouts.push(setTimeout(() => {
+        console.log('LoadingScreen: Auto progress completed, clearing timeouts and calling onComplete');
         clearTimeout(productNotFoundTimeout);
         clearTimeout(fallbackTimeout);
         if (onComplete) {
-          console.log('LoadingScreen: Auto progress completed, calling onComplete');
           onComplete();
         }
       }, 500));
