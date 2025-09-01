@@ -178,37 +178,65 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
     console.log('No cached result found, proceeding with backend AI analysis');
     
     // Use backend for AI analysis (secure)
-    const result = await trpcClient.food.analyze.mutate({
-      base64Image,
-    });
-    
-    if (!result.success) {
+    try {
+      console.log('Making tRPC request to backend...');
+      const result = await trpcClient.food.analyze.mutate({
+        base64Image,
+      });
+      
+      console.log('tRPC response received:', result);
+      
+      if (!result.success) {
+        return {
+          success: false,
+          error: result.error || 'Analysis failed'
+        };
+      }
+      
+      const nutritionData = result.data;
+      
+      if (!nutritionData) {
+        return {
+          success: false,
+          error: 'No data returned from analysis'
+        };
+      }
+      
+      // Cache the result for future scans of the same product
+      analysisCache.set(imageHash, nutritionData);
+      console.log('Cached analysis result for future use');
+      
+      // Save cache to persistent storage
+      await saveCacheToStorage();
+      
       return {
-        success: false,
-        error: result.error || 'Analysis failed'
+        success: true,
+        data: nutritionData
       };
+    } catch (trpcError) {
+      console.error('tRPC request failed:', trpcError);
+      
+      // Check if it's a JSON parsing error
+      if (trpcError instanceof Error && trpcError.message.includes('JSON Parse error')) {
+        console.error('Backend returned non-JSON response, likely HTML error page');
+        
+        // Try to make a direct HTTP request to debug
+        try {
+          const debugResponse = await fetch(`${process.env.EXPO_PUBLIC_RORK_API_BASE_URL}/debug`);
+          const debugText = await debugResponse.text();
+          console.log('Debug endpoint response:', debugText);
+        } catch (debugError) {
+          console.error('Debug request also failed:', debugError);
+        }
+        
+        return {
+          success: false,
+          error: 'Backend is returning HTML instead of JSON. This usually means the API is not properly deployed or there\'s a server error. Please check the Vercel deployment.'
+        };
+      }
+      
+      throw trpcError; // Re-throw if it's not a JSON parsing error
     }
-    
-    const nutritionData = result.data;
-    
-    if (!nutritionData) {
-      return {
-        success: false,
-        error: 'No data returned from analysis'
-      };
-    }
-    
-    // Cache the result for future scans of the same product
-    analysisCache.set(imageHash, nutritionData);
-    console.log('Cached analysis result for future use');
-    
-    // Save cache to persistent storage
-    await saveCacheToStorage();
-    
-    return {
-      success: true,
-      data: nutritionData
-    };
     
   } catch (error) {
     console.error('Food analysis error:', error);
