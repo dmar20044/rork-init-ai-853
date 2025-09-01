@@ -613,24 +613,100 @@ function calculateFoodScore(input: FoodScoringInput): ScoringResult {
   };
 }
 
-// Personalization function (simplified version)
+// Comprehensive personalization function (matches barcode scanner logic)
 function personalScore(nutritionInfo: any, userGoals: UserGoals) {
-  // This is a simplified version - you can expand this based on your needs
-  let adjustmentScore = 0;
+  let personalScore = nutritionInfo.healthScore;
   const reasons: string[] = [];
   
-  // Basic personalization logic
-  if (userGoals.healthGoal === 'low-sugar' && nutritionInfo.sugar > 10) {
-    adjustmentScore -= 15;
-    reasons.push('High sugar conflicts with your low-sugar goal');
+  // Diet-based adjustments
+  if (userGoals.dietGoal === 'whole-foods') {
+    // Penalize processed foods more heavily
+    if (nutritionInfo.ingredients && nutritionInfo.ingredients.length > 8) {
+      personalScore -= 20;
+      reasons.push('Many ingredients conflict with whole foods diet');
+    }
+    if (nutritionInfo.additives && nutritionInfo.additives.length > 0) {
+      personalScore -= 15;
+      reasons.push('Additives conflict with whole foods diet');
+    }
   }
   
-  if (userGoals.healthGoal === 'high-protein' && nutritionInfo.protein >= 15) {
-    adjustmentScore += 10;
-    reasons.push('High protein supports your protein goal');
+  if (userGoals.dietGoal === 'vegan') {
+    // Check for animal products in ingredients
+    const animalIngredients = ['milk', 'egg', 'meat', 'chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'cheese', 'butter', 'yogurt', 'whey', 'casein', 'gelatin', 'honey'];
+    const hasAnimalProducts = nutritionInfo.ingredients?.some((ingredient: string) => 
+      animalIngredients.some(animal => ingredient.toLowerCase().includes(animal))
+    );
+    if (hasAnimalProducts) {
+      personalScore -= 40;
+      reasons.push('Contains animal products - conflicts with vegan diet');
+    }
   }
   
-  const finalScore = Math.max(0, Math.min(100, nutritionInfo.healthScore + adjustmentScore));
+  if (userGoals.dietGoal === 'vegetarian') {
+    // Check for meat products
+    const meatIngredients = ['meat', 'chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'turkey', 'lamb'];
+    const hasMeat = nutritionInfo.ingredients?.some((ingredient: string) => 
+      meatIngredients.some(meat => ingredient.toLowerCase().includes(meat))
+    );
+    if (hasMeat) {
+      personalScore -= 35;
+      reasons.push('Contains meat - conflicts with vegetarian diet');
+    }
+  }
+  
+  if (userGoals.dietGoal === 'gluten-free') {
+    // Check for gluten-containing ingredients
+    const glutenIngredients = ['wheat', 'barley', 'rye', 'flour', 'gluten'];
+    const hasGluten = nutritionInfo.ingredients?.some((ingredient: string) => 
+      glutenIngredients.some(gluten => ingredient.toLowerCase().includes(gluten))
+    );
+    if (hasGluten) {
+      personalScore -= 30;
+      reasons.push('Contains gluten - conflicts with gluten-free diet');
+    }
+  }
+  
+  // Health goal adjustments
+  if (userGoals.healthGoal === 'keto') {
+    if (nutritionInfo.carbs > 5) personalScore -= 25;
+    if (nutritionInfo.fat > 10) personalScore += 15;
+    reasons.push('Adjusted for keto diet goals');
+  }
+  
+  if (userGoals.healthGoal === 'low-sugar') {
+    if (nutritionInfo.sugar > 5) personalScore -= 20;
+    if (nutritionInfo.sugar > 15) personalScore -= 30;
+    reasons.push('Adjusted for low-sugar goal');
+  }
+  
+  if (userGoals.healthGoal === 'low-fat') {
+    if (nutritionInfo.fat > 5) personalScore -= 15;
+    if (nutritionInfo.fat > 10) personalScore -= 25;
+    reasons.push('Adjusted for low-fat goal');
+  }
+  
+  if (userGoals.healthGoal === 'high-protein') {
+    if (nutritionInfo.protein > 15) personalScore += 20;
+    if (nutritionInfo.protein < 5) personalScore -= 15;
+    reasons.push('Adjusted for high-protein goal');
+  }
+  
+  // Body goal adjustments
+  if (userGoals.bodyGoal === 'lose-weight') {
+    if (nutritionInfo.calories > 150) personalScore -= 15;
+    if (nutritionInfo.calories > 250) personalScore -= 25;
+    reasons.push('Adjusted for weight loss goal');
+  }
+  
+  if (userGoals.bodyGoal === 'gain-muscle') {
+    if (nutritionInfo.protein > 10) personalScore += 15;
+    if (nutritionInfo.protein < 5) personalScore -= 20;
+    reasons.push('Adjusted for muscle gain goal');
+  }
+  
+  const finalScore = Math.max(0, Math.min(100, personalScore));
+  const personalAdjustment = finalScore - nutritionInfo.healthScore;
   
   let personalGrade: 'poor' | 'mediocre' | 'good' | 'excellent';
   if (finalScore >= 75) {
@@ -647,7 +723,7 @@ function personalScore(nutritionInfo: any, userGoals: UserGoals) {
     score: finalScore,
     reasons,
     personalGrade,
-    personalAdjustment: adjustmentScore
+    personalAdjustment
   };
 }
 
