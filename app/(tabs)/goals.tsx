@@ -137,15 +137,17 @@ export default function GoalsScreen() {
   const longestStreak = profile.longestStreak;
   const streakHistory = getStreakHistory(7);
   
-  // Get day letters for Cal AI style display using date-fns
+  // Get day letters for Cal AI style display using PST timezone
   const getDayLetter = (dateStr: string) => {
-    const date = new Date(dateStr);
+    // Parse the date string and ensure we're using PST timezone
+    const date = new Date(dateStr + 'T00:00:00-08:00'); // Force PST timezone
     const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
     return dayNames[getDay(date)];
   };
   
   const getDayNumber = (dateStr: string) => {
-    const date = new Date(dateStr);
+    // Parse the date string and ensure we're using PST timezone
+    const date = new Date(dateStr + 'T00:00:00-08:00'); // Force PST timezone
     return parseInt(format(date, 'd'));
   };
 
