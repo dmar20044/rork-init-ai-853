@@ -182,11 +182,20 @@ export default function GoalsScreen() {
   };
 
   const renderCalendarDay = (dayData: { date: string; scanned: boolean; isToday?: boolean; isFuture?: boolean }, index: number) => {
-    const date = new Date(dayData.date);
+    // Parse the date string and ensure we're using PST timezone
+    const date = new Date(dayData.date + 'T00:00:00-08:00'); // Force PST timezone
     const dayNumber = parseInt(format(date, 'd'));
+    const dayLetter = getDayLetter(dayData.date);
     
     return (
       <View key={index} style={styles.calendarDay}>
+        <Text style={[
+          styles.calendarDayLetter, 
+          dayData.isToday && styles.calendarToday,
+          dayData.isFuture && styles.calendarFuture
+        ]}>
+          {dayLetter}
+        </Text>
         <Text style={[
           styles.calendarDayNumber, 
           dayData.isToday && styles.calendarToday,
@@ -2181,6 +2190,12 @@ const createStyles = (colors: any) => StyleSheet.create({
   calendarDay: {
     alignItems: 'center',
     flex: 1,
+  },
+  calendarDayLetter: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 4,
   },
   calendarDayNumber: {
     fontSize: 14,
