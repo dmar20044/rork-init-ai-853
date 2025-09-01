@@ -248,4 +248,54 @@ app.get('/debug', (c) => {
 });
 
 // Export for Vercel
-module.exports = app;
+module.exports = async (req, res) => {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  try {
+    // Create a proper Request object for Hono
+    const url = new URL(req.url || '/', `https://${req.headers.host}`);
+    
+    let body = undefined;
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      if (req.body) {
+        body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+      }
+    }
+    
+    const request = new Request(url.toString(), {
+      method: req.method,
+      headers: req.headers,
+      body,
+    });
+    
+    const response = await app.fetch(request);
+    
+    // Set status
+    res.status(response.status);
+    
+    // Copy headers
+    for (const [key, value] of response.headers.entries()) {
+      res.setHeader(key, value);
+    }
+    
+    // Send response
+    const responseText = await response.text();
+    res.send(responseText);
+    
+  } catch (error) {
+    console.error('Vercel handler error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error', 
+      message: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+};
