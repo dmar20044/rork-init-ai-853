@@ -14,34 +14,43 @@ app.use('*', cors({
 
 // Simple health check endpoint
 app.get('/', (c) => {
+  console.log('Root endpoint called');
   return c.json({ 
     status: 'ok', 
     message: 'API is running',
     timestamp: new Date().toISOString(),
     hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-    keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0
+    keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
+    environment: process.env.NODE_ENV || 'unknown'
   });
 });
 
 app.get('/api', (c) => {
+  console.log('API endpoint called');
   return c.json({ 
     status: 'ok', 
     message: 'API is running', 
-    endpoints: ['/api/analyze-food'],
+    endpoints: ['/api/analyze-food', '/debug'],
     timestamp: new Date().toISOString(),
-    hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY
+    hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+    keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
+    environment: process.env.NODE_ENV || 'unknown'
   });
 });
 
 // Debug endpoint
 app.get('/debug', (c) => {
+  console.log('Debug endpoint called');
   return c.json({
     status: 'debug',
     environment: {
       hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
       keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
+      keyPreview: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'none',
       nodeEnv: process.env.NODE_ENV,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      vercelRegion: process.env.VERCEL_REGION || 'unknown',
+      vercelUrl: process.env.VERCEL_URL || 'unknown'
     }
   });
 });
@@ -50,13 +59,25 @@ app.get('/debug', (c) => {
 app.post('/api/analyze-food', async (c) => {
   try {
     console.log('Starting food analysis on backend...');
+    console.log('Environment check:', {
+      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+      keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0
+    });
     
     const body = await c.req.json();
     const { base64Image, userGoals } = body;
     
     if (!base64Image) {
+      console.log('No image provided in request');
       return c.json({ success: false, error: 'No image provided' }, 400);
     }
+    
+    if (!process.env.ANTHROPIC_API_KEY) {
+      console.log('No Anthropic API key found in environment');
+      return c.json({ success: false, error: 'API key not configured' }, 500);
+    }
+    
+    console.log('Image size:', base64Image.length, 'characters');
     
     const systemPrompt = `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
 
@@ -90,6 +111,25 @@ You MUST respond with ONLY a valid JSON object, no additional text or formatting
     const userMessage = 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.';
 
     console.log('Making request to Anthropic API...');
+    console.log('Request payload size:', JSON.stringify({
+      model: 'claude-3-sonnet-20240229',
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{
+        role: 'user',
+        content: [{
+          type: 'text',
+          text: userMessage
+        }, {
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: 'image/jpeg',
+            data: base64Image
+          }
+        }]
+      }]
+    }).length, 'characters');
     
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -124,12 +164,25 @@ You MUST respond with ONLY a valid JSON object, no additional text or formatting
       }),
     });
     
+    console.log('Anthropic API response status:', response.status);
+    console.log('Anthropic API response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
       const errorText = await response.text().catch(() => 'Unable to read error response');
-      console.error('Anthropic API error:', errorText);
+      console.error('Anthropic API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
       return c.json({ 
         success: false, 
-        error: `API request failed: ${response.status} - ${errorText}` 
+        error: `API request failed: ${response.status} - ${errorText}`,
+        details: {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries())
+        }
       }, 500);
     }
 
@@ -202,11 +255,16 @@ You MUST respond with ONLY a valid JSON object, no additional text or formatting
     });
     
   } catch (error) {
-    console.error('Food analysis error:', error);
+    console.error('Food analysis error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error instanceof Error ? error.constructor.name : typeof error
+    });
     
     return c.json({
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      type: error instanceof Error ? error.constructor.name : typeof error
     }, 500);
   }
 });
@@ -229,7 +287,9 @@ module.exports = async (req, res) => {
       url: req.url,
       hasBody: !!req.body,
       bodyType: typeof req.body,
-      contentType: req.headers['content-type']
+      contentType: req.headers['content-type'],
+      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+      keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0
     });
     
     // Create a proper Request object for Hono
@@ -288,10 +348,15 @@ module.exports = async (req, res) => {
     res.send(responseText);
     
   } catch (error) {
-    console.error('Vercel handler error:', error);
+    console.error('Vercel handler error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error instanceof Error ? error.constructor.name : typeof error
+    });
     res.status(500).json({ 
       error: 'Internal server error', 
-      message: error.message,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      type: error instanceof Error ? error.constructor.name : typeof error,
       timestamp: new Date().toISOString()
     });
   }

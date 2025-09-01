@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { trpcClient } from '@/lib/trpc';
+// import { trpcClient } from '@/lib/trpc';
 import { Stack } from 'expo-router';
 
 export default function DebugScreen() {
@@ -23,17 +23,44 @@ export default function DebugScreen() {
       const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
       addResult('Environment Variable', { baseUrl });
 
-      // Test basic API endpoint
-      const response = await fetch(`${baseUrl}/api`);
-      const data = await response.json();
-      addResult('Basic API Test', { status: response.status, data });
-
-      // Test tRPC hello endpoint
+      // Test basic connectivity first
       try {
-        const helloResult = await trpcClient.example.hi.mutate({ name: 'Debug Test' });
-        addResult('tRPC Hello Test', helloResult);
+        const connectivityResponse = await fetch(`${baseUrl}`);
+        const connectivityData = await connectivityResponse.text();
+        addResult('Basic Connectivity Test', { 
+          status: connectivityResponse.status, 
+          headers: Object.fromEntries(connectivityResponse.headers.entries()),
+          bodyPreview: connectivityData.substring(0, 200) + (connectivityData.length > 200 ? '...' : '')
+        });
       } catch (error) {
-        addResult('tRPC Hello Test', null, error);
+        addResult('Basic Connectivity Test', null, { 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+        });
+      }
+
+      // Test basic API endpoint
+      try {
+        const response = await fetch(`${baseUrl}/api`);
+        const data = await response.json();
+        addResult('Basic API Test', { status: response.status, data });
+      } catch (error) {
+        addResult('Basic API Test', null, { 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+        });
+      }
+
+      // Test debug endpoint
+      try {
+        const debugResponse = await fetch(`${baseUrl}/debug`);
+        const debugData = await debugResponse.json();
+        addResult('Debug Endpoint Test', { status: debugResponse.status, data: debugData });
+      } catch (error) {
+        addResult('Debug Endpoint Test', null, { 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+        });
       }
 
       // Test food analysis endpoint with a simple base64 image
@@ -41,14 +68,7 @@ export default function DebugScreen() {
         // Simple 1x1 pixel red image in base64
         const testImage = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA==';
         
-        const getBaseUrl = () => {
-          if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
-            return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-          }
-          throw new Error("No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL");
-        };
-        
-        const response = await fetch(`${getBaseUrl()}/api/analyze-food`, {
+        const response = await fetch(`${baseUrl}/api/analyze-food`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -63,13 +83,20 @@ export default function DebugScreen() {
         
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`API request failed: ${response.status} - ${errorText}`);
+          addResult('Food Analysis Test', null, {
+            status: response.status,
+            error: errorText,
+            headers: Object.fromEntries(response.headers.entries())
+          });
+        } else {
+          const analysisResult = await response.json();
+          addResult('Food Analysis Test', analysisResult);
         }
-        
-        const analysisResult = await response.json();
-        addResult('Food Analysis Test', analysisResult);
       } catch (error) {
-        addResult('Food Analysis Test', null, error);
+        addResult('Food Analysis Test', null, { 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+        });
       }
 
     } catch (error) {
@@ -95,11 +122,23 @@ export default function DebugScreen() {
         })
       });
       
-      const result = await response.json();
-      addResult('Direct Anthropic API Test', { status: response.status, result });
+      if (!response.ok) {
+        const errorText = await response.text();
+        addResult('Direct Anthropic API Test', null, {
+          status: response.status,
+          error: errorText,
+          headers: Object.fromEntries(response.headers.entries())
+        });
+      } else {
+        const result = await response.json();
+        addResult('Direct Anthropic API Test', { status: response.status, result });
+      }
       
     } catch (error) {
-      addResult('Direct Anthropic API Test', null, error);
+      addResult('Direct Anthropic API Test', null, { 
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+      });
     } finally {
       setIsLoading(false);
     }
