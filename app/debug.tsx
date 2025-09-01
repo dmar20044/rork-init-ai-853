@@ -41,12 +41,32 @@ export default function DebugScreen() {
         // Simple 1x1 pixel red image in base64
         const testImage = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA==';
         
-        const analysisResult = await trpcClient.food.analyze.mutate({
-          base64Image: testImage,
-          userGoals: {
-            healthGoal: 'general-health'
+        const getBaseUrl = () => {
+          if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
+            return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
           }
+          throw new Error("No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL");
+        };
+        
+        const response = await fetch(`${getBaseUrl()}/api/analyze-food`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            base64Image: testImage,
+            userGoals: {
+              healthGoal: 'general-health'
+            }
+          }),
         });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API request failed: ${response.status} - ${errorText}`);
+        }
+        
+        const analysisResult = await response.json();
         addResult('Food Analysis Test', analysisResult);
       } catch (error) {
         addResult('Food Analysis Test', null, error);

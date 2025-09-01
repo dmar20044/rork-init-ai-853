@@ -179,12 +179,33 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
     
     // Use backend for AI analysis (secure)
     try {
-      console.log('Making tRPC request to backend...');
-      const result = await trpcClient.food.analyze.mutate({
-        base64Image,
+      console.log('Making API request to backend...');
+      
+      const getBaseUrl = () => {
+        if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
+          return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+        }
+        throw new Error("No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL");
+      };
+      
+      const response = await fetch(`${getBaseUrl()}/api/analyze-food`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          base64Image,
+        }),
       });
       
-      console.log('tRPC response received:', result);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API request failed:', response.status, errorText);
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      console.log('API response received:', result);
       
       if (!result.success) {
         return {
@@ -1132,16 +1153,37 @@ export async function analyzeFoodImageWithPersonalization(
     console.log('No cached result found, proceeding with backend AI analysis with personalization');
     
     // Use backend for AI analysis with personalization (secure)
-    const result = await trpcClient.food.analyze.mutate({
-      base64Image,
-      userGoals: userGoals ? {
-        bodyGoal: userGoals.bodyGoal || undefined,
-        healthGoal: userGoals.healthGoal || undefined,
-        dietGoal: userGoals.dietGoal || undefined,
-        lifeGoal: userGoals.lifeGoal || undefined,
-        motivation: userGoals.motivation || undefined,
-      } : undefined,
+    const getBaseUrl = () => {
+      if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
+        return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+      }
+      throw new Error("No base url found, please set EXPO_PUBLIC_RORK_API_BASE_URL");
+    };
+    
+    const response = await fetch(`${getBaseUrl()}/api/analyze-food`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        base64Image,
+        userGoals: userGoals ? {
+          bodyGoal: userGoals.bodyGoal || undefined,
+          healthGoal: userGoals.healthGoal || undefined,
+          dietGoal: userGoals.dietGoal || undefined,
+          lifeGoal: userGoals.lifeGoal || undefined,
+          motivation: userGoals.motivation || undefined,
+        } : undefined,
+      }),
     });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API request failed:', response.status, errorText);
+      throw new Error(`API request failed: ${response.status}`);
+    }
+    
+    const result = await response.json();
     
     if (!result.success) {
       return {
