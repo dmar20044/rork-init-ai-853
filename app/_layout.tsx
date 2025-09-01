@@ -11,6 +11,7 @@ import { GroceryListProvider, useGroceryList } from "@/contexts/GroceryListConte
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastNotification } from "@/components/ToastNotification";
 import { Colors } from "@/constants/colors";
+import "@/constants/production"; // Initialize production config
 
 // Error Boundary Component
 class ErrorBoundary extends Component<
