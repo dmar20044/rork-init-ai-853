@@ -779,7 +779,6 @@ interface Profile {
   healthFocus: 'low_sugar' | 'high_protein' | 'low_fat' | 'keto' | 'balanced';
   dietPreference: 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
-  motivation: 'looking_better' | 'feeling_better' | 'more_energy' | 'longevity';
 }
 
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
@@ -993,7 +992,7 @@ function deltaBody(product: Product, body: Profile['bodyGoal']) {
   return { d: Math.round(d), why };
 }
 
-function deltaLifeAndMotivation(product: Product, life: Profile['lifeGoal'], motivation: Profile['motivation']) {
+function deltaLife(product: Product, life: Profile['lifeGoal']) {
   const m = product.macros;
   const f = new Set(product.flags || []);
   let d = 0;
@@ -1011,6 +1010,11 @@ function deltaLifeAndMotivation(product: Product, life: Profile['lifeGoal'], mot
     if (product.additives.length > 3) {
       d -= 8;
       why.push('Many additives may affect energy and mood');
+    }
+    // Additional energy-focused penalties
+    if (m.sugar_g > 10) {
+      d -= 12;
+      why.push('High sugar can cause energy crashes');
     }
   }
   
@@ -1040,6 +1044,15 @@ function deltaLifeAndMotivation(product: Product, life: Profile['lifeGoal'], mot
       d -= 8;
       why.push('Many additives may impact overall health');
     }
+    // Additional longevity-focused penalties (moved from motivation)
+    if (product.additives.length > 2) {
+      d -= product.additives.length * 2; // Escalating penalty
+      why.push('Additives may conflict with health goals');
+    }
+    if (f.has('ultra_processed')) {
+      d -= 8;
+      why.push('Ultra-processed foods may impact overall health');
+    }
   }
   
   if (life === 'body_confidence') {
@@ -1052,28 +1065,8 @@ function deltaLifeAndMotivation(product: Product, life: Profile['lifeGoal'], mot
       d += 6;
       why.push('Good protein supports body confidence goals');
     }
-  }
-  
-  // Motivation-based adjustments (more aggressive)
-  if (motivation === 'longevity') {
-    if (product.additives.length > 2) {
-      d -= product.additives.length * 2; // Escalating penalty
-      why.push('Additives may conflict with longevity goals');
-    }
-    if (f.has('high_risk_additives')) {
-      d -= 12;
-      why.push('High-risk additives strongly conflict with longevity');
-    }
-  }
-  
-  if (motivation === 'looking_better' && m.protein_g >= 15) d += 4;
-  if (motivation === 'feeling_better' && f.has('ultra_processed')) {
-    d -= 8;
-    why.push('Ultra-processed foods may impact how you feel');
-  }
-  if (motivation === 'more_energy' && m.sugar_g > 10) {
-    d -= 12;
-    why.push('High sugar can cause energy crashes');
+    // Additional body confidence bonuses
+    if (m.protein_g >= 15) d += 4;
   }
   
   return { d: Math.round(d), why };
@@ -1113,19 +1106,11 @@ function convertUserGoalsToProfile(goals: UserGoals): Profile {
     'clear-skin': 'clear_skin'
   };
   
-  const motivationMap: Record<string, Profile['motivation']> = {
-    'looking-better': 'looking_better',
-    'feeling-better': 'feeling_better',
-    'more-energy': 'more_energy',
-    'longevity': 'longevity'
-  };
-  
   return {
     bodyGoal: bodyGoalMap[goals.bodyGoal || ''] || 'maintain',
     healthFocus: healthGoalMap[goals.healthGoal || ''] || 'balanced',
     dietPreference: dietGoalMap[goals.dietGoal || ''] || 'balanced',
-    lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier',
-    motivation: motivationMap[goals.motivation || ''] || 'feeling_better'
+    lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier'
   };
 }
 
@@ -1162,9 +1147,9 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
   const dietResult = fitsDiet(product, profile.dietPreference);
   const { d: df, why: wf, forceZero } = dietResult;
   const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
-  const { d: lm, why: wl } = deltaLifeAndMotivation(product, profile.lifeGoal, profile.motivation);
+  const { d: l, why: wl } = deltaLife(product, profile.lifeGoal);
 
-  let score = product.baseScore + h + df + b + lm;
+  let score = product.baseScore + h + df + b + l;
   
   // If dietary restriction is violated, force score to 0
   if (forceZero) {
