@@ -52,10 +52,20 @@ const progressSteps = [
 ];
 
 export default function LoadingScreen({ isVisible, onCancel, onComplete, onProductNotFound, progress }: LoadingScreenProps) {
-  const { colors } = useTheme();
+  const themeContext = useTheme();
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
 
 
+  // Get colors with fallback to prevent crashes
+  const colors = themeContext?.colors || {
+    background: '#FFFFFF',
+    surface: '#FFFFFF',
+    textTertiary: '#666666',
+    primary: '#FF0040',
+    textSecondary: '#333333',
+    white: '#FFFFFF'
+  };
+  
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [showProductNotFound, setShowProductNotFound] = useState<boolean>(false);
