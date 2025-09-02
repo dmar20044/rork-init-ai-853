@@ -802,28 +802,28 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.retroOffWhite }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.retroCreamWhite }]}>
       <KeyboardAvoidingView 
-        style={[styles.container, { backgroundColor: Colors.retroOffWhite }]} 
+        style={[styles.container, { backgroundColor: Colors.retroCreamWhite }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <View style={[styles.retroHeaderBanner, { backgroundColor: Colors.retroOffWhite }]}>
+        <View style={[styles.retroHeaderBanner, { backgroundColor: Colors.retroCreamWhite }]}>
           <View style={styles.retroGradientOverlay} />
           <View style={styles.retroHeaderContent}>
             <View style={styles.retroTitleContainer}>
-              <View style={[styles.retroIconAccent, { backgroundColor: Colors.retroDustyRose }]}>
+              <View style={[styles.retroIconAccent, { backgroundColor: Colors.retroNeonTurquoise }]}>
                 <Feather size={24} color={Colors.white} />
               </View>
-              <Text style={[styles.retroMagazineTitle, { color: Colors.textPrimary }]}>Ask InIt</Text>
-              <View style={[styles.retroSubtitleDivider, { backgroundColor: Colors.retroMutedLilac }]} />
+              <Text style={[styles.retroMagazineTitle, { color: Colors.retroCharcoalBlack }]}>Ask InIt</Text>
+              <View style={[styles.retroSubtitleDivider, { backgroundColor: Colors.retroPink }]} />
             </View>
-            <Text style={[styles.retroMagazineSubtitle, { color: Colors.textSecondary }]}>Your Personal Wellness Editor</Text>
-            <Text style={[styles.retroTagline, { color: Colors.textTertiary }]}>Curated nutrition insights, just for you</Text>
+            <Text style={[styles.retroMagazineSubtitle, { color: Colors.retroSlateGray }]}>Your Personal Wellness Editor</Text>
+            <Text style={[styles.retroTagline, { color: Colors.retroSlateGray }]}>Curated nutrition insights, just for you</Text>
             {profile.hasCompletedQuiz && (
-              <View style={[styles.retroPersonalizationPill, { backgroundColor: Colors.retroSoftMint }]}>
-                <Heart size={12} color={Colors.textPrimary} />
-                <Text style={[styles.retroPersonalizationText, { color: Colors.textPrimary }]}>Personalized for {getPersonalizationText()}</Text>
+              <View style={[styles.retroPersonalizationPill, { backgroundColor: Colors.retroNeonTurquoise }]}>
+                <Heart size={12} color={Colors.white} />
+                <Text style={[styles.retroPersonalizationText, { color: Colors.white }]}>Personalized for {getPersonalizationText()}</Text>
               </View>
             )}
           </View>
@@ -831,7 +831,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
 
         <ScrollView 
           ref={scrollViewRef}
-          style={[styles.messagesContainer, { backgroundColor: Colors.retroOffWhite }]}
+          style={[styles.messagesContainer, { backgroundColor: Colors.retroCreamWhite }]}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -839,17 +839,17 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           {messages.length === 0 && (
             <View style={styles.retroQuickQuestionsSection}>
               <View style={styles.retroSectionHeader}>
-                <Text style={[styles.retroSectionTitle, { color: Colors.textPrimary }]}>Featured Articles</Text>
-                <View style={[styles.retroSectionUnderline, { backgroundColor: Colors.retroDustyRose }]} />
+                <Text style={[styles.retroSectionTitle, { color: Colors.retroCharcoalBlack }]}>Featured Articles</Text>
+                <View style={[styles.retroSectionUnderline, { backgroundColor: Colors.retroPink }]} />
               </View>
               <View style={styles.retroQuestionsGrid}>
                 {quickQuestions.map((question, index) => {
-                  const pastelColors = [Colors.retroDustyRose, Colors.retroMutedLilac, Colors.retroSoftMint];
-                  const accentColor = pastelColors[index % pastelColors.length];
+                  const techColors = [Colors.retroNeonTurquoise, Colors.retroPink, Colors.retroDeepIndigo];
+                  const accentColor = techColors[index % techColors.length];
                   return (
                     <TouchableOpacity
                       key={question.id}
-                      style={[styles.retroQuestionCard, { backgroundColor: Colors.retroWarmCream, borderLeftColor: accentColor }]}
+                      style={[styles.retroQuestionCard, { backgroundColor: Colors.white, borderLeftColor: accentColor }]}
                       onPress={() => handleQuickQuestion(question.text)}
                     >
                       <View style={[styles.retroQuestionGradient, { backgroundColor: accentColor }]} />
@@ -857,8 +857,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                         <View style={[styles.retroQuestionIcon, { backgroundColor: accentColor + '20' }]}>
                           {question.icon}
                         </View>
-                        <Text style={[styles.retroQuestionTitle, { color: Colors.textPrimary }]}>{question.text}</Text>
-                        <Text style={[styles.retroQuestionSubtext, { color: Colors.textSecondary }]}>Wellness insight</Text>
+                        <Text style={[styles.retroQuestionTitle, { color: Colors.retroCharcoalBlack }]}>{question.text}</Text>
+                        <Text style={[styles.retroQuestionSubtext, { color: Colors.retroSlateGray }]}>Wellness insight</Text>
                       </View>
                       <View style={[styles.retroQuestionArrow, { backgroundColor: accentColor }]}>
                         <ArrowRight size={14} color={Colors.white} />
@@ -1017,28 +1017,28 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { backgroundColor: Colors.retroOffWhite, borderTopColor: Colors.retroDustyRose + '30' }]}>
+        <View style={[styles.inputContainer, { backgroundColor: Colors.retroCreamWhite, borderTopColor: Colors.retroSoftGray + '50' }]}>
           {showSuggestions && messages.length === 0 && (
             <View style={styles.retroSuggestionChips}>
               {suggestionChips.map((chip, index) => {
-                const pastelColors = [Colors.retroDustyRose, Colors.retroMutedLilac, Colors.retroSoftMint, Colors.retroFadedPink];
-                const chipColor = pastelColors[index % pastelColors.length];
+                const techColors = [Colors.retroNeonTurquoise, Colors.retroPink, Colors.retroDeepIndigo, Colors.retroNeonTurquoise];
+                const chipColor = techColors[index % techColors.length];
                 return (
                   <TouchableOpacity
                     key={index}
-                    style={[styles.retroSuggestionChip, { backgroundColor: chipColor + '30', borderColor: chipColor }]}
+                    style={[styles.retroSuggestionChip, { backgroundColor: chipColor + '20', borderColor: chipColor }]}
                     onPress={() => handleSuggestionChip(chip)}
                   >
-                    <Text style={[styles.retroSuggestionChipText, { color: Colors.textPrimary }]}>{chip}</Text>
+                    <Text style={[styles.retroSuggestionChipText, { color: chipColor }]}>{chip}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
           )}
-          <View style={[styles.retroInputWrapper, { backgroundColor: Colors.retroWarmCream, borderColor: Colors.retroDustyRose }]}>
+          <View style={[styles.retroInputWrapper, { backgroundColor: Colors.white, borderColor: Colors.retroNeonTurquoise }]}>
             <TextInput
               ref={textInputRef}
-              style={[styles.retroTextInput, { color: Colors.textPrimary }]}
+              style={[styles.retroTextInput, { color: Colors.retroCharcoalBlack }]}
               value={inputText}
               onChangeText={(text) => {
                 setInputText(text);
@@ -1049,7 +1049,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 }
               }}
               placeholder="What wellness wisdom can I share with you today?"
-              placeholderTextColor={Colors.textSecondary}
+              placeholderTextColor={Colors.retroSlateGray}
               multiline
               maxLength={500}
               editable={!isLoading}
@@ -1070,8 +1070,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
             <TouchableOpacity
               style={[
                 styles.retroSendButton,
-                { backgroundColor: Colors.retroDustyRose },
-                (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: Colors.textTertiary }],
+                { backgroundColor: Colors.retroNeonTurquoise },
+                (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: Colors.retroSoftGray }],
               ]}
               onPress={() => {
                 setShowSuggestions(false);
@@ -2109,14 +2109,14 @@ const styles = StyleSheet.create({
     letterSpacing: 0.1,
   },
   
-  // Retro Ask InIt Styles - Magazine Aesthetic
+  // Retro Tech Pop Styles - Modern Magazine Aesthetic
   retroHeaderBanner: {
-    backgroundColor: Colors.retroOffWhite,
+    backgroundColor: Colors.retroCreamWhite,
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 28,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.retroDustyRose + '30',
+    borderBottomColor: Colors.retroSoftGray + '50',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -2126,8 +2126,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: `linear-gradient(135deg, ${Colors.retroDustyRose}15, ${Colors.retroMutedLilac}10, ${Colors.retroSoftMint}15)`,
-    opacity: 0.6,
+    backgroundColor: `linear-gradient(135deg, ${Colors.retroNeonTurquoise}10, ${Colors.retroPink}08, ${Colors.retroDeepIndigo}12)`,
+    opacity: 0.4,
   },
   retroHeaderContent: {
     alignItems: 'center',
@@ -2142,11 +2142,11 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.retroDustyRose,
+    backgroundColor: Colors.retroNeonTurquoise,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    shadowColor: Colors.retroDustyRose,
+    shadowColor: Colors.retroNeonTurquoise,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -2155,7 +2155,7 @@ const styles = StyleSheet.create({
   retroMagazineTitle: {
     fontSize: 36,
     fontWeight: '800',
-    color: Colors.textPrimary,
+    color: Colors.retroCharcoalBlack,
     letterSpacing: -1.2,
     textShadowColor: 'rgba(0,0,0,0.08)',
     textShadowOffset: { width: 0, height: 2 },
@@ -2164,20 +2164,20 @@ const styles = StyleSheet.create({
   retroSubtitleDivider: {
     width: 60,
     height: 3,
-    backgroundColor: Colors.retroMutedLilac,
+    backgroundColor: Colors.retroPink,
     borderRadius: 2,
     marginLeft: 12,
   },
   retroMagazineSubtitle: {
     fontSize: 18,
-    color: Colors.textSecondary,
+    color: Colors.retroSlateGray,
     fontWeight: '600',
     letterSpacing: 0.5,
     marginBottom: 4,
   },
   retroTagline: {
     fontSize: 14,
-    color: Colors.textTertiary,
+    color: Colors.retroSlateGray,
     fontStyle: 'italic',
     letterSpacing: 0.3,
     marginBottom: 16,
@@ -2185,11 +2185,11 @@ const styles = StyleSheet.create({
   retroPersonalizationPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.retroSoftMint,
+    backgroundColor: Colors.retroNeonTurquoise,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    shadowColor: Colors.retroSoftMint,
+    shadowColor: Colors.retroNeonTurquoise,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -2197,17 +2197,17 @@ const styles = StyleSheet.create({
   },
   retroPersonalizationText: {
     fontSize: 12,
-    color: Colors.textPrimary,
+    color: Colors.white,
     fontWeight: '600',
     marginLeft: 6,
     letterSpacing: 0.2,
   },
   
-  // Retro Quick Questions Section
+  // Retro Tech Pop Quick Questions Section
   retroQuickQuestionsSection: {
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: Colors.retroOffWhite,
+    backgroundColor: Colors.retroCreamWhite,
   },
   retroSectionHeader: {
     alignItems: 'center',
@@ -2216,21 +2216,21 @@ const styles = StyleSheet.create({
   retroSectionTitle: {
     fontSize: 24,
     fontWeight: '700',
-    color: Colors.textPrimary,
+    color: Colors.retroCharcoalBlack,
     letterSpacing: -0.5,
     marginBottom: 8,
   },
   retroSectionUnderline: {
     width: 80,
     height: 2,
-    backgroundColor: Colors.retroDustyRose,
+    backgroundColor: Colors.retroPink,
     borderRadius: 1,
   },
   retroQuestionsGrid: {
     gap: 16,
   },
   retroQuestionCard: {
-    backgroundColor: Colors.retroWarmCream,
+    backgroundColor: Colors.white,
     borderRadius: 20,
     padding: 20,
     marginBottom: 4,
@@ -2242,7 +2242,7 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
     borderLeftWidth: 4,
-    borderLeftColor: Colors.retroDustyRose,
+    borderLeftColor: Colors.retroNeonTurquoise,
     position: 'relative',
     overflow: 'hidden',
   },
@@ -2252,7 +2252,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: 4,
     height: '100%',
-    backgroundColor: Colors.retroDustyRose,
+    backgroundColor: Colors.retroNeonTurquoise,
   },
   retroQuestionContent: {
     flex: 1,
@@ -2262,16 +2262,16 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.retroDustyRose + '20',
+    backgroundColor: Colors.retroNeonTurquoise + '20',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
     borderWidth: 2,
-    borderColor: Colors.retroDustyRose + '40',
+    borderColor: Colors.retroNeonTurquoise + '40',
   },
   retroQuestionTitle: {
     fontSize: 16,
-    color: Colors.textPrimary,
+    color: Colors.retroCharcoalBlack,
     fontWeight: '700',
     letterSpacing: -0.2,
     lineHeight: 22,
@@ -2279,7 +2279,7 @@ const styles = StyleSheet.create({
   },
   retroQuestionSubtext: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: Colors.retroSlateGray,
     fontStyle: 'italic',
     letterSpacing: 0.2,
   },
@@ -2287,10 +2287,10 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.retroDustyRose,
+    backgroundColor: Colors.retroNeonTurquoise,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.retroDustyRose,
+    shadowColor: Colors.retroNeonTurquoise,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -2306,12 +2306,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   retroSuggestionChip: {
-    backgroundColor: Colors.retroDustyRose + '30',
+    backgroundColor: Colors.retroNeonTurquoise + '20',
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: Colors.retroDustyRose + '50',
+    borderColor: Colors.retroNeonTurquoise,
     shadowColor: 'rgba(0,0,0,0.05)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -2320,16 +2320,16 @@ const styles = StyleSheet.create({
   },
   retroSuggestionChipText: {
     fontSize: 13,
-    color: Colors.textPrimary,
+    color: Colors.retroNeonTurquoise,
     fontWeight: '600',
     letterSpacing: 0.2,
   },
   
-  // Retro Input Wrapper
+  // Retro Tech Pop Input Wrapper
   retroInputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: Colors.retroWarmCream,
+    backgroundColor: Colors.white,
     borderRadius: 24,
     paddingHorizontal: 20,
     paddingVertical: 12,
@@ -2340,12 +2340,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
     borderWidth: 2,
-    borderColor: Colors.retroDustyRose + '40',
+    borderColor: Colors.retroNeonTurquoise,
   },
   retroTextInput: {
     flex: 1,
     fontSize: 15,
-    color: Colors.textPrimary,
+    color: Colors.retroCharcoalBlack,
     maxHeight: 100,
     paddingVertical: 8,
     fontWeight: '500',
@@ -2355,18 +2355,18 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: Colors.retroDustyRose,
+    backgroundColor: Colors.retroNeonTurquoise,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 12,
-    shadowColor: Colors.retroDustyRose,
+    shadowColor: Colors.retroNeonTurquoise,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 6,
   },
   retroSendButtonDisabled: {
-    backgroundColor: Colors.textTertiary,
+    backgroundColor: Colors.retroSoftGray,
     shadowOpacity: 0,
     elevation: 0,
   },

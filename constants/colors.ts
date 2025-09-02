@@ -70,7 +70,19 @@ export const Colors = {
   error: '#DC143C', // Retro red
   info: '#4682B4', // Steel blue
   
-  // Retro Ask InIt Faded Pastels
+  // Retro Tech Pop Color Hierarchy
+  // Primary Palette
+  retroNeonTurquoise: '#4ECDC4', // Primary CTA buttons, progress highlights, active states
+  retroPink: '#FF6B81', // Headline accents, gradient bars, section titles
+  retroDeepIndigo: '#2E294E', // Background accents, card outlines, dividers
+  retroCreamWhite: '#FDFDFD', // Main background, keeps the UI breathable
+  
+  // Neutral Anchors
+  retroCharcoalBlack: '#1E1E1E', // Headline serif text
+  retroSlateGray: '#5F5F5F', // Body sans-serif text
+  retroSoftGray: '#D9D9D9', // Card shadows, inactive states
+  
+  // Legacy Faded Pastels (keeping for backward compatibility)
   retroOffWhite: '#F6F5F2', // Soft off-white background
   retroDustyRose: '#D8A7B1', // Dusty Rose
   retroMutedLilac: '#B8A1D9', // Muted Lilac
