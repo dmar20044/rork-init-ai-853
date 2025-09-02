@@ -415,7 +415,7 @@ export default function GoalsScreen() {
             activeOpacity={0.9}
           >
             <View style={[styles.goalIcon, styles.bodyGoalIcon]}>
-              <Target size={24} color={colors.primary} />
+              <Target size={24} color={'#4ECDC4'} />
             </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Body Goal</Text>
@@ -423,12 +423,12 @@ export default function GoalsScreen() {
               <View style={styles.goalProgressBar}>
                 <View style={[styles.goalProgressFill, { 
                   width: profile.goals.bodyGoal ? "100%" : "0%",
-                  backgroundColor: colors.primary 
+                  backgroundColor: '#4ECDC4' 
                 }]} />
               </View>
             </View>
             <View style={styles.goalArrow}>
-              <ChevronRight size={20} color={colors.textTertiary} />
+              <ChevronRight size={20} color={'#D9D9D9'} />
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -440,7 +440,7 @@ export default function GoalsScreen() {
             activeOpacity={0.9}
           >
             <View style={[styles.goalIcon, styles.healthGoalIcon]}>
-              <Heart size={24} color={colors.info} />
+              <Heart size={24} color={'#FF6B81'} />
             </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Health Focus</Text>
@@ -448,12 +448,12 @@ export default function GoalsScreen() {
               <View style={styles.goalProgressBar}>
                 <View style={[styles.goalProgressFill, { 
                   width: profile.goals.healthGoal ? "100%" : "0%", 
-                  backgroundColor: colors.info 
+                  backgroundColor: '#FF6B81' 
                 }]} />
               </View>
             </View>
             <View style={styles.goalArrow}>
-              <ChevronRight size={20} color={colors.textTertiary} />
+              <ChevronRight size={20} color={'#D9D9D9'} />
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -465,7 +465,7 @@ export default function GoalsScreen() {
             activeOpacity={0.9}
           >
             <View style={[styles.goalIcon, styles.dietGoalIcon]}>
-              <Bell size={24} color={colors.warning} />
+              <Bell size={24} color={'#2E294E'} />
             </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Diet Preference</Text>
@@ -473,12 +473,12 @@ export default function GoalsScreen() {
               <View style={styles.goalProgressBar}>
                 <View style={[styles.goalProgressFill, { 
                   width: profile.goals.dietGoal ? "100%" : "0%", 
-                  backgroundColor: colors.warning 
+                  backgroundColor: '#2E294E' 
                 }]} />
               </View>
             </View>
             <View style={styles.goalArrow}>
-              <ChevronRight size={20} color={colors.textTertiary} />
+              <ChevronRight size={20} color={'#D9D9D9'} />
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -490,7 +490,7 @@ export default function GoalsScreen() {
             activeOpacity={0.9}
           >
             <View style={[styles.goalIcon, styles.lifeGoalIcon]}>
-              <Trophy size={24} color={colors.success} />
+              <Trophy size={24} color={'#4ECDC4'} />
             </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Life Goal</Text>
@@ -498,12 +498,12 @@ export default function GoalsScreen() {
               <View style={styles.goalProgressBar}>
                 <View style={[styles.goalProgressFill, { 
                   width: profile.goals.lifeGoal ? "100%" : "0%", 
-                  backgroundColor: colors.success 
+                  backgroundColor: '#4ECDC4' 
                 }]} />
               </View>
             </View>
             <View style={styles.goalArrow}>
-              <ChevronRight size={20} color={colors.textTertiary} />
+              <ChevronRight size={20} color={'#D9D9D9'} />
             </View>
           </TouchableOpacity>
         </Animated.View>
@@ -520,7 +520,7 @@ export default function GoalsScreen() {
           activeOpacity={0.9}
         >
           <View style={[styles.goalIcon, styles.allergensGoalIcon]}>
-            <AlertTriangle size={24} color={colors.error} />
+            <AlertTriangle size={24} color={'#FF6B81'} />
           </View>
           <View style={styles.goalContent}>
             <Text style={styles.goalTitle}>Allergens & Preferences</Text>
@@ -533,12 +533,12 @@ export default function GoalsScreen() {
             <View style={styles.goalProgressBar}>
               <View style={[styles.goalProgressFill, { 
                 width: profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 ? "100%" : "0%", 
-                backgroundColor: colors.error 
+                backgroundColor: '#FF6B81' 
               }]} />
             </View>
           </View>
           <View style={styles.goalArrow}>
-            <ChevronRight size={20} color={colors.textTertiary} />
+            <ChevronRight size={20} color={'#D9D9D9'} />
           </View>
         </TouchableOpacity>
       </View>
@@ -746,7 +746,7 @@ export default function GoalsScreen() {
                     </View>
                   </View>
                   <View style={styles.goalArrow}>
-                    <ChevronRight size={20} color={colors.textTertiary} />
+                    <ChevronRight size={20} color={'#D9D9D9'} />
                   </View>
                 </TouchableOpacity>
               </Animated.View>
@@ -774,7 +774,7 @@ export default function GoalsScreen() {
                     </View>
                   </View>
                   <View style={styles.goalArrow}>
-                    <ChevronRight size={20} color={colors.textTertiary} />
+                    <ChevronRight size={20} color={'#D9D9D9'} />
                   </View>
                 </TouchableOpacity>
               </Animated.View>
@@ -802,7 +802,7 @@ export default function GoalsScreen() {
                     </View>
                   </View>
                   <View style={styles.goalArrow}>
-                    <ChevronRight size={20} color={colors.textTertiary} />
+                    <ChevronRight size={20} color={'#D9D9D9'} />
                   </View>
                 </TouchableOpacity>
               </Animated.View>
@@ -830,7 +830,7 @@ export default function GoalsScreen() {
                     </View>
                   </View>
                   <View style={styles.goalArrow}>
-                    <ChevronRight size={20} color={colors.textTertiary} />
+                    <ChevronRight size={20} color={'#D9D9D9'} />
                   </View>
                 </TouchableOpacity>
               </Animated.View>
@@ -866,7 +866,7 @@ export default function GoalsScreen() {
                   </View>
                 </View>
                 <View style={styles.goalArrow}>
-                  <ChevronRight size={20} color={colors.textTertiary} />
+                  <ChevronRight size={20} color={'#D9D9D9'} />
                 </View>
               </TouchableOpacity>
             </ScrollView>
@@ -1459,37 +1459,39 @@ export default function GoalsScreen() {
 const createStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   container: {
     flex: 1,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingHeader: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: colors.backgroundSecondary,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: colors.primary,
+    color: '#1E1E1E', // Charcoal Black
   },
   
   // Hero Profile Card
   heroCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     marginHorizontal: 20,
     marginVertical: 16,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: colors.textSecondary + '20',
+    shadowColor: '#D9D9D9',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 12,
     position: 'relative',
+    borderWidth: 1,
+    borderColor: '#2E294E', // Deep Indigo outline
   },
   heroBackground: {
     position: 'absolute',
@@ -1497,7 +1499,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     left: 0,
     right: 0,
     height: '100%',
-    backgroundColor: colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     opacity: 0.8,
   },
   heroContent: {
@@ -1521,7 +1523,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -1538,11 +1540,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: colors.surface,
+    borderColor: '#FDFDFD', // Cream White
   },
   heroInfo: {
     flex: 1,
@@ -1550,12 +1552,12 @@ const createStyles = (colors: any) => StyleSheet.create({
   heroName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginBottom: 8,
   },
   heroSubtitle: {
     fontSize: 16,
-    color: colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     fontWeight: '500',
   },
   heroSettingsButton: {
@@ -1850,21 +1852,23 @@ const createStyles = (colors: any) => StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: colors.textPrimary,
+    color: '#FF6B81', // Retro Pink for section titles
     marginBottom: 20,
   },
   goalCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 20,
     marginBottom: 12,
-    shadowColor: colors.textSecondary + '20',
+    shadowColor: '#D9D9D9', // Soft Gray shadows
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#2E294E', // Deep Indigo outline
   },
   goalIcon: {
     width: 56,
@@ -1875,19 +1879,19 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginRight: 16,
   },
   bodyGoalIcon: {
-    backgroundColor: `${colors.primary}15`,
+    backgroundColor: '#4ECDC415', // Neon Turquoise with transparency
   },
   healthGoalIcon: {
-    backgroundColor: `${colors.info}15`,
+    backgroundColor: '#FF6B8115', // Retro Pink with transparency
   },
   dietGoalIcon: {
-    backgroundColor: `${colors.warning}15`,
+    backgroundColor: '#2E294E15', // Deep Indigo with transparency
   },
   lifeGoalIcon: {
-    backgroundColor: `${colors.success}15`,
+    backgroundColor: '#4ECDC415', // Neon Turquoise with transparency
   },
   allergensGoalIcon: {
-    backgroundColor: `${colors.error}15`,
+    backgroundColor: '#FF6B8115', // Retro Pink with transparency
   },
   iconPulse: {
     // Animation container for pulsing icons
@@ -1898,23 +1902,23 @@ const createStyles = (colors: any) => StyleSheet.create({
   goalTitle: {
     fontSize: 17,
     fontWeight: "bold",
-    color: colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginBottom: 6,
   },
   goalProgress: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     marginBottom: 10,
     fontWeight: '500',
   },
   goalProgressBar: {
     height: 6,
-    backgroundColor: colors.textTertiary + '40',
+    backgroundColor: '#D9D9D9', // Soft Gray
     borderRadius: 3,
   },
   goalProgressFill: {
     height: "100%",
-    backgroundColor: colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
     borderRadius: 3,
   },
   goalArrow: {
@@ -2076,15 +2080,17 @@ const createStyles = (colors: any) => StyleSheet.create({
   streakCountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    shadowColor: colors.textSecondary + '20',
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: '#4ECDC4', // Neon Turquoise
   },
   flameIconContainer: {
     marginRight: 6,
@@ -2092,17 +2098,19 @@ const createStyles = (colors: any) => StyleSheet.create({
   streakCount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
   },
   calAiStreakCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 20,
     padding: 20,
-    shadowColor: colors.textSecondary + '20',
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 8,
+    borderWidth: 1,
+    borderColor: '#2E294E', // Deep Indigo outline
   },
   calAiDaysContainer: {
     flexDirection: 'row',
