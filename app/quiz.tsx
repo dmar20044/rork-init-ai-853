@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -45,7 +45,7 @@ interface QuizStep {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection';
+  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection' | 'tags-input';
   options?: {
     id: string;
     label: string;
@@ -110,6 +110,13 @@ const quizSteps: QuizStep[] = [
       { id: 'vegetarian', label: 'Vegetarian', description: 'No meat, but dairy/eggs OK' },
       { id: 'balanced', label: 'Balanced', description: 'Everything in moderation' },
     ],
+  },
+  {
+    id: 'dietary-restrictions',
+    title: 'Any allergies, intolerances, or ingredients to avoid?',
+    subtitle: 'Add items like peanuts, lactose, shellfish, seed oils, artificial sweeteners, etc. You can skip if none.',
+    icon: <Utensils size={48} color={Colors.primary} />,
+    type: 'tags-input',
   },
   {
     id: 'lifeGoal',
@@ -192,7 +199,7 @@ const quizSteps: QuizStep[] = [
 ];
 
 function QuizScreen() {
-  const { completeQuiz } = useUser();
+  const { completeQuiz, updateProfile } = useUser();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<{
     bodyGoal: string | null;
@@ -201,6 +208,7 @@ function QuizScreen() {
     lifeGoal: string | null;
     referralCode: string;
     selectedSubscription: string | null;
+    dietaryRestrictions: string[];
   }>({
     bodyGoal: null,
     healthGoal: null,
@@ -208,6 +216,7 @@ function QuizScreen() {
     lifeGoal: null,
     referralCode: '',
     selectedSubscription: null,
+    dietaryRestrictions: [],
   });
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -572,7 +581,6 @@ function QuizScreen() {
   const handleComplete = async () => {
     try {
       console.log('[Quiz] Completing quiz with answers:', answers);
-      
       const goals: UserGoals = {
         bodyGoal: answers.bodyGoal as UserGoals['bodyGoal'],
         healthGoal: answers.healthGoal as UserGoals['healthGoal'],
@@ -580,16 +588,15 @@ function QuizScreen() {
         lifeGoal: answers.lifeGoal as UserGoals['lifeGoal'],
         motivation: null,
       };
-
       const result = await completeQuiz({
         name: '',
         goals,
       });
-      
       console.log('[Quiz] Quiz completed successfully:', result);
-      console.log('[Quiz] Proceeding to subscription flow');
-      
-      // Continue to the next step (free trial) instead of navigating away
+      if (answers.dietaryRestrictions.length > 0) {
+        console.log('[Quiz] Saving dietary restrictions to profile:', answers.dietaryRestrictions);
+        await updateProfile({ dietaryRestrictions: answers.dietaryRestrictions });
+      }
       handleNext();
     } catch (error) {
       console.error('[Quiz] Error completing quiz:', error);
@@ -766,6 +773,8 @@ function QuizScreen() {
         return answers.healthGoal !== null;
       case 'dietGoal':
         return answers.dietGoal !== null;
+      case 'dietary-restrictions':
+        return true;
       case 'privacy-trust':
         return true;
       case 'rating-request':
@@ -1409,7 +1418,68 @@ function QuizScreen() {
             </View>
             <Text style={styles.title}>{currentStepData.title}</Text>
             <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
-
+          </View>
+        );
+      case 'tags-input':
+        return (
+          <View style={styles.selectContent}>
+            <View style={styles.iconContainer}>{currentStepData.icon}</View>
+            <Text style={styles.title}>{currentStepData.title}</Text>
+            <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
+            <View style={styles.tagsInputContainer}>
+              <View style={styles.tagsList}>
+                {answers.dietaryRestrictions.map((tag, idx) => (
+                  <View key={`${tag}-${idx}`} style={styles.tagChip} testID={`tag-${tag}`}>
+                    <Text style={styles.tagText}>#{tag}</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setAnswers(prev => ({
+                          ...prev,
+                          dietaryRestrictions: prev.dietaryRestrictions.filter((t, i) => !(t === tag && i === idx)),
+                        }));
+                      }}
+                      style={styles.tagRemove}
+                      testID={`remove-tag-${tag}`}
+                    >
+                      <X size={14} color={Colors.white} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+              <TextInput
+                style={styles.tagsTextInput}
+                placeholder="Type an item and press Add (e.g., peanuts, lactose, seed oils)"
+                placeholderTextColor={Colors.gray500}
+                value={tagDraft}
+                onChangeText={setTagDraft}
+                autoCapitalize="none"
+                autoCorrect={false}
+                testID="dietary-restrictions-input"
+              />
+              <TouchableOpacity
+                style={[styles.addTagButton, tagDraft.trim().length === 0 && styles.nextButtonDisabled]}
+                onPress={handleAddTag}
+                disabled={tagDraft.trim().length === 0}
+                testID="add-dietary-restriction"
+              >
+                <Text style={[styles.nextButtonText, tagDraft.trim().length === 0 && styles.nextButtonTextDisabled]}>Add</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.suggestionsContainer}>
+              {commonRestrictionSuggestions.map((s) => {
+                const selected = answers.dietaryRestrictions.includes(s);
+                return (
+                  <TouchableOpacity
+                    key={s}
+                    style={[styles.suggestionChip, selected && styles.suggestionChipSelected]}
+                    onPress={() => toggleSuggestion(s)}
+                    testID={`suggestion-${s}`}
+                  >
+                    <Text style={[styles.suggestionText, selected && styles.suggestionTextSelected]}>{s}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </View>
         );
 
@@ -1589,6 +1659,46 @@ function QuizScreen() {
     </Modal>
   );
 
+  const [tagDraft, setTagDraft] = useState<string>('');
+  const commonRestrictionSuggestions = useMemo<string[]>(
+    () => [
+      'peanuts',
+      'tree nuts',
+      'dairy',
+      'lactose',
+      'gluten',
+      'shellfish',
+      'soy',
+      'egg',
+      'sesame',
+      'seed oils',
+      'artificial sweeteners',
+      'added sugar',
+      'high sodium',
+      'red meat',
+    ],
+    []
+  );
+  const normalizeTag = (s: string) => s.trim().toLowerCase();
+  const handleAddTag = () => {
+    const normalized = normalizeTag(tagDraft);
+    if (!normalized) return;
+    if (answers.dietaryRestrictions.includes(normalized)) {
+      setTagDraft('');
+      return;
+    }
+    setAnswers(prev => ({ ...prev, dietaryRestrictions: [...prev.dietaryRestrictions, normalized] }));
+    setTagDraft('');
+  };
+  const toggleSuggestion = (s: string) => {
+    const normalized = normalizeTag(s);
+    setAnswers(prev => (
+      prev.dietaryRestrictions.includes(normalized)
+        ? { ...prev, dietaryRestrictions: prev.dietaryRestrictions.filter(t => t !== normalized) }
+        : { ...prev, dietaryRestrictions: [...prev.dietaryRestrictions, normalized] }
+    ));
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {renderSignInModal()}
@@ -1606,6 +1716,7 @@ function QuizScreen() {
       <Animated.View 
         style={[styles.content, currentStepData.type === 'welcome' && { paddingHorizontal: 0 }, { transform: [{ translateX: slideAnim }] }]}
         {...panResponder.panHandlers}
+        testID={`quiz-step-${currentStepData.id}`}
       >
         {renderStepContent()}
       </Animated.View>
@@ -1972,6 +2083,84 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingBottom: 80,
+  },
+  tagsInputContainer: {
+    backgroundColor: Colors.surface,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
+    padding: 16,
+    gap: 12,
+  },
+  tagsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  tagChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 16,
+    gap: 6,
+  },
+  tagText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tagRemove: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tagsTextInput: {
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 16,
+    color: Colors.textPrimary,
+    backgroundColor: Colors.surface,
+  },
+  addTagButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  suggestionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 16,
+  },
+  suggestionChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    backgroundColor: Colors.gray100,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+  },
+  suggestionChipSelected: {
+    backgroundColor: Colors.primaryLight,
+    borderColor: Colors.primary,
+  },
+  suggestionText: {
+    color: Colors.textPrimary,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  suggestionTextSelected: {
+    color: Colors.textPrimary,
   },
   authContent: {
     flex: 1,

@@ -20,6 +20,7 @@ export interface UserProfile {
   profilePictureUri: string | null;
   goals: UserGoals;
   hasCompletedQuiz: boolean;
+  dietaryRestrictions?: string[];
 
   currentStreak: number;
   longestStreak: number;
@@ -47,6 +48,7 @@ const defaultProfile: UserProfile = {
     motivation: null,
   },
   hasCompletedQuiz: false,
+  dietaryRestrictions: [],
 
   currentStreak: 0,
   longestStreak: 0,
@@ -226,6 +228,8 @@ export const [UserProvider, useUser] = createContextHook(() => {
           scanDates: parsedProfile.scanDates ?? [],
           // Ensure profile picture field exists for older profiles
           profilePictureUri: parsedProfile.profilePictureUri ?? null,
+          // Ensure dietary restrictions exists for older profiles
+          dietaryRestrictions: parsedProfile.dietaryRestrictions ?? [],
           // Update email from auth if available
           email: user?.email || parsedProfile.email || '',
         };
