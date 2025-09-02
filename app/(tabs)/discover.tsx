@@ -14,6 +14,8 @@ import {
   Keyboard,
   Dimensions,
   Modal,
+  Animated,
+  Easing,
 } from "react-native";
 import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2 } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
@@ -105,6 +107,14 @@ export default function AskInItScreen() {
   const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const shimmerAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const rippleAnim = useRef(new Animated.Value(0)).current;
+  const typingDotsAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -116,10 +126,71 @@ export default function AskInItScreen() {
       }
     );
 
+    // Start shimmer animation for gradient bars
+    const shimmerAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmerAnim, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmerAnim, {
+          toValue: 0,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    shimmerAnimation.start();
+
+    // Start typing dots animation when loading
+    if (isLoading) {
+      const typingAnimation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(typingDotsAnim, {
+            toValue: 1,
+            duration: 600,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(typingDotsAnim, {
+            toValue: 0,
+            duration: 600,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      typingAnimation.start();
+    }
+
     return () => {
       keyboardDidShowListener.remove();
+      shimmerAnimation.stop();
     };
-  }, []);
+  }, [isLoading]);
+
+  // Card slide-up animation
+  useEffect(() => {
+    if (messages.length > 0) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 800,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [messages.length]);
 
   const getPersonalizationText = () => {
     const goals = profile.goals;
@@ -397,6 +468,22 @@ Rules:
   };
 
   const handleQuickQuestion = (question: string) => {
+    // Ripple effect animation
+    Animated.sequence([
+      Animated.timing(rippleAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(rippleAnim, {
+        toValue: 0,
+        duration: 200,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
     setShowSuggestions(false);
     sendMessage(question);
   };
@@ -664,6 +751,22 @@ Rules:
   };
 
   const handleViewRecipe = async (recipe: RecipeItem) => {
+    // Tap ripple effect for recipe buttons
+    Animated.sequence([
+      Animated.timing(rippleAnim, {
+        toValue: 1,
+        duration: 200,
+        easing: Easing.out(Easing.quad),
+        useNativeDriver: true,
+      }),
+      Animated.timing(rippleAnim, {
+        toValue: 0,
+        duration: 150,
+        easing: Easing.in(Easing.quad),
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
     setSelectedRecipe(recipe);
     setShowRecipeModal(true);
     
@@ -846,24 +949,70 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 {quickQuestions.map((question, index) => {
                   const techColors = [Colors.retroNeonTurquoise, Colors.retroPink, Colors.retroDeepIndigo];
                   const accentColor = techColors[index % techColors.length];
+                  
+                  // Create shimmer effect for gradient bars
+                  const shimmerTranslateX = shimmerAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [-100, 100],
+                  });
+                  
                   return (
-                    <TouchableOpacity
+                    <Animated.View
                       key={question.id}
-                      style={[styles.retroQuestionCard, { backgroundColor: Colors.white, borderLeftColor: accentColor }]}
-                      onPress={() => handleQuickQuestion(question.text)}
+                      style={[
+                        {
+                          opacity: fadeAnim,
+                          transform: [
+                            {
+                              translateY: slideAnim,
+                            },
+                          ],
+                        },
+                      ]}
                     >
-                      <View style={[styles.retroQuestionGradient, { backgroundColor: accentColor }]} />
-                      <View style={styles.retroQuestionContent}>
-                        <View style={[styles.retroQuestionIcon, { backgroundColor: accentColor + '20' }]}>
-                          {question.icon}
+                      <TouchableOpacity
+                        style={[styles.retroQuestionCard, { backgroundColor: Colors.white, borderLeftColor: accentColor }]}
+                        onPress={() => handleQuickQuestion(question.text)}
+                        activeOpacity={0.8}
+                      >
+                        <View style={[styles.retroQuestionGradient, { backgroundColor: accentColor }]}>
+                          <Animated.View
+                            style={[
+                              styles.shimmerOverlay,
+                              {
+                                backgroundColor: Colors.white,
+                                transform: [{ translateX: shimmerTranslateX }],
+                              },
+                            ]}
+                          />
                         </View>
-                        <Text style={[styles.retroQuestionTitle, { color: Colors.retroCharcoalBlack }]}>{question.text}</Text>
-                        <Text style={[styles.retroQuestionSubtext, { color: Colors.retroSlateGray }]}>Wellness insight</Text>
-                      </View>
-                      <View style={[styles.retroQuestionArrow, { backgroundColor: accentColor }]}>
-                        <ArrowRight size={14} color={Colors.white} />
-                      </View>
-                    </TouchableOpacity>
+                        <View style={styles.retroQuestionContent}>
+                          <View style={[styles.retroQuestionIcon, { backgroundColor: accentColor + '20' }]}>
+                            {question.icon}
+                          </View>
+                          <Text style={[styles.retroQuestionTitle, { color: Colors.retroCharcoalBlack }]}>{question.text}</Text>
+                          <Text style={[styles.retroQuestionSubtext, { color: Colors.retroSlateGray }]}>Wellness insight</Text>
+                        </View>
+                        <Animated.View 
+                          style={[
+                            styles.retroQuestionArrow, 
+                            { backgroundColor: accentColor },
+                            {
+                              transform: [
+                                {
+                                  scale: rippleAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [1, 1.1],
+                                  }),
+                                },
+                              ],
+                            },
+                          ]}
+                        >
+                          <ArrowRight size={14} color={Colors.white} />
+                        </Animated.View>
+                      </TouchableOpacity>
+                    </Animated.View>
                   );
                 })}
               </View>
@@ -960,23 +1109,82 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                             return (
                               <View key={index}>
                                 <View style={styles.recipeCardsGrid}>
-                                  {visibleRecipes.map((recipe, itemIndex) => (
-                                    <View key={itemIndex} style={[styles.floatingRecipeCard, { backgroundColor: colors.surface, borderColor: colors.textTertiary }]}>
-                                      <View style={[styles.recipeCardGradient, { backgroundColor: colors.primary }]} />
-                                      <View style={styles.recipeCardContent}>
-                                        <Text style={[styles.recipeCardTitle, { color: colors.textPrimary }]}>{recipe.name}</Text>
-                                        <Text style={[styles.recipeCardDescription, { color: colors.textSecondary }]}>{recipe.description}</Text>
-                                        <View style={[styles.recipeDivider, { backgroundColor: colors.textTertiary }]} />
-                                        <TouchableOpacity 
-                                          style={[styles.viewRecipeButton, { backgroundColor: colors.primary }]}
-                                          onPress={() => handleViewRecipe(recipe)}
-                                        >
-                                          <Text style={[styles.viewRecipeButtonText, { color: colors.white }]}>View Recipe</Text>
-                                          <ArrowRight size={14} color={colors.white} />
-                                        </TouchableOpacity>
-                                      </View>
-                                    </View>
-                                  ))}
+                                  {visibleRecipes.map((recipe, itemIndex) => {
+                                    // Staggered animation delay for each card
+                                    const cardDelay = itemIndex * 150;
+                                    
+                                    return (
+                                      <Animated.View 
+                                        key={itemIndex} 
+                                        style={[
+                                          styles.floatingRecipeCard, 
+                                          { backgroundColor: colors.surface, borderColor: colors.textTertiary },
+                                          {
+                                            opacity: fadeAnim,
+                                            transform: [
+                                              {
+                                                translateY: slideAnim.interpolate({
+                                                  inputRange: [0, 50],
+                                                  outputRange: [0, 50 + cardDelay / 10],
+                                                }),
+                                              },
+                                            ],
+                                          },
+                                        ]}
+                                      >
+                                        <View style={[styles.recipeCardGradient, { backgroundColor: Colors.retroNeonTurquoise }]}>
+                                          <Animated.View
+                                            style={[
+                                              styles.shimmerOverlay,
+                                              {
+                                                backgroundColor: Colors.retroPink,
+                                                transform: [
+                                                  {
+                                                    translateX: shimmerAnim.interpolate({
+                                                      inputRange: [0, 1],
+                                                      outputRange: [-200, 200],
+                                                    }),
+                                                  },
+                                                ],
+                                              },
+                                            ]}
+                                          />
+                                        </View>
+                                        <View style={styles.recipeCardContent}>
+                                          <Text style={[styles.recipeCardTitle, { color: colors.textPrimary }]}>{recipe.name}</Text>
+                                          <Text style={[styles.recipeCardDescription, { color: colors.textSecondary }]}>{recipe.description}</Text>
+                                          <View style={[styles.recipeDivider, { backgroundColor: colors.textTertiary }]} />
+                                          <TouchableOpacity 
+                                            style={[styles.viewRecipeButton, { backgroundColor: Colors.retroNeonTurquoise }]}
+                                            onPress={() => handleViewRecipe(recipe)}
+                                            activeOpacity={0.8}
+                                          >
+                                            <Animated.View
+                                              style={[
+                                                styles.rippleEffect,
+                                                {
+                                                  opacity: rippleAnim.interpolate({
+                                                    inputRange: [0, 1],
+                                                    outputRange: [0, 0.3],
+                                                  }),
+                                                  transform: [
+                                                    {
+                                                      scale: rippleAnim.interpolate({
+                                                        inputRange: [0, 1],
+                                                        outputRange: [0, 2],
+                                                      }),
+                                                    },
+                                                  ],
+                                                },
+                                              ]}
+                                            />
+                                            <Text style={[styles.viewRecipeButtonText, { color: colors.white }]}>View Recipe</Text>
+                                            <ArrowRight size={14} color={colors.white} />
+                                          </TouchableOpacity>
+                                        </View>
+                                      </Animated.View>
+                                    );
+                                  })}
                                 </View>
                                 {hasMoreOptions && (
                                   <TouchableOpacity 
@@ -1004,13 +1212,74 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           {isLoading && (
             <View style={[styles.messageContainer, styles.aiMessage]}>
               <View style={styles.messageHeader}>
-                <View style={[styles.messageAvatar, { backgroundColor: colors.primary }]}>
+                <View style={[styles.messageAvatar, { backgroundColor: Colors.retroNeonTurquoise }]}>
                   <MessageCircle size={16} color={colors.white} />
                 </View>
                 <Text style={[styles.messageSender, { color: colors.textSecondary }]}>InIt AI</Text>
               </View>
               <View style={[styles.loadingContainer, { backgroundColor: colors.surface }]}>
-                <ActivityIndicator size="small" color={colors.primary} />
+                <View style={styles.typingDotsContainer}>
+                  <Animated.View
+                    style={[
+                      styles.typingDot,
+                      {
+                        backgroundColor: Colors.retroNeonTurquoise,
+                        opacity: typingDotsAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.3, 1],
+                        }),
+                        transform: [
+                          {
+                            scale: typingDotsAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.8, 1.2],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                  <Animated.View
+                    style={[
+                      styles.typingDot,
+                      {
+                        backgroundColor: Colors.retroNeonTurquoise,
+                        opacity: typingDotsAnim.interpolate({
+                          inputRange: [0, 0.33, 1],
+                          outputRange: [0.3, 1, 0.3],
+                        }),
+                        transform: [
+                          {
+                            scale: typingDotsAnim.interpolate({
+                              inputRange: [0, 0.33, 1],
+                              outputRange: [0.8, 1.2, 0.8],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                  <Animated.View
+                    style={[
+                      styles.typingDot,
+                      {
+                        backgroundColor: Colors.retroNeonTurquoise,
+                        opacity: typingDotsAnim.interpolate({
+                          inputRange: [0, 0.66, 1],
+                          outputRange: [0.3, 1, 0.3],
+                        }),
+                        transform: [
+                          {
+                            scale: typingDotsAnim.interpolate({
+                              inputRange: [0, 0.66, 1],
+                              outputRange: [0.8, 1.2, 0.8],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                </View>
                 <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Thinking...</Text>
               </View>
             </View>
@@ -1028,7 +1297,28 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                     key={index}
                     style={[styles.retroSuggestionChip, { backgroundColor: chipColor + '20', borderColor: chipColor }]}
                     onPress={() => handleSuggestionChip(chip)}
+                    activeOpacity={0.7}
                   >
+                    <Animated.View
+                      style={[
+                        styles.chipRipple,
+                        {
+                          backgroundColor: chipColor,
+                          opacity: rippleAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 0.2],
+                          }),
+                          transform: [
+                            {
+                              scale: rippleAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 1],
+                              }),
+                            },
+                          ],
+                        },
+                      ]}
+                    />
                     <Text style={[styles.retroSuggestionChipText, { color: chipColor }]}>{chip}</Text>
                   </TouchableOpacity>
                 );
@@ -1074,11 +1364,48 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: Colors.retroSoftGray }],
               ]}
               onPress={() => {
+                // Tap ripple effect for send button
+                Animated.sequence([
+                  Animated.timing(rippleAnim, {
+                    toValue: 1,
+                    duration: 200,
+                    easing: Easing.out(Easing.quad),
+                    useNativeDriver: true,
+                  }),
+                  Animated.timing(rippleAnim, {
+                    toValue: 0,
+                    duration: 150,
+                    easing: Easing.in(Easing.quad),
+                    useNativeDriver: true,
+                  }),
+                ]).start();
+                
                 setShowSuggestions(false);
                 sendMessage(inputText);
               }}
               disabled={!inputText.trim() || isLoading}
+              activeOpacity={0.8}
             >
+              <Animated.View
+                style={[
+                  styles.sendButtonRipple,
+                  {
+                    backgroundColor: Colors.white,
+                    opacity: rippleAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, 0.3],
+                    }),
+                    transform: [
+                      {
+                        scale: rippleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 1.5],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              />
               <Send size={18} color={Colors.white} />
             </TouchableOpacity>
           </View>
@@ -2369,5 +2696,57 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.retroSoftGray,
     shadowOpacity: 0,
     elevation: 0,
+  },
+  
+  // Animation styles
+  shimmerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: 50,
+    opacity: 0.3,
+  },
+  rippleEffect: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 25,
+    backgroundColor: Colors.white,
+  },
+  chipRipple: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 18,
+  },
+  sendButtonRipple: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderRadius: 22,
+  },
+  typingDotsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  typingDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 2,
+    shadowColor: Colors.retroNeonTurquoise,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+    elevation: 2,
   },
 });
