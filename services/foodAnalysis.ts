@@ -775,7 +775,7 @@ interface Product {
 }
 
 interface Profile {
-  bodyGoal: 'lose' | 'gain' | 'maintain';
+  bodyGoal: 'lose' | 'slightly-lose' | 'maintain' | 'slightly-gain' | 'gain';
   healthFocus: 'low_sugar' | 'high_protein' | 'low_fat' | 'keto' | 'balanced';
   dietPreference: 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
@@ -937,10 +937,48 @@ function deltaBody(product: Product, body: Profile['bodyGoal']) {
     }
   }
   
+  if (body === 'slightly-lose') {
+    // Moderate calorie penalties for slight weight loss
+    if (m.energyKcal > 350) {
+      d -= 12; // Moderate penalty
+      why.push(`High calories (${m.energyKcal}) may slow gradual weight loss`);
+    } else if (m.energyKcal > 200) {
+      d -= 5;
+      why.push(`Moderate calories (${m.energyKcal}) for gradual weight loss`);
+    } else {
+      d += 5; // Smaller bonus than aggressive weight loss
+      why.push('Good calorie level for gradual weight loss');
+    }
+    
+    // Moderate protein and fiber bonuses
+    d += clamp(m.protein_g / 20, 0, 1) * 5;
+    d += clamp(m.fiber_g / 6, 0, 1) * 5;
+    
+    // Moderate sugar penalty
+    if (m.sugar_g > 10) {
+      d -= clamp((m.sugar_g - 10) / 12, 0, 1) * 10;
+      why.push(`Sugar (${m.sugar_g}g) may hinder gradual weight loss`);
+    }
+  }
+  
   if (body === 'gain') {
     d += clamp(m.protein_g / 25, 0, 1) * 10; // Increased protein bonus
     d += clamp((m.energyKcal - 200) / 300, 0, 1) * 8;
     if (m.protein_g >= 20) why.push('High protein supports weight gain goals');
+  }
+  
+  if (body === 'slightly-gain') {
+    // Moderate protein bonus for slight weight gain
+    d += clamp(m.protein_g / 25, 0, 1) * 6;
+    // Smaller calorie bonus than aggressive weight gain
+    d += clamp((m.energyKcal - 150) / 250, 0, 1) * 5;
+    if (m.protein_g >= 15) why.push('Good protein supports gradual weight gain goals');
+    
+    // Still want to avoid excessive calories
+    if (m.energyKcal > 450) {
+      d -= 5;
+      why.push('Very high calories may lead to excessive weight gain');
+    }
   }
   
   if (body === 'maintain') {
@@ -1045,8 +1083,10 @@ function deltaLifeAndMotivation(product: Product, life: Profile['lifeGoal'], mot
 function convertUserGoalsToProfile(goals: UserGoals): Profile {
   const bodyGoalMap: Record<string, Profile['bodyGoal']> = {
     'lose-weight': 'lose',
-    'gain-weight': 'gain',
-    'maintain-weight': 'maintain'
+    'slightly-lose-weight': 'slightly-lose',
+    'maintain-weight': 'maintain',
+    'slightly-gain-weight': 'slightly-gain',
+    'gain-weight': 'gain'
   };
   
   const healthGoalMap: Record<string, Profile['healthFocus']> = {
