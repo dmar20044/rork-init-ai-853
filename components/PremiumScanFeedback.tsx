@@ -560,11 +560,11 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               ]}
             >
               {index % 3 === 0 ? (
-                <Sparkles size={20} color={colors.primary} />
+                <Sparkles size={20} color="#4ECDC4" />
               ) : index % 3 === 1 ? (
-                <Zap size={18} color={colors.info} />
+                <Zap size={18} color="#FF6B81" />
               ) : (
-                <Star size={16} color={colors.warning} />
+                <Star size={16} color="#2E294E" />
               )}
             </Animated.View>
           ))}
@@ -583,7 +583,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 },
               ]}
             >
-              <Heart size={12} color={colors.primary} />
+              <Heart size={12} color="#FF6B81" />
             </Animated.View>
           ))}
           
@@ -601,7 +601,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                     },
                   ]}
                 >
-                  <View style={[styles.fireworkDot, { backgroundColor: i % 2 === 0 ? colors.primary : colors.info }]} />
+                  <View style={[styles.fireworkDot, { backgroundColor: i % 2 === 0 ? '#4ECDC4' : '#FF6B81' }]} />
                 </Animated.View>
               ))}
             </View>
@@ -706,7 +706,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                   },
                 ]}
               >
-                <Icon size={16} color={colors.primary} />
+                <Icon size={16} color="#4ECDC4" />
               </Animated.View>
             ))}
           </View>
@@ -879,7 +879,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
 
           {/* Macro Breakdown Section */}
-          <View style={[styles.card, { backgroundColor: colors.surface }]}>
+          <View style={[styles.card, { backgroundColor: '#FDFDFD' }]}>
             <View style={styles.cardHeader}>
               <Zap size={20} color={colors.primary} />
               <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
@@ -926,7 +926,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
           {/* Ingredient Breakdown Section */}
           {nutrition.ingredients && nutrition.ingredients.length > 0 && (
-            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <View style={[styles.card, { backgroundColor: '#FDFDFD' }]}>
               <TouchableOpacity 
                 style={styles.cardHeader}
                 onPress={toggleIngredientSection}
@@ -935,9 +935,9 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 <List size={20} color={colors.primary} />
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Ingredient Breakdown</Text>
                 {isIngredientSectionExpanded ? (
-                  <ChevronDown size={20} color={colors.textSecondary} style={styles.sectionChevron} />
+                  <ChevronDown size={20} color="#5F5F5F" style={styles.sectionChevron} />
                 ) : (
-                  <ChevronRight size={20} color={colors.textSecondary} style={styles.sectionChevron} />
+                  <ChevronRight size={20} color="#5F5F5F" style={styles.sectionChevron} />
                 )}
               </TouchableOpacity>
               
@@ -984,9 +984,9 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                               </View>
                               <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{analysis.ingredient}</Text>
                               {isExpanded ? (
-                                <ChevronDown size={20} color={colors.textSecondary} />
+                                <ChevronDown size={20} color="#5F5F5F" />
                               ) : (
-                                <ChevronRight size={20} color={colors.textSecondary} />
+                                <ChevronRight size={20} color="#5F5F5F" />
                               )}
                             </TouchableOpacity>
                             
@@ -1018,7 +1018,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
           {/* For You Analysis Section */}
           {showPersonalized && (
-            <View style={[styles.card, { backgroundColor: colors.surface }]}>
+            <View style={[styles.card, { backgroundColor: '#FDFDFD' }]}>
               <TouchableOpacity 
                 style={styles.cardHeader}
                 onPress={toggleForYouSection}
@@ -1027,9 +1027,9 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 <Heart size={20} color={colors.primary} />
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>For You Analysis</Text>
                 {isForYouSectionExpanded ? (
-                  <ChevronDown size={20} color={colors.textSecondary} style={styles.sectionChevron} />
+                  <ChevronDown size={20} color="#5F5F5F" style={styles.sectionChevron} />
                 ) : (
-                  <ChevronRight size={20} color={colors.textSecondary} style={styles.sectionChevron} />
+                  <ChevronRight size={20} color="#5F5F5F" style={styles.sectionChevron} />
                 )}
               </TouchableOpacity>
               
