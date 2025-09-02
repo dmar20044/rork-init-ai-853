@@ -12,7 +12,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { User, Target, Trophy, ChevronRight, Settings, Bell, Heart, Zap, TrendingUp, X, UserCircle, LogOut, Flame, Calendar, Edit3, Moon, Sun, Shield, Camera, Image as ImageIcon } from "lucide-react-native";
+import { User, Target, Trophy, ChevronRight, Settings, Bell, Heart, Zap, TrendingUp, X, UserCircle, LogOut, Flame, Calendar, Edit3, Moon, Sun, Shield, Camera, Image as ImageIcon, AlertTriangle, Plus } from "lucide-react-native";
 import { format, getDay } from 'date-fns';
 
 import { useUser, UserGoals } from "@/contexts/UserContext";
@@ -43,6 +43,8 @@ export default function GoalsScreen() {
   const [editingName, setEditingName] = useState(false);
   const [tempName, setTempName] = useState(profile.name || '');
   const [isPickingImage, setIsPickingImage] = useState(false);
+  const [allergensModalVisible, setAllergensModalVisible] = useState(false);
+  const [newAllergen, setNewAllergen] = useState('');
   
   // Animation values
   const flameAnim = useRef(new Animated.Value(1)).current;
@@ -120,12 +122,6 @@ export default function GoalsScreen() {
         'boost-energy': 'Boost Energy',
         'feel-better': 'Feel Better',
         'clear-skin': 'Clear Skin',
-      },
-      motivation: {
-        'looking-better': 'Looking Better',
-        'feeling-better': 'Feeling Better',
-        'more-energy': 'More Energy',
-        'longevity': 'Longevity',
       },
     };
     
@@ -512,31 +508,39 @@ export default function GoalsScreen() {
           </TouchableOpacity>
         </Animated.View>
 
-        {/* Motivation Goal Card */}
-        <Animated.View style={{ transform: [{ scale: cardScales[0] }] }}>
-          <TouchableOpacity 
-            style={styles.goalCard} 
-            onPress={() => handleCardPress(0, 'motivation')}
-            activeOpacity={0.9}
-          >
-            <View style={[styles.goalIcon, styles.motivationGoalIcon]}>
-              <Zap size={24} color={colors.warning} />
+        {/* Allergens/Preferences Card */}
+        <TouchableOpacity 
+          style={styles.goalCard} 
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+            setAllergensModalVisible(true);
+          }}
+          activeOpacity={0.9}
+        >
+          <View style={[styles.goalIcon, styles.allergensGoalIcon]}>
+            <AlertTriangle size={24} color={colors.error} />
+          </View>
+          <View style={styles.goalContent}>
+            <Text style={styles.goalTitle}>Allergens & Preferences</Text>
+            <Text style={styles.goalProgress}>
+              {profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 
+                ? `${profile.dietaryRestrictions.length} restriction${profile.dietaryRestrictions.length > 1 ? 's' : ''} set`
+                : 'No restrictions set'
+              }
+            </Text>
+            <View style={styles.goalProgressBar}>
+              <View style={[styles.goalProgressFill, { 
+                width: profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 ? "100%" : "0%", 
+                backgroundColor: colors.error 
+              }]} />
             </View>
-            <View style={styles.goalContent}>
-              <Text style={styles.goalTitle}>Motivation</Text>
-              <Text style={styles.goalProgress}>{getGoalLabel('motivation', profile.goals.motivation)}</Text>
-              <View style={styles.goalProgressBar}>
-                <View style={[styles.goalProgressFill, { 
-                  width: profile.goals.motivation ? "100%" : "0%", 
-                  backgroundColor: colors.warning 
-                }]} />
-              </View>
-            </View>
-            <View style={styles.goalArrow}>
-              <ChevronRight size={20} color={colors.textTertiary} />
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
+          </View>
+          <View style={styles.goalArrow}>
+            <ChevronRight size={20} color={colors.textTertiary} />
+          </View>
+        </TouchableOpacity>
       </View>
       
 
@@ -831,34 +835,40 @@ export default function GoalsScreen() {
                 </TouchableOpacity>
               </Animated.View>
 
-              {/* Motivation Goal Card */}
-              <Animated.View style={{ transform: [{ scale: cardScales[0] }] }}>
-                <TouchableOpacity 
-                  style={styles.goalCard} 
-                  onPress={() => {
-                    setGoalsModalVisible(false);
-                    handleCardPress(0, 'motivation');
-                  }}
-                  activeOpacity={0.9}
-                >
-                  <View style={[styles.goalIcon, styles.motivationGoalIcon]}>
-                    <Zap size={24} color={colors.warning} />
+              {/* Allergens/Preferences Card */}
+              <TouchableOpacity 
+                style={styles.goalCard} 
+                onPress={() => {
+                  setGoalsModalVisible(false);
+                  if (Platform.OS !== 'web') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  setAllergensModalVisible(true);
+                }}
+                activeOpacity={0.9}
+              >
+                <View style={[styles.goalIcon, styles.allergensGoalIcon]}>
+                  <AlertTriangle size={24} color={colors.error} />
+                </View>
+                <View style={styles.goalContent}>
+                  <Text style={styles.goalTitle}>Allergens & Preferences</Text>
+                  <Text style={styles.goalProgress}>
+                    {profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 
+                      ? `${profile.dietaryRestrictions.length} restriction${profile.dietaryRestrictions.length > 1 ? 's' : ''} set`
+                      : 'No restrictions set'
+                    }
+                  </Text>
+                  <View style={styles.goalProgressBar}>
+                    <View style={[styles.goalProgressFill, { 
+                      width: profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 ? "100%" : "0%", 
+                      backgroundColor: colors.error 
+                    }]} />
                   </View>
-                  <View style={styles.goalContent}>
-                    <Text style={styles.goalTitle}>Motivation</Text>
-                    <Text style={styles.goalProgress}>{getGoalLabel('motivation', profile.goals.motivation)}</Text>
-                    <View style={styles.goalProgressBar}>
-                      <View style={[styles.goalProgressFill, { 
-                        width: profile.goals.motivation ? "100%" : "0%", 
-                        backgroundColor: colors.warning 
-                      }]} />
-                    </View>
-                  </View>
-                  <View style={styles.goalArrow}>
-                    <ChevronRight size={20} color={colors.textTertiary} />
-                  </View>
-                </TouchableOpacity>
-              </Animated.View>
+                </View>
+                <View style={styles.goalArrow}>
+                  <ChevronRight size={20} color={colors.textTertiary} />
+                </View>
+              </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
@@ -1307,6 +1317,141 @@ export default function GoalsScreen() {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+      
+      {/* Allergens/Preferences Modal */}
+      <Modal
+        visible={allergensModalVisible}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setAllergensModalVisible(false)}
+      >
+        <SafeAreaView style={styles.allergensScreen}>
+          {/* Header */}
+          <View style={styles.allergensScreenHeader}>
+            <TouchableOpacity 
+              onPress={() => setAllergensModalVisible(false)}
+              style={styles.backButton}
+            >
+              <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+            <Text style={styles.allergensScreenTitle}>Allergens & Preferences</Text>
+            <View style={styles.headerSpacer} />
+          </View>
+          
+          <ScrollView style={styles.allergensScreenContent}>
+            <View style={styles.allergensCard}>
+              <Text style={styles.allergensTitle}>Dietary Restrictions</Text>
+              <Text style={styles.allergensSubtitle}>
+                Add any allergens, intolerances, or dietary preferences you want to avoid. We'll warn you when scanning products that contain these ingredients.
+              </Text>
+              
+              {/* Add New Allergen */}
+              <View style={styles.addAllergenSection}>
+                <View style={styles.addAllergenInputContainer}>
+                  <TextInput
+                    style={styles.addAllergenInput}
+                    value={newAllergen}
+                    onChangeText={setNewAllergen}
+                    placeholder="e.g., peanuts, gluten, seed oils"
+                    placeholderTextColor={colors.textSecondary}
+                    onSubmitEditing={() => {
+                      if (newAllergen.trim()) {
+                        const currentRestrictions = profile.dietaryRestrictions || [];
+                        const newRestrictions = [...currentRestrictions, newAllergen.trim()];
+                        updateProfile({ dietaryRestrictions: newRestrictions });
+                        setNewAllergen('');
+                        if (Platform.OS !== 'web') {
+                          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        }
+                      }
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={styles.addAllergenButton}
+                    onPress={() => {
+                      if (newAllergen.trim()) {
+                        const currentRestrictions = profile.dietaryRestrictions || [];
+                        const newRestrictions = [...currentRestrictions, newAllergen.trim()];
+                        updateProfile({ dietaryRestrictions: newRestrictions });
+                        setNewAllergen('');
+                        if (Platform.OS !== 'web') {
+                          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        }
+                      }
+                    }}
+                  >
+                    <Plus size={20} color={colors.white} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+              
+              {/* Current Restrictions */}
+              {profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 && (
+                <View style={styles.currentRestrictionsSection}>
+                  <Text style={styles.currentRestrictionsTitle}>Current Restrictions:</Text>
+                  <View style={styles.restrictionsList}>
+                    {profile.dietaryRestrictions.map((restriction, index) => (
+                      <View key={index} style={styles.restrictionChip}>
+                        <Text style={styles.restrictionChipText}>{restriction}</Text>
+                        <TouchableOpacity
+                          style={styles.removeRestrictionButton}
+                          onPress={() => {
+                            const newRestrictions = profile.dietaryRestrictions?.filter((_, i) => i !== index) || [];
+                            updateProfile({ dietaryRestrictions: newRestrictions });
+                            if (Platform.OS !== 'web') {
+                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                            }
+                          }}
+                        >
+                          <X size={16} color={colors.error} />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+              
+              {/* Common Allergens Quick Add */}
+              <View style={styles.commonAllergensSection}>
+                <Text style={styles.commonAllergensTitle}>Common Allergens:</Text>
+                <View style={styles.commonAllergensList}>
+                  {['Peanuts', 'Tree Nuts', 'Dairy', 'Eggs', 'Soy', 'Wheat/Gluten', 'Fish', 'Shellfish', 'Seed Oils', 'Artificial Sweeteners'].map((allergen) => {
+                    const isAdded = profile.dietaryRestrictions?.includes(allergen.toLowerCase()) || false;
+                    return (
+                      <TouchableOpacity
+                        key={allergen}
+                        style={[styles.commonAllergenChip, isAdded && styles.commonAllergenChipAdded]}
+                        onPress={() => {
+                          const currentRestrictions = profile.dietaryRestrictions || [];
+                          const allergenLower = allergen.toLowerCase();
+                          
+                          if (isAdded) {
+                            // Remove it
+                            const newRestrictions = currentRestrictions.filter(r => r !== allergenLower);
+                            updateProfile({ dietaryRestrictions: newRestrictions });
+                          } else {
+                            // Add it
+                            const newRestrictions = [...currentRestrictions, allergenLower];
+                            updateProfile({ dietaryRestrictions: newRestrictions });
+                          }
+                          
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                        }}
+                      >
+                        <Text style={[styles.commonAllergenChipText, isAdded && styles.commonAllergenChipTextAdded]}>
+                          {allergen}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1741,8 +1886,8 @@ const createStyles = (colors: any) => StyleSheet.create({
   lifeGoalIcon: {
     backgroundColor: `${colors.success}15`,
   },
-  motivationGoalIcon: {
-    backgroundColor: `${colors.warning}15`,
+  allergensGoalIcon: {
+    backgroundColor: `${colors.error}15`,
   },
   iconPulse: {
     // Animation container for pulsing icons
@@ -2640,5 +2785,151 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 22,
     marginBottom: 16,
+  },
+  
+  // Allergens Screen Styles
+  allergensScreen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  allergensScreenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.textTertiary + '30',
+  },
+  allergensScreenTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+  allergensScreenContent: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  allergensCard: {
+    backgroundColor: colors.surface,
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 32,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: colors.textSecondary + '20',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.textTertiary + '30',
+  },
+  allergensTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  allergensSubtitle: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  addAllergenSection: {
+    marginBottom: 32,
+  },
+  addAllergenInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  addAllergenInput: {
+    flex: 1,
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: colors.textPrimary,
+    borderWidth: 1,
+    borderColor: colors.textTertiary + '30',
+  },
+  addAllergenButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  currentRestrictionsSection: {
+    marginBottom: 32,
+  },
+  currentRestrictionsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  restrictionsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  restrictionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.error + '15',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  restrictionChipText: {
+    fontSize: 14,
+    color: colors.error,
+    fontWeight: '500',
+  },
+  removeRestrictionButton: {
+    padding: 2,
+  },
+  commonAllergensSection: {
+    marginTop: 8,
+  },
+  commonAllergensTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  commonAllergensList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  commonAllergenChip: {
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: colors.textTertiary + '30',
+  },
+  commonAllergenChipAdded: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  commonAllergenChipText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  commonAllergenChipTextAdded: {
+    color: colors.white,
   },
 });

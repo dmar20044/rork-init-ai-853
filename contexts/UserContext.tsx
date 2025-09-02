@@ -11,7 +11,6 @@ export interface UserGoals {
   healthGoal: 'low-sugar' | 'high-protein' | 'low-fat' | 'keto' | 'balanced' | null;
   dietGoal: 'whole-foods' | 'vegan' | 'carnivore' | 'gluten-free' | 'vegetarian' | 'balanced' | null;
   lifeGoal: 'eat-healthier' | 'boost-energy' | 'feel-better' | 'clear-skin' | null;
-  motivation: 'looking-better' | 'feeling-better' | 'more-energy' | 'longevity' | null;
 }
 
 export interface UserProfile {
@@ -45,7 +44,6 @@ const defaultProfile: UserProfile = {
     healthGoal: null,
     dietGoal: null,
     lifeGoal: null,
-    motivation: null,
   },
   hasCompletedQuiz: false,
   dietaryRestrictions: [],
@@ -184,7 +182,6 @@ export const [UserProvider, useUser] = createContextHook(() => {
                 healthGoal: supabaseProfile.health_goal as any,
                 dietGoal: supabaseProfile.diet_goal as any,
                 lifeGoal: supabaseProfile.life_goal as any,
-                motivation: supabaseProfile.motivation as any,
               },
               hasCompletedQuiz: supabaseProfile.has_completed_quiz,
 
@@ -292,7 +289,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
           if (updates.goals.healthGoal !== undefined) supabaseUpdates.health_goal = updates.goals.healthGoal;
           if (updates.goals.dietGoal !== undefined) supabaseUpdates.diet_goal = updates.goals.dietGoal;
           if (updates.goals.lifeGoal !== undefined) supabaseUpdates.life_goal = updates.goals.lifeGoal;
-          if (updates.goals.motivation !== undefined) supabaseUpdates.motivation = updates.goals.motivation;
+
         }
         
         if (Object.keys(supabaseUpdates).length > 0) {
@@ -332,7 +329,6 @@ export const [UserProvider, useUser] = createContextHook(() => {
           health_goal: newGoals.healthGoal,
           diet_goal: newGoals.dietGoal,
           life_goal: newGoals.lifeGoal,
-          motivation: newGoals.motivation,
         });
         console.log('[UserContext] Goals updated in Supabase successfully');
       } catch (error: any) {
@@ -428,7 +424,6 @@ export const [UserProvider, useUser] = createContextHook(() => {
         healthGoal: quizData.goals.healthGoal,
         dietGoal: quizData.goals.dietGoal,
         lifeGoal: quizData.goals.lifeGoal,
-        motivation: quizData.goals.motivation,
         referralSource: quizData.referralSource || 'unknown'
       });
       
@@ -457,7 +452,6 @@ export const [UserProvider, useUser] = createContextHook(() => {
         healthGoal: profileData.goals.healthGoal,
         dietGoal: profileData.goals.dietGoal,
         lifeGoal: profileData.goals.lifeGoal,
-        motivation: profileData.goals.motivation,
         hasCompletedQuiz: profileData.hasCompletedQuiz
       });
       
@@ -471,7 +465,6 @@ export const [UserProvider, useUser] = createContextHook(() => {
           health_goal: profileData.goals.healthGoal,
           diet_goal: profileData.goals.dietGoal,
           life_goal: profileData.goals.lifeGoal,
-          motivation: profileData.goals.motivation,
           has_completed_quiz: profileData.hasCompletedQuiz,
         });
         console.log('[UserContext] ✅ Updated existing user profile:', updatedProfile?.id);

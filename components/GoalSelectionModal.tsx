@@ -56,12 +56,7 @@ const goalOptions: Record<GoalType, GoalOption[]> = {
     { value: 'feel-better', label: 'Feel Better', description: 'Improve overall wellbeing' },
     { value: 'clear-skin', label: 'Clear Skin', description: 'Improve skin health through diet' },
   ],
-  motivation: [
-    { value: 'looking-better', label: 'Looking Better', description: 'Improve physical appearance' },
-    { value: 'feeling-better', label: 'Feeling Better', description: 'Enhance mental wellbeing' },
-    { value: 'more-energy', label: 'More Energy', description: 'Increase vitality and stamina' },
-    { value: 'longevity', label: 'Longevity', description: 'Live a longer, healthier life' },
-  ],
+
 };
 
 const goalTitles: Record<GoalType, string> = {
@@ -69,7 +64,6 @@ const goalTitles: Record<GoalType, string> = {
   healthGoal: 'Health Focus',
   dietGoal: 'Diet Preference',
   lifeGoal: 'Life Goal',
-  motivation: 'Motivation',
 };
 
 export default function GoalSelectionModal({
