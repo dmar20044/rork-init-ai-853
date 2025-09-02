@@ -49,6 +49,8 @@ export interface Database {
           longest_streak: number;
           last_scan_date: string | null;
           scan_dates: string[];
+          dietary_restrictions: any;
+          dietary_preferences: any;
           created_at: string;
           updated_at: string;
         };
@@ -73,6 +75,8 @@ export interface Database {
           longest_streak?: number;
           last_scan_date?: string | null;
           scan_dates?: string[];
+          dietary_restrictions?: any;
+          dietary_preferences?: any;
           created_at?: string;
           updated_at?: string;
         };
@@ -97,6 +101,8 @@ export interface Database {
           longest_streak?: number;
           last_scan_date?: string | null;
           scan_dates?: string[];
+          dietary_restrictions?: any;
+          dietary_preferences?: any;
           created_at?: string;
           updated_at?: string;
         };
@@ -213,6 +219,8 @@ export const createUserProfile = async (userId: string, profileData: any) => {
     longest_streak: profileData.longestStreak || 0,
     last_scan_date: profileData.lastScanDate || null,
     scan_dates: profileData.scanDates || [],
+    dietary_restrictions: profileData.dietaryRestrictions || [],
+    dietary_preferences: profileData.dietaryPreferences || [],
   };
   
   console.log('[Supabase] Inserting user profile data:', insertData);

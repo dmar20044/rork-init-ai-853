@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -91,6 +91,19 @@ export default function PremiumScanFeedback({
   const cardOpacity = useRef(new Animated.Value(0)).current;
   
   const loadingMessages = getLoadingMessages();
+
+  const normalized = useCallback((s: string) => s.toLowerCase().trim(), []);
+  const alerts = useMemo(() => {
+    const restrictions = (profile.dietaryRestrictions ?? []).map(normalized);
+    const ingredients = (nutrition.ingredients ?? []).map(normalized);
+    const allergens = (nutrition.allergens ?? []).map(normalized);
+    const matches: string[] = [];
+    restrictions.forEach(r => {
+      const hit = ingredients.some(i => i.includes(r)) || allergens.some(a => a.includes(r));
+      if (hit && r.length > 0 && !matches.includes(r)) matches.push(r);
+    });
+    return matches;
+  }, [profile.dietaryRestrictions, nutrition.ingredients, nutrition.allergens, normalized]);
   
   useEffect(() => {
     if (isLoading) {
@@ -718,7 +731,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
   return (
     <View style={styles.container}>
       {/* Header with back arrow and title */}
-      <View style={styles.header}>
+      <View style={styles.header} testID="results-header">
         <TouchableOpacity 
           style={styles.backButton}
           onPress={onBack || onScanAnother}
@@ -751,7 +764,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Hero Score Section */}
           <View style={styles.heroCard}>
-            <View style={styles.productHeader}>
+            <View style={styles.productHeader} testID="product-header">
               <View style={styles.productImageContainer}>
                 {imageUri ? (
                   <Image source={{ uri: imageUri }} style={styles.productImage} />
@@ -772,7 +785,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             {/* Main Score Ring */}
             <View style={styles.scoreSection}>
               <View style={styles.scoreRingContainer}>
-                <View style={[styles.scoreRing, { shadowColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]}>
+                <View style={[styles.scoreRing, { shadowColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} testID="score-ring">
                   <View style={styles.scoreRingInner}>
                     <Text style={[styles.scoreNumber, { color: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]}>
                       {showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore}
@@ -784,6 +797,13 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               </View>
               
               <Text style={styles.personalScoreSubtitle}>Personal Score</Text>
+
+              {alerts.length > 0 && (
+                <View style={styles.alertPill} testID="allergen-preference-pill">
+                  <AlertTriangle size={14} color={Colors.white} />
+                  <Text style={styles.alertPillText}>Contains items you avoid</Text>
+                </View>
+              )}
               
               {/* Score Comparison Row */}
               {showPersonalized && nutrition.personalScore !== undefined && nutrition.personalScore !== nutrition.healthScore && (
@@ -872,6 +892,26 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
           </View>
 
 
+
+          {alerts.length > 0 && (
+            <View style={styles.card} testID="allergen-preference-card">
+              <View style={styles.cardHeader}>
+                <AlertTriangle size={20} color={Colors.error} />
+                <Text style={styles.cardTitle}>Heads up</Text>
+              </View>
+              <View>
+                <Text style={styles.alertText}>This product includes ingredients you marked as allergens or preferences to avoid:</Text>
+                <View style={styles.alertChips}>
+                  {alerts.map((a) => (
+                    <View key={a} style={styles.alertChip}>
+                      <Text style={styles.alertChipText}>{a}</Text>
+                    </View>
+                  ))}
+                </View>
+                <Text style={styles.alertSubtext}>Your score is not reduced. We show this warning so you can decide.</Text>
+              </View>
+            </View>
+          )}
 
           {/* Macro Breakdown Section */}
           <View style={styles.card}>
@@ -1861,6 +1901,53 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
+  alertPill: {
+    marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    backgroundColor: Colors.error,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+  },
+  alertPillText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  alertText: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    marginBottom: 8,
+  },
+  alertChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 8,
+  },
+  alertChip: {
+    backgroundColor: Colors.error + '10',
+    borderColor: Colors.error + '40',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  alertChipText: {
+    color: Colors.error,
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'capitalize',
+  },
+  alertSubtext: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+  },
+
   personalReasonsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
