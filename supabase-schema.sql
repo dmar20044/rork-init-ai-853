@@ -15,6 +15,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     health_goal TEXT,
     diet_goal TEXT,
     life_goal TEXT,
+    -- New: store lists like allergies (peanuts) and preferences (no seed oils)
+    dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
+    dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
     motivation TEXT,
     referral_source TEXT,
     has_completed_quiz BOOLEAN DEFAULT FALSE,
@@ -36,10 +39,22 @@ CREATE TABLE IF NOT EXISTS public.quiz_responses (
     health_goal TEXT NOT NULL,
     diet_goal TEXT NOT NULL,
     life_goal TEXT NOT NULL,
+    -- New: capture responses at submission time
+    dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
+    dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
     motivation TEXT NOT NULL,
     referral_source TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Backfill-safe: ensure columns exist if tables were created before
+ALTER TABLE public.user_profiles
+  ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb;
+
+ALTER TABLE public.quiz_responses
+  ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -87,6 +102,12 @@ CREATE POLICY "Users can insert their own quiz responses" ON public.quiz_respons
 CREATE INDEX IF NOT EXISTS idx_user_profiles_user_id ON public.user_profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_quiz_responses_user_id ON public.quiz_responses(user_id);
 CREATE INDEX IF NOT EXISTS idx_quiz_responses_created_at ON public.quiz_responses(created_at);
+
+-- JSONB GIN indexes for fast lookups on restrictions/preferences
+CREATE INDEX IF NOT EXISTS idx_user_profiles_dietary_restrictions_gin ON public.user_profiles USING GIN (dietary_restrictions);
+CREATE INDEX IF NOT EXISTS idx_user_profiles_dietary_preferences_gin ON public.user_profiles USING GIN (dietary_preferences);
+CREATE INDEX IF NOT EXISTS idx_quiz_responses_dietary_restrictions_gin ON public.quiz_responses USING GIN (dietary_restrictions);
+CREATE INDEX IF NOT EXISTS idx_quiz_responses_dietary_preferences_gin ON public.quiz_responses USING GIN (dietary_preferences);
 
 -- Create scan_history table
 CREATE TABLE IF NOT EXISTS public.scan_history (
