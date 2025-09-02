@@ -14,6 +14,7 @@ import {
   ActivityIndicator,
   PanResponder,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { 
@@ -30,11 +31,14 @@ import {
   Star,
   Users,
   Bell,
-  Gift
+  Gift,
+  CreditCard
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useUser, UserGoals } from '@/contexts/UserContext';
 import { supabase } from '@/lib/supabase';
+import * as StoreReview from 'expo-store-review';
+import * as Notifications from 'expo-notifications';
 
 interface QuizStep {
   id: string;
@@ -604,6 +608,165 @@ function QuizScreen() {
     }
   };
 
+  const handleRateApp = async () => {
+    try {
+      console.log('[Quiz] Requesting app store review');
+      
+      if (Platform.OS === 'ios') {
+        // Check if StoreReview is available
+        const isAvailable = await StoreReview.isAvailableAsync();
+        if (isAvailable) {
+          await StoreReview.requestReview();
+          console.log('[Quiz] iOS review prompt shown');
+        } else {
+          console.log('[Quiz] StoreReview not available on this device');
+          // Fallback: could open App Store URL
+        }
+      } else if (Platform.OS === 'android') {
+        // For Android, you would typically use Google Play In-App Review
+        // Since we're using Expo Go, we'll show a message
+        Alert.alert(
+          'Rate InIt AI',
+          'Thank you for wanting to rate our app! Please visit the Google Play Store to leave a review.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      } else {
+        // Web platform
+        Alert.alert(
+          'Thank You!',
+          'Thank you for your interest in rating our app! Your feedback means a lot to us.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+      
+      // Continue to next step after rating attempt
+      setTimeout(() => {
+        handleNext();
+      }, 1000);
+    } catch (error) {
+      console.error('[Quiz] Error requesting review:', error);
+      // Continue anyway
+      handleNext();
+    }
+  };
+
+  const handleNotificationPermission = async (allow: boolean) => {
+    try {
+      console.log('[Quiz] Handling notification permission:', allow);
+      
+      if (allow && Platform.OS !== 'web') {
+        // Request notification permissions
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        let finalStatus = existingStatus;
+        
+        if (existingStatus !== 'granted') {
+          const { status } = await Notifications.requestPermissionsAsync();
+          finalStatus = status;
+        }
+        
+        if (finalStatus === 'granted') {
+          console.log('[Quiz] Notification permissions granted');
+          
+          // Configure notification behavior
+          await Notifications.setNotificationHandler({
+            handleNotification: async () => ({
+              shouldShowAlert: true,
+              shouldPlaySound: true,
+              shouldSetBadge: false,
+              shouldShowBanner: true,
+              shouldShowList: true,
+            }),
+          });
+          
+          Alert.alert(
+            'Notifications Enabled!',
+            'You\'ll receive helpful reminders and updates to stay on track with your nutrition goals.',
+            [{ text: 'Great!', style: 'default' }]
+          );
+        } else {
+          console.log('[Quiz] Notification permissions denied');
+          Alert.alert(
+            'Notifications Disabled',
+            'You can enable notifications later in your device settings if you change your mind.',
+            [{ text: 'OK', style: 'default' }]
+          );
+        }
+      } else if (allow && Platform.OS === 'web') {
+        // Web notification handling
+        if ('Notification' in window) {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            console.log('[Quiz] Web notification permissions granted');
+            Alert.alert(
+              'Notifications Enabled!',
+              'You\'ll receive helpful reminders in your browser.',
+              [{ text: 'Great!', style: 'default' }]
+            );
+          } else {
+            console.log('[Quiz] Web notification permissions denied');
+          }
+        }
+      } else {
+        console.log('[Quiz] User declined notifications');
+      }
+      
+      // Continue to next step
+      setTimeout(() => {
+        handleNext();
+      }, allow ? 2000 : 500);
+    } catch (error) {
+      console.error('[Quiz] Error handling notification permission:', error);
+      // Continue anyway
+      handleNext();
+    }
+  };
+
+  const handleStartFreeTrial = async () => {
+    try {
+      console.log('[Quiz] Starting free trial process');
+      
+      // In a real app, you would integrate with:
+      // - RevenueCat for cross-platform subscriptions
+      // - Expo In-App Purchases
+      // - Stripe for web payments
+      
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        // Mobile: Would use in-app purchases
+        Alert.alert(
+          'Free Trial Started!',
+          'Your 3-day free trial has begun. You now have access to all premium features!',
+          [
+            {
+              text: 'Continue',
+              style: 'default',
+              onPress: () => handleNext()
+            }
+          ]
+        );
+      } else {
+        // Web: Would redirect to payment processor
+        Alert.alert(
+          'Free Trial',
+          'In the full app, this would start your free trial with payment processing.',
+          [
+            {
+              text: 'Continue',
+              style: 'default',
+              onPress: () => handleNext()
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('[Quiz] Error starting free trial:', error);
+      Alert.alert(
+        'Error',
+        'There was an issue starting your free trial. Please try again.',
+        [{ text: 'OK', style: 'default' }]
+      );
+    }
+  };
+
   const canProceed = () => {
     switch (currentStepData.id) {
       case 'welcome':
@@ -968,6 +1131,23 @@ function QuizScreen() {
                 </Text>
               </View>
             </View>
+            
+            <View style={styles.ratingActions}>
+              <TouchableOpacity 
+                style={styles.rateNowButton}
+                onPress={handleRateApp}
+              >
+                <Star size={20} color={Colors.white} fill={Colors.white} />
+                <Text style={styles.rateNowButtonText}>Rate Now</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.rateLaterButton}
+                onPress={handleNext}
+              >
+                <Text style={styles.rateLaterButtonText}>Maybe Later</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         );
 
@@ -987,16 +1167,37 @@ function QuizScreen() {
                   <Text style={styles.notificationTitle}>Notifications</Text>
                 </View>
                 <View style={styles.notificationButtons}>
-                  <TouchableOpacity style={styles.notificationDenyButton}>
+                  <TouchableOpacity 
+                    style={styles.notificationDenyButton}
+                    onPress={() => handleNotificationPermission(false)}
+                  >
                     <Text style={styles.notificationDenyText}>Don&apos;t Allow</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.notificationAllowButton}>
+                  <TouchableOpacity 
+                    style={styles.notificationAllowButton}
+                    onPress={() => handleNotificationPermission(true)}
+                  >
                     <Text style={styles.notificationAllowText}>Allow</Text>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.pointingHand}>
                   <Text style={styles.pointingHandEmoji}>👆</Text>
                 </View>
+              </View>
+            </View>
+            
+            <View style={styles.notificationBenefits}>
+              <View style={styles.notificationBenefit}>
+                <Bell size={20} color={Colors.primary} />
+                <Text style={styles.notificationBenefitText}>Daily nutrition reminders</Text>
+              </View>
+              <View style={styles.notificationBenefit}>
+                <TrendingUp size={20} color={Colors.primary} />
+                <Text style={styles.notificationBenefitText}>Weekly progress updates</Text>
+              </View>
+              <View style={styles.notificationBenefit}>
+                <Sparkles size={20} color={Colors.primary} />
+                <Text style={styles.notificationBenefitText}>Personalized tips & insights</Text>
               </View>
             </View>
           </View>
@@ -1032,7 +1233,7 @@ function QuizScreen() {
         return (
           <View style={styles.freeTrialContent}>
             <View style={styles.iconContainer}>
-              {currentStepData.icon}
+              <CreditCard size={48} color={Colors.primary} />
             </View>
             <Text style={styles.title}>{currentStepData.title}</Text>
             <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
@@ -1062,10 +1263,20 @@ function QuizScreen() {
                 </View>
               </View>
               
-
+              <TouchableOpacity 
+                style={styles.startTrialButton}
+                onPress={handleStartFreeTrial}
+              >
+                <CreditCard size={20} color={Colors.white} />
+                <Text style={styles.startTrialButtonText}>Start Free Trial</Text>
+              </TouchableOpacity>
             </View>
             
-
+            <View style={styles.paymentDisclaimer}>
+              <Text style={styles.paymentDisclaimerText}>
+                No payment required now. Cancel anytime during your free trial.
+              </Text>
+            </View>
           </View>
         );
 
@@ -1480,14 +1691,13 @@ function QuizScreen() {
             )
           ) : currentStepData.type === 'free-trial' ? (
             <TouchableOpacity
-              style={[styles.nextButton, !canProceed() && styles.nextButtonDisabled]}
+              style={[styles.nextButton, styles.skipButton]}
               onPress={handleNext}
-              disabled={!canProceed()}
             >
-              <Text style={[styles.nextButtonText, !canProceed() && styles.nextButtonTextDisabled]}>
-                Secure Free Trial
+              <Text style={styles.skipButtonText}>
+                Skip for Now
               </Text>
-              <ChevronRight size={20} color={!canProceed() ? Colors.gray400 : Colors.white} />
+              <ChevronRight size={20} color={Colors.gray600} />
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -3265,6 +3475,98 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
     marginBottom: 32,
+  },
+  // Rating actions styles
+  ratingActions: {
+    width: '100%',
+    gap: 12,
+    marginTop: 20,
+  },
+  rateNowButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    gap: 8,
+  },
+  rateNowButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.white,
+  },
+  rateLaterButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+  },
+  rateLaterButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.textSecondary,
+  },
+  // Notification benefits styles
+  notificationBenefits: {
+    width: '100%',
+    marginTop: 32,
+    gap: 16,
+  },
+  notificationBenefit: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: Colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    gap: 12,
+  },
+  notificationBenefitText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.textPrimary,
+    flex: 1,
+  },
+  // Free trial button styles
+  startTrialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.primary,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    marginTop: 8,
+    gap: 8,
+  },
+  startTrialButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.white,
+  },
+  paymentDisclaimer: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  paymentDisclaimerText: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontStyle: 'italic',
+  },
+  // Skip button styles
+  skipButton: {
+    backgroundColor: Colors.gray200,
+  },
+  skipButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.gray600,
+    marginRight: 8,
   },
 });
 
