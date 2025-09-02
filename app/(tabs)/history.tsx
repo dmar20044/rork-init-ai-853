@@ -357,7 +357,10 @@ export default function HistoryScreen() {
         {/* Recent Scans with Timeline */}
         <View style={styles.historyContainer}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Recent Scans</Text>
+            <View style={styles.sectionTitleContainer}>
+              <Text style={[styles.sectionTitle, { color: '#1E1E1E' }]}>Recent Scans</Text>
+              <View style={[styles.sectionAccent, { backgroundColor: '#FF6B81' }]} />
+            </View>
             {history.length > 0 && (
               <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: '#4ECDC4' + '20' }]}>
                 <BarChart3 size={16} color="#4ECDC4" />
@@ -429,6 +432,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: '#2E294E20', // Deep Indigo with opacity
   },
   statIcon: {
     width: 48,
@@ -481,6 +486,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+    borderWidth: 1,
+    borderColor: '#2E294E15', // Deep Indigo with opacity
   },
   deleteButtonContainer: {
     position: 'absolute',
@@ -584,6 +591,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  sectionTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  sectionAccent: {
+    width: 24,
+    height: 3,
+    borderRadius: 1.5,
+    backgroundColor: '#FF6B81', // Retro Pink
+  },
   manageButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -667,6 +685,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#2E294E20', // Deep Indigo with opacity
   },
   ribbonContainer: {
     position: 'relative',
@@ -720,6 +740,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#FF6B8120', // Retro Pink with opacity
   },
   topChoiceHeader: {
     flexDirection: 'row',
@@ -776,6 +798,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#4ECDC420', // Neon Turquoise with opacity
   },
   goalAlignmentHeader: {
     flexDirection: 'row',
