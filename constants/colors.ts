@@ -70,6 +70,16 @@ export const Colors = {
   error: '#DC143C', // Retro red
   info: '#4682B4', // Steel blue
   
+  // Retro Ask InIt Faded Pastels
+  retroOffWhite: '#F6F5F2', // Soft off-white background
+  retroDustyRose: '#D8A7B1', // Dusty Rose
+  retroMutedLilac: '#B8A1D9', // Muted Lilac
+  retroSoftMint: '#A8DADC', // Soft Mint
+  retroFadedPink: '#E8C5C5', // Faded pink accent
+  retroWarmCream: '#F9F6F1', // Warm cream
+  retroSoftLavender: '#D4C5E8', // Soft lavender
+  retroPaleGold: '#F4E6B7', // Pale gold
+  
   // Status colors based on personalized score ranges
   gradeExcellent: '#00FF00', // Bright green for excellent (86-100)
   gradeGood: '#34C759',      // Green for good (66-85)

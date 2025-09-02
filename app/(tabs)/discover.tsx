@@ -15,7 +15,7 @@ import {
   Dimensions,
   Modal,
 } from "react-native";
-import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X } from "lucide-react-native";
+import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2 } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -135,12 +135,14 @@ export default function AskInItScreen() {
     const context = [];
     
     if (goals.bodyGoal) {
-      const bodyGoalMap = {
+      const bodyGoalMap: Record<string, string> = {
         'lose-weight': 'lose weight',
-        'gain-weight': 'gain weight',
-        'maintain-weight': 'maintain weight'
+        'slightly-lose-weight': 'slightly lose weight',
+        'maintain-weight': 'maintain weight',
+        'slightly-gain-weight': 'slightly gain weight',
+        'gain-weight': 'gain weight'
       };
-      context.push(`Body goal: ${bodyGoalMap[goals.bodyGoal]}`);
+      context.push(`Body goal: ${bodyGoalMap[goals.bodyGoal] || goals.bodyGoal}`);
     }
     
     if (goals.healthGoal) {
@@ -176,15 +178,7 @@ export default function AskInItScreen() {
       context.push(`Life goal: ${lifeGoalMap[goals.lifeGoal]}`);
     }
     
-    if (goals.motivation) {
-      const motivationMap = {
-        'looking-better': 'looking better',
-        'feeling-better': 'feeling better',
-        'more-energy': 'having more energy',
-        'longevity': 'longevity'
-      };
-      context.push(`Motivation: ${motivationMap[goals.motivation]}`);
-    }
+
     
     return context.length > 0 ? context.join(', ') : 'general health';
   };
@@ -808,20 +802,28 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.retroOffWhite }]}>
       <KeyboardAvoidingView 
-        style={[styles.container, { backgroundColor: colors.background }]} 
+        style={[styles.container, { backgroundColor: Colors.retroOffWhite }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        <View style={[styles.headerBanner, { backgroundColor: colors.surface }]}>
-          <View style={[styles.gradientOverlay, { backgroundColor: colors.background }]} />
-          <View style={styles.headerContent}>
-            <Text style={[styles.brandingText, { color: colors.primary }]}>Ask InIt AI</Text>
-            <Text style={[styles.coachTagline, { color: colors.textSecondary }]}>Your personal nutritionist, 24/7</Text>
+        <View style={[styles.retroHeaderBanner, { backgroundColor: Colors.retroOffWhite }]}>
+          <View style={styles.retroGradientOverlay} />
+          <View style={styles.retroHeaderContent}>
+            <View style={styles.retroTitleContainer}>
+              <View style={[styles.retroIconAccent, { backgroundColor: Colors.retroDustyRose }]}>
+                <Feather size={24} color={Colors.white} />
+              </View>
+              <Text style={[styles.retroMagazineTitle, { color: Colors.textPrimary }]}>Ask InIt</Text>
+              <View style={[styles.retroSubtitleDivider, { backgroundColor: Colors.retroMutedLilac }]} />
+            </View>
+            <Text style={[styles.retroMagazineSubtitle, { color: Colors.textSecondary }]}>Your Personal Wellness Editor</Text>
+            <Text style={[styles.retroTagline, { color: Colors.textTertiary }]}>Curated nutrition insights, just for you</Text>
             {profile.hasCompletedQuiz && (
-              <View style={[styles.personalizationBadge, { backgroundColor: colors.primary }]}>
-                <Text style={[styles.badgeText, { color: colors.white }]}>For your goal: {getPersonalizationText()}</Text>
+              <View style={[styles.retroPersonalizationPill, { backgroundColor: Colors.retroSoftMint }]}>
+                <Heart size={12} color={Colors.textPrimary} />
+                <Text style={[styles.retroPersonalizationText, { color: Colors.textPrimary }]}>Personalized for {getPersonalizationText()}</Text>
               </View>
             )}
           </View>
@@ -829,27 +831,41 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
 
         <ScrollView 
           ref={scrollViewRef}
-          style={styles.messagesContainer}
+          style={[styles.messagesContainer, { backgroundColor: Colors.retroOffWhite }]}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {messages.length === 0 && (
-            <View style={styles.quickQuestionsSection}>
-
-              <View style={styles.quickQuestionsGrid}>
-                {quickQuestions.map((question) => (
-                  <TouchableOpacity
-                    key={question.id}
-                    style={[styles.quickQuestionPill, { backgroundColor: colors.surface, borderColor: colors.textTertiary }]}
-                    onPress={() => handleQuickQuestion(question.text)}
-                  >
-                    <View style={[styles.questionIconPill, { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}>
-                      {question.icon}
-                    </View>
-                    <Text style={[styles.questionTextPill, { color: colors.textPrimary }]}>{question.text}</Text>
-                  </TouchableOpacity>
-                ))}
+            <View style={styles.retroQuickQuestionsSection}>
+              <View style={styles.retroSectionHeader}>
+                <Text style={[styles.retroSectionTitle, { color: Colors.textPrimary }]}>Featured Articles</Text>
+                <View style={[styles.retroSectionUnderline, { backgroundColor: Colors.retroDustyRose }]} />
+              </View>
+              <View style={styles.retroQuestionsGrid}>
+                {quickQuestions.map((question, index) => {
+                  const pastelColors = [Colors.retroDustyRose, Colors.retroMutedLilac, Colors.retroSoftMint];
+                  const accentColor = pastelColors[index % pastelColors.length];
+                  return (
+                    <TouchableOpacity
+                      key={question.id}
+                      style={[styles.retroQuestionCard, { backgroundColor: Colors.retroWarmCream, borderLeftColor: accentColor }]}
+                      onPress={() => handleQuickQuestion(question.text)}
+                    >
+                      <View style={[styles.retroQuestionGradient, { backgroundColor: accentColor }]} />
+                      <View style={styles.retroQuestionContent}>
+                        <View style={[styles.retroQuestionIcon, { backgroundColor: accentColor + '20' }]}>
+                          {question.icon}
+                        </View>
+                        <Text style={[styles.retroQuestionTitle, { color: Colors.textPrimary }]}>{question.text}</Text>
+                        <Text style={[styles.retroQuestionSubtext, { color: Colors.textSecondary }]}>Wellness insight</Text>
+                      </View>
+                      <View style={[styles.retroQuestionArrow, { backgroundColor: accentColor }]}>
+                        <ArrowRight size={14} color={Colors.white} />
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
             </View>
           )}
@@ -1001,24 +1017,28 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { backgroundColor: colors.surface, borderTopColor: colors.textTertiary }]}>
+        <View style={[styles.inputContainer, { backgroundColor: Colors.retroOffWhite, borderTopColor: Colors.retroDustyRose + '30' }]}>
           {showSuggestions && messages.length === 0 && (
-            <View style={styles.suggestionChips}>
-              {suggestionChips.map((chip, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[styles.suggestionChip, { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}
-                  onPress={() => handleSuggestionChip(chip)}
-                >
-                  <Text style={[styles.suggestionChipText, { color: colors.primary }]}>{chip}</Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.retroSuggestionChips}>
+              {suggestionChips.map((chip, index) => {
+                const pastelColors = [Colors.retroDustyRose, Colors.retroMutedLilac, Colors.retroSoftMint, Colors.retroFadedPink];
+                const chipColor = pastelColors[index % pastelColors.length];
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[styles.retroSuggestionChip, { backgroundColor: chipColor + '30', borderColor: chipColor }]}
+                    onPress={() => handleSuggestionChip(chip)}
+                  >
+                    <Text style={[styles.retroSuggestionChipText, { color: Colors.textPrimary }]}>{chip}</Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
-          <View style={[styles.inputWrapper, { backgroundColor: colors.surface, borderColor: colors.textTertiary }]}>
+          <View style={[styles.retroInputWrapper, { backgroundColor: Colors.retroWarmCream, borderColor: Colors.retroDustyRose }]}>
             <TextInput
               ref={textInputRef}
-              style={[styles.textInput, { color: colors.textPrimary }]}
+              style={[styles.retroTextInput, { color: Colors.textPrimary }]}
               value={inputText}
               onChangeText={(text) => {
                 setInputText(text);
@@ -1028,8 +1048,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   setShowSuggestions(true);
                 }
               }}
-              placeholder="Ask about healthier food options..."
-              placeholderTextColor={colors.textSecondary}
+              placeholder="What wellness wisdom can I share with you today?"
+              placeholderTextColor={Colors.textSecondary}
               multiline
               maxLength={500}
               editable={!isLoading}
@@ -1049,9 +1069,9 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
             />
             <TouchableOpacity
               style={[
-                styles.sendButton,
-                { backgroundColor: colors.primary },
-                (!inputText.trim() || isLoading) && [styles.sendButtonDisabled, { backgroundColor: colors.textTertiary }],
+                styles.retroSendButton,
+                { backgroundColor: Colors.retroDustyRose },
+                (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: Colors.textTertiary }],
               ]}
               onPress={() => {
                 setShowSuggestions(false);
@@ -1059,7 +1079,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               }}
               disabled={!inputText.trim() || isLoading}
             >
-              <Send size={20} color={colors.white} />
+              <Send size={18} color={Colors.white} />
             </TouchableOpacity>
           </View>
         </View>
@@ -2087,5 +2107,267 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: '400',
     letterSpacing: 0.1,
+  },
+  
+  // Retro Ask InIt Styles - Magazine Aesthetic
+  retroHeaderBanner: {
+    backgroundColor: Colors.retroOffWhite,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 28,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.retroDustyRose + '30',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  retroGradientOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: `linear-gradient(135deg, ${Colors.retroDustyRose}15, ${Colors.retroMutedLilac}10, ${Colors.retroSoftMint}15)`,
+    opacity: 0.6,
+  },
+  retroHeaderContent: {
+    alignItems: 'center',
+    zIndex: 1,
+  },
+  retroTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  retroIconAccent: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: Colors.retroDustyRose,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    shadowColor: Colors.retroDustyRose,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  retroMagazineTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    letterSpacing: -1.2,
+    textShadowColor: 'rgba(0,0,0,0.08)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  retroSubtitleDivider: {
+    width: 60,
+    height: 3,
+    backgroundColor: Colors.retroMutedLilac,
+    borderRadius: 2,
+    marginLeft: 12,
+  },
+  retroMagazineSubtitle: {
+    fontSize: 18,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  retroTagline: {
+    fontSize: 14,
+    color: Colors.textTertiary,
+    fontStyle: 'italic',
+    letterSpacing: 0.3,
+    marginBottom: 16,
+  },
+  retroPersonalizationPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.retroSoftMint,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: Colors.retroSoftMint,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  retroPersonalizationText: {
+    fontSize: 12,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+    marginLeft: 6,
+    letterSpacing: 0.2,
+  },
+  
+  // Retro Quick Questions Section
+  retroQuickQuestionsSection: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: Colors.retroOffWhite,
+  },
+  retroSectionHeader: {
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  retroSectionTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    letterSpacing: -0.5,
+    marginBottom: 8,
+  },
+  retroSectionUnderline: {
+    width: 80,
+    height: 2,
+    backgroundColor: Colors.retroDustyRose,
+    borderRadius: 1,
+  },
+  retroQuestionsGrid: {
+    gap: 16,
+  },
+  retroQuestionCard: {
+    backgroundColor: Colors.retroWarmCream,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    shadowColor: 'rgba(0,0,0,0.08)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 6,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.retroDustyRose,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  retroQuestionGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 4,
+    height: '100%',
+    backgroundColor: Colors.retroDustyRose,
+  },
+  retroQuestionContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  retroQuestionIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.retroDustyRose + '20',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 2,
+    borderColor: Colors.retroDustyRose + '40',
+  },
+  retroQuestionTitle: {
+    fontSize: 16,
+    color: Colors.textPrimary,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+    lineHeight: 22,
+    marginBottom: 4,
+  },
+  retroQuestionSubtext: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    fontStyle: 'italic',
+    letterSpacing: 0.2,
+  },
+  retroQuestionArrow: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.retroDustyRose,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.retroDustyRose,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  
+  // Retro Suggestion Chips
+  retroSuggestionChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  retroSuggestionChip: {
+    backgroundColor: Colors.retroDustyRose + '30',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: Colors.retroDustyRose + '50',
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  retroSuggestionChipText: {
+    fontSize: 13,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  
+  // Retro Input Wrapper
+  retroInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    backgroundColor: Colors.retroWarmCream,
+    borderRadius: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    minHeight: 56,
+    shadowColor: 'rgba(0,0,0,0.08)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
+    borderWidth: 2,
+    borderColor: Colors.retroDustyRose + '40',
+  },
+  retroTextInput: {
+    flex: 1,
+    fontSize: 15,
+    color: Colors.textPrimary,
+    maxHeight: 100,
+    paddingVertical: 8,
+    fontWeight: '500',
+    letterSpacing: 0.1,
+  },
+  retroSendButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: Colors.retroDustyRose,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
+    shadowColor: Colors.retroDustyRose,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
+  },
+  retroSendButtonDisabled: {
+    backgroundColor: Colors.textTertiary,
+    shadowOpacity: 0,
+    elevation: 0,
   },
 });
