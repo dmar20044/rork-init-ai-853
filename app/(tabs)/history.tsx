@@ -165,8 +165,8 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
           onPress={handleDelete}
           testID={`delete-${item.id}`}
         >
-          <Trash2 size={20} color={colors.white} />
-          <Text style={[styles.deleteButtonText, { color: colors.white }]}>Delete</Text>
+          <Trash2 size={20} color="#FDFDFD" />
+          <Text style={[styles.deleteButtonText, { color: '#FDFDFD' }]}>Delete</Text>
         </TouchableOpacity>
       </View>
       
@@ -197,7 +197,7 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
                 <Text style={[styles.detailText, { color: colors.textSecondary }]}>{item.nutrition.protein}g protein</Text>
               </View>
               <View style={styles.timeRow}>
-                <Clock size={10} color={colors.textTertiary} />
+                <Clock size={10} color="#5F5F5F" />
                 <Text style={[styles.timeText, { color: colors.textTertiary }]}>{formatDate(item.timestamp)}</Text>
               </View>
             </View>
@@ -271,17 +271,17 @@ export default function HistoryScreen() {
         </View>
         <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
           <View style={styles.emptyBasket}>
-            <ShoppingBasket size={64} color={colors.primary} />
+            <ShoppingBasket size={64} color="#4ECDC4" />
           </View>
           <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No scans yet!</Text>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             Start your health journey by scanning your first product
           </Text>
           <TouchableOpacity 
-            style={[styles.startScanningButton, { backgroundColor: colors.primary }]}
+            style={[styles.startScanningButton, { backgroundColor: '#4ECDC4' }]}
             onPress={() => router.push('/(tabs)')}
           >
-            <Text style={[styles.startScanningText, { color: colors.white }]}>Start Scanning</Text>
+            <Text style={[styles.startScanningText, { color: '#FDFDFD' }]}>Start Scanning</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -312,7 +312,7 @@ export default function HistoryScreen() {
           {/* Top Choice of the Week */}
           <View style={[styles.topChoiceCard, { backgroundColor: colors.surface }]}>
             <View style={styles.topChoiceHeader}>
-              <Trophy size={16} color={colors.primary} />
+              <Trophy size={16} color="#4ECDC4" />
               <Text style={[styles.topChoiceTitle, { color: colors.textPrimary }]}>Top Choice</Text>
             </View>
             {topChoice ? (
@@ -331,7 +331,7 @@ export default function HistoryScreen() {
           {/* Goal Alignment */}
           <View style={[styles.goalAlignmentCard, { backgroundColor: colors.surface }]}>
             <View style={styles.goalAlignmentHeader}>
-              <Target size={16} color={colors.primary} />
+              <Target size={16} color="#4ECDC4" />
               <Text style={[styles.goalAlignmentTitle, { color: colors.textPrimary }]}>Goal Alignment</Text>
             </View>
             <View style={styles.progressRingContainer}>
@@ -341,7 +341,7 @@ export default function HistoryScreen() {
                     styles.progressRingFill,
                     {
                       transform: [{ rotate: `${(goalAlignment / 100) * 360}deg` }],
-                      backgroundColor: goalAlignment >= 70 ? Colors.success : goalAlignment >= 40 ? Colors.warning : Colors.error,
+                      backgroundColor: goalAlignment >= 70 ? '#4ECDC4' : goalAlignment >= 40 ? '#FF6B81' : '#2E294E',
                     }
                   ]}
                 />
@@ -359,9 +359,9 @@ export default function HistoryScreen() {
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Recent Scans</Text>
             {history.length > 0 && (
-              <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: colors.primary + '10' }]}>
-                <BarChart3 size={16} color={colors.primary} />
-                <Text style={[styles.manageButtonText, { color: colors.primary }]}>View Full Insights</Text>
+              <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: '#4ECDC4' + '20' }]}>
+                <BarChart3 size={16} color="#4ECDC4" />
+                <Text style={[styles.manageButtonText, { color: '#4ECDC4' }]}>View Full Insights</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -393,22 +393,22 @@ export default function HistoryScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingHeader: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.primary,
+    color: '#1E1E1E', // Charcoal Black
   },
   statsContainer: {
     flexDirection: "row",
@@ -419,14 +419,14 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 4,
     alignItems: "center",
-    shadowColor: Colors.shadow,
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -441,12 +441,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
   },
   historyContainer: {
     padding: 16,
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginBottom: 16,
   },
   historyCardContainer: {
@@ -473,12 +473,12 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   historyCardNoTimeline: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 12,
     padding: 16,
-    shadowColor: Colors.shadow,
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -567,13 +567,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     textAlign: 'center',
     paddingHorizontal: 32,
     lineHeight: 22,
@@ -590,11 +590,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: Colors.primary + '10',
+    backgroundColor: '#4ECDC4' + '20', // Neon Turquoise with opacity
   },
   manageButtonText: {
     fontSize: 12,
-    color: Colors.primary,
+    color: '#4ECDC4', // Neon Turquoise
     marginLeft: 4,
     fontWeight: '600',
   },
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   deleteButton: {
-    backgroundColor: Colors.error,
+    backgroundColor: '#FF6B81', // Retro Pink
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -634,7 +634,7 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   deleteButtonText: {
-    color: Colors.white,
+    color: '#FDFDFD', // Cream White
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
@@ -658,13 +658,13 @@ const styles = StyleSheet.create({
   // Avg Score Badge styles
   avgScoreBadge: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: Colors.shadow,
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   ribbonGrade: {
-    color: Colors.white,
+    color: '#FDFDFD', // Cream White
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -696,28 +696,28 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: Colors.gray300,
+    borderTopColor: '#D9D9D9', // Soft Gray
   },
   avgScoreLabel: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     marginBottom: 4,
   },
   avgScoreValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
   },
   
   // Top Choice Card styles
   topChoiceCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 16,
-    shadowColor: Colors.shadow,
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -730,7 +730,7 @@ const styles = StyleSheet.create({
   topChoiceTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
   },
   topChoiceContent: {
     flexDirection: 'row',
@@ -748,17 +748,17 @@ const styles = StyleSheet.create({
   topChoiceName: {
     fontSize: 11,
     fontWeight: '500',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginBottom: 2,
   },
   topChoiceScore: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#4ECDC4', // Neon Turquoise
   },
   topChoicePlaceholder: {
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
@@ -767,13 +767,13 @@ const styles = StyleSheet.create({
   // Goal Alignment Card styles
   goalAlignmentCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: Colors.shadow,
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -786,7 +786,7 @@ const styles = StyleSheet.create({
   goalAlignmentTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
   },
   progressRingContainer: {
     marginBottom: 8,
@@ -795,7 +795,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.gray200,
+    backgroundColor: '#D9D9D9', // Soft Gray
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -811,7 +811,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
@@ -819,11 +819,11 @@ const styles = StyleSheet.create({
   progressPercentage: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
   },
   goalAlignmentLabel: {
     fontSize: 10,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     textAlign: 'center',
   },
   
@@ -847,7 +847,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 15,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#1E1E1E', // Charcoal Black
     marginBottom: 4,
   },
   productDetails: {
@@ -858,11 +858,11 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
   },
   detailSeparator: {
     fontSize: 12,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
   },
   timeRow: {
     flexDirection: 'row',
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 10,
-    color: Colors.gray500,
+    color: '#5F5F5F', // Slate Gray
   },
   scoreRing: {
     alignItems: 'center',
@@ -883,7 +883,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
   },
   miniGradeText: {
     fontSize: 14,
@@ -900,14 +900,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   startScanningButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
     marginTop: 16,
   },
   startScanningText: {
-    color: Colors.white,
+    color: '#FDFDFD', // Cream White
     fontSize: 16,
     fontWeight: '600',
   },
