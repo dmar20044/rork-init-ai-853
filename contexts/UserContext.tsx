@@ -7,7 +7,7 @@ import { supabase, createUserProfile, updateUserProfile, getUserProfile, saveQui
 import type { User } from '@supabase/supabase-js';
 
 export interface UserGoals {
-  bodyGoal: 'lose-weight' | 'gain-weight' | 'maintain-weight' | null;
+  bodyGoal: 'lose-weight' | 'slightly-lose-weight' | 'maintain-weight' | 'slightly-gain-weight' | 'gain-weight' | null;
   healthGoal: 'low-sugar' | 'high-protein' | 'low-fat' | 'keto' | 'balanced' | null;
   dietGoal: 'whole-foods' | 'vegan' | 'carnivore' | 'gluten-free' | 'vegetarian' | 'balanced' | null;
   lifeGoal: 'eat-healthier' | 'boost-energy' | 'feel-better' | 'clear-skin' | null;

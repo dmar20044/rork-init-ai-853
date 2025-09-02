@@ -76,8 +76,10 @@ const quizSteps: QuizStep[] = [
     type: 'single-select',
     options: [
       { id: 'lose-weight', label: 'Lose Weight', description: 'I want to shed some pounds' },
-      { id: 'gain-weight', label: 'Gain Weight', description: 'I want to build mass' },
+      { id: 'slightly-lose-weight', label: 'Slightly Lose Weight', description: 'I want to lose a few pounds gradually' },
       { id: 'maintain-weight', label: 'Maintain Weight', description: 'I\'m happy with my current weight' },
+      { id: 'slightly-gain-weight', label: 'Slightly Gain Weight', description: 'I want to gain a few pounds gradually' },
+      { id: 'gain-weight', label: 'Gain Weight', description: 'I want to build mass' },
     ],
   },
   {
