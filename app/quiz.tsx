@@ -124,19 +124,7 @@ const quizSteps: QuizStep[] = [
       { id: 'clear-skin', label: 'Clear Up My Skin', description: 'Better skin through nutrition' },
     ],
   },
-  {
-    id: 'motivation',
-    title: 'What motivates you most?',
-    subtitle: 'Choose your primary driving force',
-    icon: <TrendingUp size={48} color={Colors.primary} />,
-    type: 'single-select',
-    options: [
-      { id: 'looking-better', label: 'Looking Better', description: 'Improve physical appearance' },
-      { id: 'feeling-better', label: 'Feeling Better', description: 'Enhanced overall wellbeing' },
-      { id: 'more-energy', label: 'More Energy', description: 'Increased vitality and stamina' },
-      { id: 'longevity', label: 'Longevity', description: 'Long-term health and lifespan' },
-    ],
-  },
+
   {
     id: 'privacy-trust',
     title: 'Thank you for trusting us',
@@ -211,7 +199,6 @@ function QuizScreen() {
     healthGoal: string | null;
     dietGoal: string | null;
     lifeGoal: string | null;
-    motivation: string | null;
     referralCode: string;
     selectedSubscription: string | null;
   }>({
@@ -219,7 +206,6 @@ function QuizScreen() {
     healthGoal: null,
     dietGoal: null,
     lifeGoal: null,
-    motivation: null,
     referralCode: '',
     selectedSubscription: null,
   });
@@ -592,7 +578,7 @@ function QuizScreen() {
         healthGoal: answers.healthGoal as UserGoals['healthGoal'],
         dietGoal: answers.dietGoal as UserGoals['dietGoal'],
         lifeGoal: answers.lifeGoal as UserGoals['lifeGoal'],
-        motivation: answers.motivation as UserGoals['motivation'],
+        motivation: null,
       };
 
       const result = await completeQuiz({
@@ -790,8 +776,6 @@ function QuizScreen() {
         return true;
       case 'lifeGoal':
         return answers.lifeGoal !== null;
-      case 'motivation':
-        return answers.motivation !== null;
       case 'generating-questions':
         return loadingProgress >= 100;
       case 'save-progress':
