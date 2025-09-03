@@ -586,7 +586,6 @@ function QuizScreen() {
         healthGoal: answers.healthGoal as UserGoals['healthGoal'],
         dietGoal: answers.dietGoal as UserGoals['dietGoal'],
         lifeGoal: answers.lifeGoal as UserGoals['lifeGoal'],
-        motivation: null,
       };
       const result = await completeQuiz({
         name: '',
