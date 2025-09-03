@@ -23,6 +23,8 @@ import { useScanHistory } from "@/contexts/ScanHistoryContext";
 import { useUser } from "@/contexts/UserContext";
 import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
+import ARScanningOverlay from "@/components/ARScanningOverlay";
+import ParticleEffects from "@/components/ParticleEffects";
 
 export default function ScannerScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -40,6 +42,8 @@ export default function ScannerScreen() {
   const [scanCooldown, setScanCooldown] = useState(false);
   const [apiStatus, setApiStatus] = useState<{ aiAPI: boolean; openFoodFacts: boolean } | null>(null);
   const [showApiTest, setShowApiTest] = useState(false);
+  const [showParticleEffect, setShowParticleEffect] = useState(false);
+  const [particleType, setParticleType] = useState<'confetti' | 'shake' | 'sparkles' | 'warning' | 'success' | 'none'>('none');
   const cameraRef = useRef<CameraView>(null);
   const { addToHistory } = useScanHistory();
   const { profile, updateScanStreak } = useUser();
@@ -154,6 +158,9 @@ export default function ScannerScreen() {
               // Update scan streak and total scans counter
               await updateScanStreak(nutritionData.healthScore || 0);
               console.log('Scan streak updated for barcode scan');
+              
+              // Trigger particle effect based on nutrition score
+              triggerParticleEffect(nutritionData.healthScore || 0);
 
             } catch (historyError) {
               console.error('Error saving barcode scan to history:', historyError);
@@ -166,6 +173,9 @@ export default function ScannerScreen() {
             try {
               await updateScanStreak(nutritionData.healthScore || 0);
               console.log('Scan streak updated for unknown barcode item');
+              
+              // Trigger particle effect for unknown items (usually poor score)
+              triggerParticleEffect(nutritionData.healthScore || 0);
             } catch (streakError) {
               console.error('Error updating scan streak:', streakError);
             }
@@ -435,6 +445,9 @@ export default function ScannerScreen() {
               // Update scan streak and total scans counter
               await updateScanStreak(result.data.healthScore || 0);
               console.log('Scan streak updated for AI analysis');
+              
+              // Trigger particle effect based on nutrition score
+              triggerParticleEffect(result.data.healthScore || 0);
 
             } catch (historyError) {
               console.error('Error saving to history:', historyError);
@@ -447,6 +460,9 @@ export default function ScannerScreen() {
             try {
               await updateScanStreak(result.data.healthScore || 0);
               console.log('Scan streak updated for unknown AI analysis item');
+              
+              // Trigger particle effect for unknown items
+              triggerParticleEffect(result.data.healthScore || 0);
             } catch (streakError) {
               console.error('Error updating scan streak:', streakError);
             }
@@ -473,6 +489,31 @@ export default function ScannerScreen() {
     }
   };
 
+  const triggerParticleEffect = (healthScore: number) => {
+    let effectType: 'confetti' | 'shake' | 'sparkles' | 'warning' | 'success' | 'none' = 'none';
+    
+    if (healthScore >= 85) {
+      effectType = 'success';
+    } else if (healthScore >= 70) {
+      effectType = 'sparkles';
+    } else if (healthScore >= 50) {
+      effectType = 'confetti';
+    } else if (healthScore >= 30) {
+      effectType = 'warning';
+    } else {
+      effectType = 'shake';
+    }
+    
+    setParticleType(effectType);
+    setShowParticleEffect(true);
+    
+    // Reset after animation
+    setTimeout(() => {
+      setShowParticleEffect(false);
+      setParticleType('none');
+    }, 3000);
+  };
+
   const handleScanAnother = () => {
     setCapturedImage(null);
     setNutritionData(null);
@@ -483,6 +524,8 @@ export default function ScannerScreen() {
     setIsBarcodeMode(false); // Reset barcode mode
     setLastScannedBarcode(null); // Reset last scanned barcode
     setScanCooldown(false); // Reset cooldown
+    setShowParticleEffect(false); // Reset particle effects
+    setParticleType('none');
   };
 
   const handleSaveToHistory = async () => {
@@ -621,12 +664,11 @@ export default function ScannerScreen() {
                 </View>
               )}
               
-              <View style={styles.scanFrame}>
-                <View style={[styles.scanCorner, styles.scanCornerTL]} />
-                <View style={[styles.scanCorner, styles.scanCornerTR]} />
-                <View style={[styles.scanCorner, styles.scanCornerBL]} />
-                <View style={[styles.scanCorner, styles.scanCornerBR]} />
-              </View>
+              {/* AR Scanning Overlay */}
+              <ARScanningOverlay 
+                isScanning={isScanning || isProcessing}
+                scanProgress={scanProgress}
+              />
               
               <Text style={styles.scanHint}>
                 {isBarcodeMode ? (isScanning ? 'Scanning...' : 'Position barcode within frame - automatic detection') : 'Position food item within frame'}
@@ -638,11 +680,7 @@ export default function ScannerScreen() {
                 </View>
               )}
               
-              {isBarcodeMode && (
-                <View style={styles.scanningIndicator}>
-                  <View style={[styles.scanningLine, isScanning && styles.scanningLineActive]} />
-                </View>
-              )}
+
               
               <View style={styles.cameraControls}>
                 <TouchableOpacity 
@@ -706,6 +744,17 @@ export default function ScannerScreen() {
             </View>
           </View>
         </CameraView>
+        
+        {/* Particle Effects */}
+        <ParticleEffects
+          type={particleType}
+          trigger={showParticleEffect}
+          nutritionScore={nutritionData?.healthScore || nutritionData?.personalScore || 50}
+          onComplete={() => {
+            setShowParticleEffect(false);
+            setParticleType('none');
+          }}
+        />
         
         {capturedImage && (
           <SafeAreaView style={styles.resultOverlay}>
