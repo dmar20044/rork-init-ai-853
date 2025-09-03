@@ -120,6 +120,7 @@ export default function AskInItScreen() {
   const voiceModeBubbleAnim = useRef(new Animated.Value(0)).current;
   const soundWaveAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
   const micRotationAnim = useRef(new Animated.Value(0)).current;
+  const bubbleExpandAnim = useRef(new Animated.Value(0)).current;
   const [showCheckmark, setShowCheckmark] = useState(false);
 
   useEffect(() => {
@@ -895,6 +896,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         useNativeDriver: true,
       }).start();
       
+      // Reset bubble expand animation
+      Animated.timing(bubbleExpandAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+      
       Animated.timing(voiceModeBubbleAnim, {
         toValue: 0,
         duration: 300,
@@ -906,6 +915,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
+      
+      // Start bubble expand animation from microphone
+      Animated.timing(bubbleExpandAnim, {
+        toValue: 1,
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
       
       // Start microphone to checkmark rotation animation
       Animated.timing(micRotationAnim, {
@@ -1019,6 +1036,27 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               activeOpacity={0.8}
               onPress={handleVoiceModeToggle}
             >
+              {/* Expanding teal background */}
+              <Animated.View 
+                style={[
+                  styles.retroBubbleExpandingBackground,
+                  {
+                    backgroundColor: Colors.retroNeonTurquoise,
+                    transform: [
+                      {
+                        scale: bubbleExpandAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 1],
+                        }),
+                      },
+                    ],
+                    opacity: bubbleExpandAnim.interpolate({
+                      inputRange: [0, 0.5, 1],
+                      outputRange: [0, 0.8, 1],
+                    }),
+                  },
+                ]}
+              />
               <Text style={[styles.retroConversationText, { color: Colors.white }]}>Talk to InIt</Text>
               <Animated.View 
                 style={[
@@ -2722,6 +2760,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  retroBubbleExpandingBackground: {
+    position: 'absolute',
+    top: 0,
+    right: 14, // Position it at the microphone location
+    width: 28,
+    height: 28,
+    borderRadius: 25,
+    transformOrigin: 'center',
   },
   retroConversationText: {
     fontSize: 14,
