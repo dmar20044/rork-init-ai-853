@@ -209,6 +209,7 @@ function QuizScreen() {
     referralCode: string;
     selectedSubscription: string | null;
     dietaryRestrictions: string[];
+    healthStrictness: string | null;
   }>({
     bodyGoal: null,
     healthGoal: null,
@@ -217,6 +218,7 @@ function QuizScreen() {
     referralCode: '',
     selectedSubscription: null,
     dietaryRestrictions: [],
+    healthStrictness: null,
   });
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -1483,6 +1485,9 @@ function QuizScreen() {
         );
 
       case 'single-select':
+        const selectedAnswer = answers[currentStepData.id as keyof typeof answers];
+        const showStrictnessSlider = currentStepData.id === 'healthGoal' && selectedAnswer;
+        
         return (
           <View style={styles.selectContent}>
             <View style={styles.iconContainer}>
@@ -1492,7 +1497,7 @@ function QuizScreen() {
             <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
             <ScrollView style={styles.optionsContainer} showsVerticalScrollIndicator={false}>
               {currentStepData.options?.map((option) => {
-                const isSelected = answers[currentStepData.id as keyof typeof answers] === option.id;
+                const isSelected = selectedAnswer === option.id;
                 return (
                   <TouchableOpacity
                     key={option.id}
@@ -1516,6 +1521,37 @@ function QuizScreen() {
                 );
               })}
             </ScrollView>
+            
+            {showStrictnessSlider && (
+              <View style={styles.strictnessContainer}>
+                <Text style={styles.strictnessTitle}>How strict are you?</Text>
+                <View style={styles.strictnessSlider}>
+                  {['not-strict', 'neutral', 'very-strict'].map((level, index) => {
+                    const labels = ['Not too strict', 'Neutral', 'Very strict'];
+                    const isSelected = answers.healthStrictness === level;
+                    return (
+                      <TouchableOpacity
+                        key={level}
+                        style={[
+                          styles.strictnessOption,
+                          isSelected && styles.strictnessOptionSelected,
+                          index === 0 && styles.strictnessOptionFirst,
+                          index === 2 && styles.strictnessOptionLast,
+                        ]}
+                        onPress={() => setAnswers(prev => ({ ...prev, healthStrictness: level }))}
+                      >
+                        <Text style={[
+                          styles.strictnessOptionText,
+                          isSelected && styles.strictnessOptionTextSelected
+                        ]}>
+                          {labels[index]}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
           </View>
         );
 
@@ -3741,6 +3777,64 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.gray600,
     marginRight: 8,
+  },
+  // Strictness slider styles
+  strictnessContainer: {
+    marginTop: 32,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: Colors.borderLight,
+  },
+  strictnessTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  strictnessSlider: {
+    flexDirection: 'row',
+    backgroundColor: Colors.gray100,
+    borderRadius: 12,
+    padding: 4,
+    marginHorizontal: 20,
+  },
+  strictnessOption: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  strictnessOptionSelected: {
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  strictnessOptionFirst: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+  },
+  strictnessOptionLast: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+  },
+  strictnessOptionText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.textSecondary,
+    textAlign: 'center',
+  },
+  strictnessOptionTextSelected: {
+    color: Colors.white,
+    fontWeight: '600',
   },
 });
 
