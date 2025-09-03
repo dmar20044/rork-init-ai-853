@@ -560,11 +560,11 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               ]}
             >
               {index % 3 === 0 ? (
-                <Sparkles size={20} color="#4ECDC4" />
+                <Sparkles size={20} color={Colors.retroNeonTurquoise} />
               ) : index % 3 === 1 ? (
-                <Zap size={18} color="#FF6B81" />
+                <Zap size={18} color={Colors.retroPink} />
               ) : (
-                <Star size={16} color="#2E294E" />
+                <Star size={16} color={Colors.retroDeepIndigo} />
               )}
             </Animated.View>
           ))}
@@ -583,7 +583,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 },
               ]}
             >
-              <Heart size={12} color="#FF6B81" />
+              <Heart size={12} color={Colors.retroPink} />
             </Animated.View>
           ))}
           
@@ -601,7 +601,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                     },
                   ]}
                 >
-                  <View style={[styles.fireworkDot, { backgroundColor: i % 2 === 0 ? '#4ECDC4' : '#FF6B81' }]} />
+                  <View style={[styles.fireworkDot, { backgroundColor: i % 2 === 0 ? Colors.retroNeonTurquoise : Colors.retroPink }]} />
                 </Animated.View>
               ))}
             </View>
@@ -706,7 +706,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                   },
                 ]}
               >
-                <Icon size={16} color="#4ECDC4" />
+                <Icon size={16} color={Colors.retroNeonTurquoise} />
               </Animated.View>
             ))}
           </View>
@@ -879,7 +879,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
 
           {/* Macro Breakdown Section */}
-          <View style={[styles.card, { backgroundColor: '#FDFDFD' }]}>
+          <View style={[styles.card, { backgroundColor: Colors.retroCreamWhite }]}>
             <View style={styles.cardHeader}>
               <Zap size={20} color={colors.primary} />
               <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
@@ -926,7 +926,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
           {/* Ingredient Breakdown Section */}
           {nutrition.ingredients && nutrition.ingredients.length > 0 && (
-            <View style={[styles.card, { backgroundColor: '#FDFDFD' }]}>
+            <View style={[styles.card, { backgroundColor: Colors.retroCreamWhite }]}>
               <TouchableOpacity 
                 style={styles.cardHeader}
                 onPress={toggleIngredientSection}
@@ -1018,7 +1018,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
           {/* For You Analysis Section */}
           {showPersonalized && (
-            <View style={[styles.card, { backgroundColor: '#FDFDFD' }]}>
+            <View style={[styles.card, { backgroundColor: Colors.retroCreamWhite }]}>
               <TouchableOpacity 
                 style={styles.cardHeader}
                 onPress={toggleForYouSection}
@@ -1129,7 +1129,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: Colors.retroCreamWhite,
   },
   scrollView: {
     flex: 1,
@@ -1144,8 +1144,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    backgroundColor: '#FDFDFD', // Cream White
-    borderBottomColor: '#D9D9D9', // Soft Gray
+    backgroundColor: Colors.retroCreamWhite,
+    borderBottomColor: Colors.retroSoftGray,
   },
   backButton: {
     width: 40,
@@ -1153,19 +1153,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#D9D9D9' + '30', // Soft Gray with opacity
+    backgroundColor: Colors.retroSoftGray + '30',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   headerSpacer: {
     width: 40,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: Colors.retroCreamWhite,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -1204,26 +1204,26 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   shimmerCard: {
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: Colors.retroCreamWhite,
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
     width: '100%',
     maxWidth: 350,
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: Colors.retroSoftGray,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     zIndex: 10,
     borderWidth: 1,
-    borderColor: '#2E294E20', // Deep Indigo with opacity
+    borderColor: Colors.retroDeepIndigo + '20',
   },
   shimmerCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: '#D9D9D9', // Soft Gray
+    backgroundColor: Colors.retroSoftGray,
     marginBottom: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1233,11 +1233,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#4ECDC4', // Neon Turquoise
+    backgroundColor: Colors.retroNeonTurquoise,
   },
   loadingText: {
     fontSize: 16,
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -1247,7 +1247,7 @@ const styles = StyleSheet.create({
   },
   shimmerBar: {
     height: 12,
-    backgroundColor: '#D9D9D9', // Soft Gray
+    backgroundColor: Colors.retroSoftGray,
     borderRadius: 6,
   },
   loadingIcons: {
@@ -1268,20 +1268,20 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     width: '100%',
     height: 8,
-    backgroundColor: '#D9D9D9', // Soft Gray
+    backgroundColor: Colors.retroSoftGray,
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#4ECDC4', // Neon Turquoise
+    backgroundColor: Colors.retroNeonTurquoise,
     borderRadius: 4,
   },
   progressText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#4ECDC4', // Neon Turquoise
+    color: Colors.retroNeonTurquoise,
   },
   cardContainer: {
     flex: 1,
@@ -1292,14 +1292,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     padding: 20,
-    backgroundColor: '#FDFDFD', // Cream White
-    shadowColor: '#D9D9D9', // Soft Gray
+    backgroundColor: Colors.retroCreamWhite,
+    shadowColor: Colors.retroSoftGray,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#2E294E15', // Deep Indigo with opacity
+    borderColor: Colors.retroDeepIndigo + '15',
   },
   productHeader: {
     flexDirection: 'row',
@@ -1330,13 +1330,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4,
     lineHeight: 24,
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   servingSize: {
     fontSize: 14,
     marginBottom: 12,
     fontStyle: 'italic',
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   scoreSection: {
     alignItems: 'center',
@@ -1371,7 +1371,7 @@ const styles = StyleSheet.create({
   
   scoreOutOf: {
     fontSize: 14,
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
     marginTop: -4,
   },
   
@@ -1388,7 +1388,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     fontWeight: '500',
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   
   comparisonContainer: {
@@ -1423,18 +1423,18 @@ const styles = StyleSheet.create({
   baseScoreValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   
   personalScoreChip: {
-    backgroundColor: '#4ECDC4' + '15', // Neon Turquoise with opacity
+    backgroundColor: Colors.retroNeonTurquoise + '15',
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: 'center',
     minWidth: 80,
     borderWidth: 1,
-    borderColor: '#4ECDC4' + '30', // Neon Turquoise with opacity
+    borderColor: Colors.retroNeonTurquoise + '30',
   },
   
   personalScoreLabel: {
@@ -1443,13 +1443,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
-    color: '#4ECDC4', // Neon Turquoise
+    color: Colors.retroNeonTurquoise,
   },
   
   personalScoreValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ECDC4', // Neon Turquoise
+    color: Colors.retroNeonTurquoise,
   },
   
   deltaContainer: {
@@ -1500,7 +1500,7 @@ const styles = StyleSheet.create({
   
   resultMessage: {
     fontSize: 16,
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
     textAlign: 'center',
     lineHeight: 22,
     flex: 1,
@@ -1511,14 +1511,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     padding: 20,
-    backgroundColor: '#FDFDFD', // Cream White
-    shadowColor: '#D9D9D9', // Soft Gray
+    backgroundColor: Colors.retroCreamWhite,
+    shadowColor: Colors.retroSoftGray,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#2E294E15', // Deep Indigo with opacity
+    borderColor: Colors.retroDeepIndigo + '15',
   },
   
   cardHeader: {
@@ -1539,7 +1539,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 8,
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   
 
@@ -1668,20 +1668,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: '#4ECDC4', // Neon Turquoise
+    backgroundColor: Colors.retroNeonTurquoise,
   },
   secondaryButton: {
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: Colors.retroCreamWhite,
     borderWidth: 2,
-    borderColor: '#4ECDC4', // Neon Turquoise
+    borderColor: Colors.retroNeonTurquoise,
   },
   primaryButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#FDFDFD', // Cream White
+    color: Colors.retroCreamWhite,
   },
   secondaryButtonText: {
-    color: '#4ECDC4', // Neon Turquoise
+    color: Colors.retroNeonTurquoise,
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1722,7 +1722,7 @@ const styles = StyleSheet.create({
   loadingIngredientsText: {
     fontSize: 14,
     fontStyle: 'italic',
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   
   ingredientsScrollView: {
@@ -1735,11 +1735,11 @@ const styles = StyleSheet.create({
   },
   
   ingredientItem: {
-    backgroundColor: '#D9D9D9' + '20', // Soft Gray with opacity
+    backgroundColor: Colors.retroSoftGray + '20',
     borderRadius: 12,
     padding: 16,
     borderLeftWidth: 4,
-    borderLeftColor: '#4ECDC4', // Neon Turquoise
+    borderLeftColor: Colors.retroNeonTurquoise,
   },
   
   ingredientHeader: {
@@ -1760,14 +1760,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     textTransform: 'capitalize',
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   
   ingredientDetails: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#D9D9D9', // Soft Gray
+    borderTopColor: Colors.retroSoftGray,
   },
   
   ingredientDescription: {
@@ -1780,7 +1780,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontStyle: 'italic',
     lineHeight: 16,
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   
   noIngredientsText: {
@@ -1788,7 +1788,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 20,
     fontStyle: 'italic',
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   
   // For You Analysis Styles
@@ -1800,7 +1800,7 @@ const styles = StyleSheet.create({
   loadingAnalysisText: {
     fontSize: 14,
     fontStyle: 'italic',
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   
   analysisContent: {
@@ -1811,7 +1811,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'left',
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   
   // Macro Breakdown Styles
@@ -1831,7 +1831,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#4ECDC4', // Neon Turquoise
+    color: Colors.retroNeonTurquoise,
   },
   
   macroLabel: {
@@ -1839,13 +1839,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   
   macroSecondaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#D9D9D9' + '30', // Soft Gray with opacity
+    backgroundColor: Colors.retroSoftGray + '30',
     borderRadius: 12,
     padding: 16,
     paddingHorizontal: 8,
@@ -1860,14 +1860,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#1E1E1E', // Charcoal Black
+    color: Colors.retroCharcoalBlack,
   },
   
   macroSecondaryLabel: {
     fontSize: 11,
     fontWeight: '500',
     textAlign: 'center',
-    color: '#5F5F5F', // Slate Gray
+    color: Colors.retroSlateGray,
   },
   personalReasonsHeader: {
     flexDirection: 'row',
