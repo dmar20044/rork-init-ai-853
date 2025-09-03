@@ -17,7 +17,7 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic } from "lucide-react-native";
+import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic, Check } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -119,6 +119,8 @@ export default function AskInItScreen() {
   const voiceModeExpandAnim = useRef(new Animated.Value(0)).current;
   const voiceModeBubbleAnim = useRef(new Animated.Value(0)).current;
   const soundWaveAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
+  const micRotationAnim = useRef(new Animated.Value(0)).current;
+  const [showCheckmark, setShowCheckmark] = useState(false);
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -883,6 +885,16 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     if (isVoiceModeActive) {
       // Close voice mode
       stopSoundWaveAnimation();
+      setShowCheckmark(false);
+      
+      // Reset rotation animation
+      Animated.timing(micRotationAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
+      
       Animated.parallel([
         Animated.timing(voiceModeExpandAnim, {
           toValue: 0,
@@ -902,6 +914,18 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
+      
+      // Start microphone to checkmark rotation animation
+      Animated.timing(micRotationAnim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.1)),
+        useNativeDriver: true,
+      }).start(() => {
+        // Show checkmark after rotation completes
+        setShowCheckmark(true);
+      });
+      
       Animated.parallel([
         Animated.timing(voiceModeExpandAnim, {
           toValue: 1,
@@ -1012,9 +1036,28 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               onPress={handleVoiceModeToggle}
             >
               <Text style={[styles.retroConversationText, { color: Colors.white }]}>Talk to InIt</Text>
-              <View style={[styles.retroMicrophoneCircle, { backgroundColor: Colors.white }]}>
-                <Mic size={16} color={'#FF3B30'} />
-              </View>
+              <Animated.View 
+                style={[
+                  styles.retroMicrophoneCircle, 
+                  { backgroundColor: Colors.white },
+                  {
+                    transform: [
+                      {
+                        rotate: micRotationAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {showCheckmark ? (
+                  <Check size={16} color={'#FF3B30'} />
+                ) : (
+                  <Mic size={16} color={'#FF3B30'} />
+                )}
+              </Animated.View>
             </TouchableOpacity>
           </View>
         </View>
