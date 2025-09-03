@@ -25,6 +25,8 @@ const UserIcon = memo(({ color, size }: { color: string; size: number }) => (
   <User color={color} size={size} />
 ));
 
+
+
 function TabLayout() {
   const { colors } = useTheme();
   

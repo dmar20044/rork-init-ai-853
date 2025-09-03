@@ -335,7 +335,8 @@ export default function GroceryListScreen() {
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
+    <AnimatedTabWrapper tabName="grocery-list">
+      <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
       <View style={[styles.header, { backgroundColor: RetroColors.creamWhite, borderBottomColor: RetroColors.softGray }]}>
         <View style={styles.headerContent}>
           <ShoppingCart size={28} color={RetroColors.neonTurquoise} />
@@ -459,7 +460,8 @@ export default function GroceryListScreen() {
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </AnimatedTabWrapper>
   );
 }
 

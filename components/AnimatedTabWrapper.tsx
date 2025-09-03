@@ -1,86 +1,115 @@
-import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, StyleSheet } from 'react-native';
-import { useTabNavigation } from '@/contexts/TabNavigationContext';
+import React, { useEffect, useRef, createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import { Animated, Dimensions } from 'react-native';
+import { useSegments } from 'expo-router';
 
-const { width: screenWidth } = Dimensions.get('window');
+interface TabAnimationContextType {
+  currentTabIndex: number;
+  previousTabIndex: number;
+  slideDirection: 'left' | 'right';
+  isAnimating: boolean;
+}
+
+const TabAnimationContext = createContext<TabAnimationContextType | null>(null);
+
+export const useTabAnimation = () => {
+  const context = useContext(TabAnimationContext);
+  if (!context) {
+    return { currentTabIndex: 0, previousTabIndex: 0, slideDirection: 'right' as const, isAnimating: false };
+  }
+  return context;
+};
+
+// Tab order mapping
+const tabOrder = ['index', 'grocery-list', 'discover', 'history', 'goals'];
+
+export const TabAnimationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const segments = useSegments();
+  const [currentTabIndex, setCurrentTabIndex] = useState(0);
+  const [previousTabIndex, setPreviousTabIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const currentTab = segments[segments.length - 1] || 'index';
+    const newIndex = tabOrder.indexOf(currentTab);
+    
+    if (newIndex !== -1 && newIndex !== currentTabIndex) {
+      setPreviousTabIndex(currentTabIndex);
+      setCurrentTabIndex(newIndex);
+      setSlideDirection(newIndex > currentTabIndex ? 'left' : 'right');
+      setIsAnimating(true);
+      
+      // Reset animation state after animation completes
+      setTimeout(() => {
+        setIsAnimating(false);
+      }, 500);
+    }
+  }, [segments, currentTabIndex]);
+
+  const contextValue = useMemo(() => ({
+    currentTabIndex,
+    previousTabIndex,
+    slideDirection,
+    isAnimating
+  }), [currentTabIndex, previousTabIndex, slideDirection, isAnimating]);
+
+  return (
+    <TabAnimationContext.Provider value={contextValue}>
+      {children}
+    </TabAnimationContext.Provider>
+  );
+};
 
 interface AnimatedTabWrapperProps {
-  children: React.ReactNode;
+  children: ReactNode;
   tabName: string;
 }
 
-export default function AnimatedTabWrapper({ children, tabName }: AnimatedTabWrapperProps) {
-  const { currentTab, previousTab, isTransitioning, animationDirection } = useTabNavigation();
+export const AnimatedTabWrapper: React.FC<AnimatedTabWrapperProps> = ({ children, tabName }) => {
+  const { currentTabIndex, previousTabIndex, slideDirection, isAnimating } = useTabAnimation();
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const isInitialMount = useRef(true);
+  const { width: screenWidth } = Dimensions.get('window');
+  
+  const tabIndex = tabOrder.indexOf(tabName);
+  const isCurrentTab = currentTabIndex === tabIndex;
+  const wasPreviousTab = previousTabIndex === tabIndex;
   
   useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
+    if (isAnimating && (isCurrentTab || wasPreviousTab)) {
+      // Reset animation value
+      slideAnim.setValue(isCurrentTab ? (slideDirection === 'left' ? screenWidth : -screenWidth) : 0);
+      
+      // Animate to final position
+      Animated.timing(slideAnim, {
+        toValue: isCurrentTab ? 0 : (slideDirection === 'left' ? -screenWidth : screenWidth),
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    } else if (!isAnimating) {
+      // Ensure current tab is visible and others are hidden
+      slideAnim.setValue(isCurrentTab ? 0 : screenWidth);
     }
-
-    if (isTransitioning && animationDirection) {
-      if (tabName === currentTab) {
-        // This is the incoming tab
-        const startPosition = animationDirection === 'left' ? screenWidth : -screenWidth;
-        slideAnim.setValue(startPosition);
-        
-        // Animate to center
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      } else if (tabName === previousTab) {
-        // This is the outgoing tab
-        const endPosition = animationDirection === 'left' ? -screenWidth : screenWidth;
-        slideAnim.setValue(0);
-        
-        // Animate out
-        Animated.timing(slideAnim, {
-          toValue: endPosition,
-          duration: 300,
-          useNativeDriver: true,
-        }).start();
-      }
-    } else if (!isTransitioning && tabName === currentTab) {
-      // Ensure current tab is centered when not transitioning
-      slideAnim.setValue(0);
-    }
-  }, [currentTab, previousTab, isTransitioning, animationDirection, tabName, slideAnim]);
+  }, [isAnimating, isCurrentTab, wasPreviousTab, slideDirection, screenWidth, slideAnim]);
   
-  // Always render, but control visibility through opacity and position
-  const isVisible = tabName === currentTab || (isTransitioning && (tabName === previousTab || tabName === currentTab));
+  // Only render if this is the current tab or involved in animation
+  if (!isCurrentTab && !wasPreviousTab && isAnimating) {
+    return null;
+  }
   
-  if (!isVisible) {
+  if (!isCurrentTab && !isAnimating) {
     return null;
   }
   
   return (
     <Animated.View 
       style={[
-        styles.container,
-        isTransitioning && styles.transitioning,
+        { flex: 1 },
         {
-          transform: [{ translateX: slideAnim }],
+          transform: [{ translateX: slideAnim }]
         }
       ]}
     >
       {children}
     </Animated.View>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  transitioning: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-});
+};
