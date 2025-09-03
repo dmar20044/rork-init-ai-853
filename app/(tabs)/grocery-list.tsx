@@ -375,7 +375,11 @@ export default function GroceryListScreen() {
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
         {groceryItems.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <ShoppingCart size={64} color={RetroColors.softGray} />
+            <Image 
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/xt467ii7wrgo97tkru9kf' }}
+              style={styles.emptyIllustration}
+              resizeMode="contain"
+            />
             <Text style={[styles.emptyTitle, { color: RetroColors.charcoalBlack }]}>Your grocery list is empty</Text>
             <Text style={[styles.emptySubtitle, { color: RetroColors.slateGray }]}>Add items to get started!</Text>
           </View>
@@ -533,6 +537,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 80,
+  },
+  emptyIllustration: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 20,
