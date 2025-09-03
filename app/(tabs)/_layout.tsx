@@ -1,9 +1,8 @@
 import { Tabs } from "expo-router";
 import { Camera, History, User, MessageCircle, ShoppingCart } from "lucide-react-native";
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import { Platform } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
-import { TabTransitionProvider, useTabTransition } from "@/contexts/TabTransitionContext";
 
 // Memoized icon components for better performance
 const CameraIcon = memo(({ color, size }: { color: string; size: number }) => (
@@ -77,48 +76,15 @@ function TabLayout() {
     title: "Profile",
     tabBarIcon: ({ color, size }: { color: string; size: number }) => <UserIcon color={color} size={size} />,
   }), []);
-  const order = React.useMemo(() => ["index", "grocery-list", "discover", "history", "goals"] as const, []);
-
-  const screenListeners = React.useMemo(() => ({
-    focus: (e: any) => {
-      const routeName: string = e?.target?.split('-')[0] ?? '';
-      const idx = order.findIndex((n) => routeName.startsWith(n));
-      if (idx >= 0) {
-        try {
-          // Lazy import hook to avoid calling outside provider
-          const { setCurrentIndex } = require("@/contexts/TabTransitionContext").useTabTransition();
-          setCurrentIndex(idx);
-        } catch (err) {
-          console.log('[Tabs] focus listener error', err);
-        }
-      }
-    },
-    tabPress: (e: any) => {
-      const name: string | undefined = e?.target?.split('-')[0];
-      if (name) {
-        const idx = order.findIndex((n) => name.startsWith(n));
-        if (idx >= 0) {
-          try {
-            const { setCurrentIndex } = require("@/contexts/TabTransitionContext").useTabTransition();
-            setCurrentIndex(idx);
-          } catch (err) {
-            console.log('[Tabs] tabPress listener error', err);
-          }
-        }
-      }
-    },
-  }), [order]);
   
   return (
-    <TabTransitionProvider>
-      <Tabs screenOptions={screenOptions} screenListeners={screenListeners}>
-        <Tabs.Screen name="index" options={scannerOptions} />
-        <Tabs.Screen name="grocery-list" options={groceryListOptions} />
-        <Tabs.Screen name="discover" options={discoverOptions} />
-        <Tabs.Screen name="history" options={historyOptions} />
-        <Tabs.Screen name="goals" options={goalsOptions} />
-      </Tabs>
-    </TabTransitionProvider>
+    <Tabs screenOptions={screenOptions}>
+      <Tabs.Screen name="index" options={scannerOptions} />
+      <Tabs.Screen name="grocery-list" options={groceryListOptions} />
+      <Tabs.Screen name="discover" options={discoverOptions} />
+      <Tabs.Screen name="history" options={historyOptions} />
+      <Tabs.Screen name="goals" options={goalsOptions} />
+    </Tabs>
   );
 }
 

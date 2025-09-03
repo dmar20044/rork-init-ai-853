@@ -26,7 +26,6 @@ import {
 import { Colors } from '@/constants/colors';
 import { useGroceryList, GroceryItem } from '@/contexts/GroceryListContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import TabSlideView from '@/components/TabSlideView';
 
 // Retro Tech Pop Color Palette
 const RetroColors = {
@@ -250,7 +249,6 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
   );
 }
 
-
 export default function GroceryListScreen() {
   const { groceryItems, addItem, toggleItem, deleteItem, updateItem, clearCompleted, isLoading } = useGroceryList();
   const [newItemName, setNewItemName] = useState<string>('');
@@ -338,7 +336,6 @@ export default function GroceryListScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
-      <TabSlideView index={1} testID="tab-grocery">
       <View style={[styles.header, { backgroundColor: RetroColors.creamWhite, borderBottomColor: RetroColors.softGray }]}>
         <View style={styles.headerContent}>
           <ShoppingCart size={28} color={RetroColors.neonTurquoise} />
@@ -462,7 +459,6 @@ export default function GroceryListScreen() {
           </>
         )}
       </ScrollView>
-      </TabSlideView>
     </SafeAreaView>
   );
 }

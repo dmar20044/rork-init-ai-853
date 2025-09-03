@@ -24,8 +24,6 @@ import { useUser } from "@/contexts/UserContext";
 import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
 
-import TabSlideView from "@/components/TabSlideView";
-
 export default function ScannerScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
@@ -575,8 +573,7 @@ export default function ScannerScreen() {
 
   // Always show camera as the main interface
   return (
-    <TabSlideView index={0} testID="tab-scanner">
-      <View style={styles.cameraContainer}>
+    <View style={styles.cameraContainer}>
       <CameraView 
         ref={cameraRef}
         style={styles.camera} 
@@ -760,7 +757,6 @@ export default function ScannerScreen() {
           </SafeAreaView>
         )}
       </View>
-    </TabSlideView>
     );
 }
 
