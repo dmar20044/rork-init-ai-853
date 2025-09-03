@@ -2,6 +2,7 @@ import { Tabs } from "expo-router";
 import { Camera, History, User, MessageCircle, ShoppingCart } from "lucide-react-native";
 import React, { memo, useCallback } from "react";
 import { Platform } from "react-native";
+import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 
 // Memoized icon components for better performance
@@ -27,6 +28,13 @@ const UserIcon = memo(({ color, size }: { color: string; size: number }) => (
 
 function TabLayout() {
   const { colors } = useTheme();
+  
+  // Handle tab press with haptic feedback
+  const handleTabPress = useCallback(() => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync();
+    }
+  }, []);
   
   // Memoize screen options to prevent unnecessary re-renders
   const screenOptions = React.useMemo(() => ({
@@ -78,7 +86,12 @@ function TabLayout() {
   }), []);
   
   return (
-    <Tabs screenOptions={screenOptions}>
+    <Tabs 
+      screenOptions={screenOptions}
+      screenListeners={{
+        tabPress: handleTabPress,
+      }}
+    >
       <Tabs.Screen name="index" options={scannerOptions} />
       <Tabs.Screen name="grocery-list" options={groceryListOptions} />
       <Tabs.Screen name="discover" options={discoverOptions} />
