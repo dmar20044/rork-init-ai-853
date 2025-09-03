@@ -24,7 +24,6 @@ import { useScanHistory } from "@/contexts/ScanHistoryContext";
 import { useUser } from "@/contexts/UserContext";
 import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
-import { AnimatedTabWrapper } from "@/components/AnimatedTabWrapper";
 
 export default function ScannerScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -589,8 +588,7 @@ export default function ScannerScreen() {
 
   // Always show camera as the main interface
   return (
-    <AnimatedTabWrapper tabName="index">
-      <View style={styles.cameraContainer}>
+    <View style={styles.cameraContainer}>
       <CameraView 
         ref={cameraRef}
         style={styles.camera} 
@@ -797,8 +795,7 @@ export default function ScannerScreen() {
           </SafeAreaView>
         )}
       </View>
-    </AnimatedTabWrapper>
-  );
+    );
 }
 
 const styles = StyleSheet.create({

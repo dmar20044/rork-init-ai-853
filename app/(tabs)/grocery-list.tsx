@@ -26,7 +26,6 @@ import {
 import { Colors } from '@/constants/colors';
 import { useGroceryList, GroceryItem } from '@/contexts/GroceryListContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { AnimatedTabWrapper } from '@/components/AnimatedTabWrapper';
 
 // Retro Tech Pop Color Palette
 const RetroColors = {
@@ -336,8 +335,7 @@ export default function GroceryListScreen() {
   }
 
   return (
-    <AnimatedTabWrapper tabName="grocery-list">
-      <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
       <View style={[styles.header, { backgroundColor: RetroColors.creamWhite, borderBottomColor: RetroColors.softGray }]}>
         <View style={styles.headerContent}>
           <ShoppingCart size={28} color={RetroColors.neonTurquoise} />
@@ -461,8 +459,7 @@ export default function GroceryListScreen() {
           </>
         )}
       </ScrollView>
-      </SafeAreaView>
-    </AnimatedTabWrapper>
+    </SafeAreaView>
   );
 }
 

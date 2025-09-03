@@ -9,7 +9,6 @@ import { ScanHistoryProvider } from "@/contexts/ScanHistoryContext";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import { GroceryListProvider, useGroceryList } from "@/contexts/GroceryListContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { TabAnimationProvider } from "@/components/AnimatedTabWrapper";
 import { ToastNotification } from "@/components/ToastNotification";
 import { Colors } from "@/constants/colors";
 import "@/constants/production"; // Initialize production config
@@ -82,14 +81,9 @@ const RootLayoutNav = memo(function RootLayoutNav() {
     animation: 'slide_from_right' as const,
     animationDuration: 200, // Faster animations
   }), []);
-  
-  const tabsScreenOptions = React.useMemo(() => ({ 
-    headerShown: false,
-    animation: 'slide_from_right' as const,
-    animationDuration: 500, // Slide animation for tab transitions
-  }), []);
 
   const quizScreenOptions = React.useMemo(() => ({ headerShown: false }), []);
+  const tabsScreenOptions = React.useMemo(() => ({ headerShown: false }), []);
   const nutritionResultsScreenOptions = React.useMemo(() => ({ headerShown: false }), []);
 
   useEffect(() => {
@@ -163,11 +157,9 @@ export default function RootLayout() {
           <UserProvider>
             <ScanHistoryProvider>
               <GroceryListProvider>
-                <TabAnimationProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                  </GestureHandlerRootView>
-                </TabAnimationProvider>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <RootLayoutNav />
+                </GestureHandlerRootView>
               </GroceryListProvider>
             </ScanHistoryProvider>
           </UserProvider>
