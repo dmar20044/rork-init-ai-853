@@ -895,20 +895,12 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         useNativeDriver: true,
       }).start();
       
-      Animated.parallel([
-        Animated.timing(voiceModeExpandAnim, {
-          toValue: 0,
-          duration: 400,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: false,
-        }),
-        Animated.timing(voiceModeBubbleAnim, {
-          toValue: 0,
-          duration: 300,
-          easing: Easing.inOut(Easing.cubic),
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
+      Animated.timing(voiceModeBubbleAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: true,
+      }).start(() => {
         setIsVoiceModeActive(false);
       });
     } else {
@@ -926,21 +918,13 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         setShowCheckmark(true);
       });
       
-      Animated.parallel([
-        Animated.timing(voiceModeExpandAnim, {
-          toValue: 1,
-          duration: 500,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: false,
-        }),
-        Animated.timing(voiceModeBubbleAnim, {
-          toValue: 1,
-          duration: 600,
-          delay: 200,
-          easing: Easing.out(Easing.back(1.2)),
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
+      Animated.timing(voiceModeBubbleAnim, {
+        toValue: 1,
+        duration: 600,
+        delay: 200,
+        easing: Easing.out(Easing.back(1.2)),
+        useNativeDriver: true,
+      }).start(() => {
         // Start sound wave animation after bubble appears
         setTimeout(() => {
           startSoundWaveAnimation();
@@ -1059,6 +1043,70 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 )}
               </Animated.View>
             </TouchableOpacity>
+            
+            {/* Inline Voice Mode Interface */}
+            {isVoiceModeActive && (
+              <Animated.View 
+                style={[
+                  styles.inlineVoiceModeContainer,
+                  {
+                    opacity: voiceModeBubbleAnim,
+                    transform: [
+                      {
+                        scale: voiceModeBubbleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.8, 1],
+                        }),
+                      },
+                      {
+                        translateY: voiceModeBubbleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <View style={styles.inlineVoiceBubble}>
+                  <View style={styles.inlineVoiceIcon}>
+                    <Mic size={24} color={'#FF3B30'} />
+                  </View>
+                  <Text style={styles.inlineVoiceTitle}>Listening...</Text>
+                  <Text style={styles.inlineVoiceSubtitle}>Ask me anything about nutrition</Text>
+                  
+                  {/* Animated Sound Waves */}
+                  <View style={styles.inlineSoundWavesContainer}>
+                    {soundWaveAnims.map((anim, index) => (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.inlineSoundWave,
+                          {
+                            height: anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [4, 16 + (index % 3) * 4],
+                            }),
+                            opacity: anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.4, 1],
+                            }),
+                            transform: [
+                              {
+                                scaleY: anim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [0.5, 1.2],
+                                }),
+                              },
+                            ],
+                          },
+                        ]}
+                      />
+                    ))}
+                  </View>
+                </View>
+              </Animated.View>
+            )}
           </View>
         </View>
 
@@ -1546,114 +1594,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           isGenerating={isGeneratingRecipe}
         />
         
-        {/* Voice Mode Overlay */}
-        {isVoiceModeActive && (
-          <Animated.View 
-            style={[
-              styles.voiceModeOverlay,
-              {
-                backgroundColor: '#FF3B30',
-                opacity: voiceModeExpandAnim,
-                transform: [
-                  {
-                    scale: voiceModeExpandAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, 1],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          >
-            <SafeAreaView style={styles.voiceModeContent}>
-              {/* Close Button */}
-              <TouchableOpacity 
-                style={styles.voiceModeCloseButton}
-                onPress={handleVoiceModeToggle}
-                activeOpacity={0.8}
-              >
-                <X size={24} color={Colors.white} />
-              </TouchableOpacity>
-              
-              {/* Voice Mode Bubble */}
-              <Animated.View 
-                style={[
-                  styles.voiceModeBubble,
-                  {
-                    opacity: voiceModeBubbleAnim,
-                    transform: [
-                      {
-                        scale: voiceModeBubbleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.3, 1],
-                        }),
-                      },
-                      {
-                        translateY: voiceModeBubbleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [50, 0],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <View style={styles.voiceBubbleContent}>
-                  <View style={styles.voiceBubbleIcon}>
-                    <Mic size={32} color={'#FF3B30'} />
-                  </View>
-                  <Text style={styles.voiceBubbleTitle}>Listening...</Text>
-                  <Text style={styles.voiceBubbleSubtitle}>Ask me anything about nutrition</Text>
-                  
-                  {/* Animated Sound Waves */}
-                  <View style={styles.soundWavesContainer}>
-                    {soundWaveAnims.map((anim, index) => (
-                      <Animated.View
-                        key={index}
-                        style={[
-                          styles.soundWave,
-                          {
-                            height: anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [8, 32 + (index % 3) * 8],
-                            }),
-                            opacity: anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0.4, 1],
-                            }),
-                            transform: [
-                              {
-                                scaleY: anim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: [0.5, 1.2],
-                                }),
-                              },
-                            ],
-                          },
-                        ]}
-                      />
-                    ))}
-                  </View>
-                </View>
-              </Animated.View>
-              
-              {/* Voice Mode Instructions */}
-              <Animated.View 
-                style={[
-                  styles.voiceModeInstructions,
-                  {
-                    opacity: voiceModeBubbleAnim.interpolate({
-                      inputRange: [0, 0.5, 1],
-                      outputRange: [0, 0, 1],
-                    }),
-                  },
-                ]}
-              >
-                <Text style={styles.voiceInstructionText}>Tap to speak, or say "Hey InIt" to start</Text>
-              </Animated.View>
-            </SafeAreaView>
-          </Animated.View>
-        )}
+
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -3019,104 +2960,62 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   
-  // Voice Mode Overlay Styles
-  voiceModeOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#FF3B30',
-    zIndex: 1000,
-    justifyContent: 'center',
+  // Inline Voice Mode Styles
+  inlineVoiceModeContainer: {
+    marginTop: 16,
     alignItems: 'center',
   },
-  voiceModeContent: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  voiceModeCloseButton: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1001,
-  },
-  voiceModeBubble: {
+  inlineVoiceBubble: {
     backgroundColor: Colors.white,
-    borderRadius: 32,
-    padding: 40,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    shadowColor: 'rgba(0, 0, 0, 0.3)',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 15,
+    shadowColor: 'rgba(0, 0, 0, 0.15)',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
     minWidth: 280,
     maxWidth: 320,
+    borderWidth: 2,
+    borderColor: '#FF3B30' + '20',
   },
-  voiceBubbleContent: {
-    alignItems: 'center',
-  },
-  voiceBubbleIcon: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+  inlineVoiceIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#FF3B30' + '20',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    borderWidth: 3,
+    marginBottom: 16,
+    borderWidth: 2,
     borderColor: '#FF3B30' + '40',
   },
-  voiceBubbleTitle: {
-    fontSize: 24,
+  inlineVoiceTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: Colors.retroCharcoalBlack,
-    marginBottom: 8,
-    letterSpacing: -0.5,
+    marginBottom: 6,
+    letterSpacing: -0.3,
   },
-  voiceBubbleSubtitle: {
-    fontSize: 16,
+  inlineVoiceSubtitle: {
+    fontSize: 14,
     color: Colors.retroSlateGray,
     textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
+    marginBottom: 20,
+    lineHeight: 20,
   },
-  soundWavesContainer: {
+  inlineSoundWavesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    height: 40,
+    gap: 3,
+    height: 24,
   },
-  soundWave: {
-    width: 3,
+  inlineSoundWave: {
+    width: 2,
     backgroundColor: '#FF3B30',
-    borderRadius: 2,
-    minHeight: 4,
-  },
-  voiceModeInstructions: {
-    position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
-    alignItems: 'center',
-  },
-  voiceInstructionText: {
-    fontSize: 16,
-    color: Colors.white,
-    textAlign: 'center',
-    opacity: 0.9,
-    fontWeight: '500',
-    letterSpacing: 0.2,
+    borderRadius: 1,
+    minHeight: 2,
   },
 });
