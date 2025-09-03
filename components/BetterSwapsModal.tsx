@@ -7,7 +7,9 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import {
   X,
   TrendingUp,
@@ -25,6 +27,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { NutritionInfo } from '@/services/foodAnalysis';
 import { useUser } from '@/contexts/UserContext';
 import { useGroceryList } from '@/contexts/GroceryListContext';
+import { ToastNotification } from '@/components/ToastNotification';
 
 interface BetterSwap {
   name: string;
@@ -82,6 +85,7 @@ export default function BetterSwapsModal({ visible, onClose, currentProduct }: B
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addingToList, setAddingToList] = useState<string | null>(null);
+  const [showToast, setShowToast] = useState(false);
 
   const showPersonalized = profile.hasCompletedQuiz && currentProduct.personalScore !== undefined;
   const currentScore = showPersonalized ? currentProduct.personalScore! : currentProduct.healthScore;
@@ -308,10 +312,19 @@ Find products in the same category that would be significantly better for this u
 
   const handleAddToGroceryList = useCallback(async (swapName: string, swapBrand: string) => {
     try {
+      // Light haptic feedback
+      if (Platform.OS !== 'web') {
+        await Haptics.selectionAsync();
+      }
+      
       setAddingToList(swapName);
       const itemName = swapBrand && swapBrand !== 'Various' ? `${swapName} (${swapBrand})` : swapName;
       await addItem(itemName);
       console.log('Added to grocery list:', itemName);
+      
+      // Show toast notification
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2000);
     } catch (error) {
       console.error('Error adding to grocery list:', error);
     } finally {
@@ -483,6 +496,12 @@ Find products in the same category that would be significantly better for this u
             <Text style={[styles.doneButtonText, { color: colors.textPrimary }]}>Continue</Text>
           </TouchableOpacity>
         </View>
+        
+        {/* Toast Notification */}
+        <ToastNotification 
+          visible={showToast} 
+          message="Added to your grocery list" 
+        />
       </View>
     </Modal>
   );
