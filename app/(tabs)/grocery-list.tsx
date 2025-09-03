@@ -539,9 +539,9 @@ const styles = StyleSheet.create({
     paddingVertical: 80,
   },
   emptyIllustration: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
+    width: 160,
+    height: 160,
+    marginBottom: 8,
   },
   emptyTitle: {
     fontSize: 20,
