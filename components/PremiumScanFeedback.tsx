@@ -8,7 +8,9 @@ import {
   Image,
   Animated,
   Dimensions,
+  Platform,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import {
   Sparkles,
   AlertTriangle,
@@ -1064,6 +1066,9 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             <TouchableOpacity 
               style={[styles.addToGroceryButton, { backgroundColor: colors.surface, borderColor: colors.primary }]}
               onPress={async () => {
+                if (Platform.OS !== 'web') {
+                  await Haptics.selectionAsync();
+                }
                 try {
                   const productDetails = {
                     imageUri: nutrition.imageUrl || imageUri,
@@ -1086,7 +1091,12 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             
             <TouchableOpacity 
               style={[styles.ctaButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
-              onPress={() => setShowBetterSwapsModal(true)}
+              onPress={async () => {
+                if (Platform.OS !== 'web') {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+                }
+                setShowBetterSwapsModal(true);
+              }}
               activeOpacity={0.7}
             >
               <Text style={[styles.ctaButtonText, { color: colors.white }]}>Better Bites</Text>
