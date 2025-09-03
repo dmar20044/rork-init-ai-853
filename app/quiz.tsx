@@ -210,6 +210,8 @@ function QuizScreen() {
     selectedSubscription: string | null;
     dietaryRestrictions: string[];
     healthStrictness: string | null;
+    dietStrictness: string | null;
+    lifeStrictness: string | null;
   }>({
     bodyGoal: null,
     healthGoal: null,
@@ -219,6 +221,8 @@ function QuizScreen() {
     selectedSubscription: null,
     dietaryRestrictions: [],
     healthStrictness: null,
+    dietStrictness: null,
+    lifeStrictness: null,
   });
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -773,7 +777,7 @@ function QuizScreen() {
       case 'healthGoal':
         return answers.healthGoal !== null && answers.healthStrictness !== null;
       case 'dietGoal':
-        return answers.dietGoal !== null;
+        return answers.dietGoal !== null && answers.dietStrictness !== null;
       case 'dietary-restrictions':
         return true;
       case 'privacy-trust':
@@ -785,7 +789,7 @@ function QuizScreen() {
       case 'referral-code':
         return true;
       case 'lifeGoal':
-        return answers.lifeGoal !== null;
+        return answers.lifeGoal !== null && answers.lifeStrictness !== null;
       case 'generating-questions':
         return loadingProgress >= 100;
       case 'save-progress':
@@ -1486,7 +1490,25 @@ function QuizScreen() {
 
       case 'single-select':
         const selectedAnswer = answers[currentStepData.id as keyof typeof answers];
-        const showStrictnessSlider = currentStepData.id === 'healthGoal' && selectedAnswer;
+        const showStrictnessSlider = (currentStepData.id === 'healthGoal' || currentStepData.id === 'dietGoal' || currentStepData.id === 'lifeGoal') && selectedAnswer;
+        
+        // Get the appropriate strictness value and setter based on current step
+        const getStrictnessValue = () => {
+          if (currentStepData.id === 'healthGoal') return answers.healthStrictness;
+          if (currentStepData.id === 'dietGoal') return answers.dietStrictness;
+          if (currentStepData.id === 'lifeGoal') return answers.lifeStrictness;
+          return null;
+        };
+        
+        const setStrictnessValue = (level: string) => {
+          if (currentStepData.id === 'healthGoal') {
+            setAnswers(prev => ({ ...prev, healthStrictness: level }));
+          } else if (currentStepData.id === 'dietGoal') {
+            setAnswers(prev => ({ ...prev, dietStrictness: level }));
+          } else if (currentStepData.id === 'lifeGoal') {
+            setAnswers(prev => ({ ...prev, lifeStrictness: level }));
+          }
+        };
         
         return (
           <View style={styles.selectContent}>
@@ -1528,7 +1550,7 @@ function QuizScreen() {
                 <View style={styles.strictnessSlider}>
                   {['not-strict', 'neutral', 'very-strict'].map((level, index) => {
                     const labels = ['Not too strict', 'Neutral', 'Very strict'];
-                    const isSelected = answers.healthStrictness === level;
+                    const isSelected = getStrictnessValue() === level;
                     return (
                       <TouchableOpacity
                         key={level}
@@ -1538,7 +1560,7 @@ function QuizScreen() {
                           index === 0 && styles.strictnessOptionFirst,
                           index === 2 && styles.strictnessOptionLast,
                         ]}
-                        onPress={() => setAnswers(prev => ({ ...prev, healthStrictness: level }))}
+                        onPress={() => setStrictnessValue(level)}
                       >
                         <Text style={[
                           styles.strictnessOptionText,
