@@ -9,6 +9,7 @@ import { ScanHistoryProvider } from "@/contexts/ScanHistoryContext";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import { GroceryListProvider, useGroceryList } from "@/contexts/GroceryListContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { TabNavigationProvider } from "@/contexts/TabNavigationContext";
 import { ToastNotification } from "@/components/ToastNotification";
 import { Colors } from "@/constants/colors";
 import "@/constants/production"; // Initialize production config
@@ -157,9 +158,11 @@ export default function RootLayout() {
           <UserProvider>
             <ScanHistoryProvider>
               <GroceryListProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <RootLayoutNav />
-                </GestureHandlerRootView>
+                <TabNavigationProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </TabNavigationProvider>
               </GroceryListProvider>
             </ScanHistoryProvider>
           </UserProvider>
