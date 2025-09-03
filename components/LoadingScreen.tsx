@@ -15,7 +15,7 @@ import {
   User,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useTheme } from '@/contexts/ThemeContext';
+
 
 interface LoadingScreenProps {
   isVisible: boolean;
@@ -52,18 +52,19 @@ const progressSteps = [
 ];
 
 export default function LoadingScreen({ isVisible, onCancel, onComplete, onProductNotFound, progress }: LoadingScreenProps) {
-  const themeContext = useTheme();
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
 
-
-  // Get colors with fallback to prevent crashes
-  const colors = themeContext?.colors || {
-    background: '#FFFFFF',
-    surface: '#FFFFFF',
-    textTertiary: '#666666',
-    primary: '#FF0040',
-    textSecondary: '#333333',
-    white: '#FFFFFF'
+  // Retro Tech Pop Color Scheme
+  const colors = {
+    primary: '#4ECDC4', // Neon Turquoise
+    secondary: '#FF6B81', // Retro Pink
+    accent: '#2E294E', // Deep Indigo
+    background: '#FDFDFD', // Cream White
+    surface: '#FDFDFD', // Cream White
+    text: '#1E1E1E', // Charcoal Black
+    textSecondary: '#5F5F5F', // Slate Gray
+    textTertiary: '#D9D9D9', // Soft Gray
+    white: '#FDFDFD'
   };
   
   const [currentStep, setCurrentStep] = useState<number>(0);
@@ -884,7 +885,7 @@ const styles = StyleSheet.create({
     left: -200,
     right: -200,
     bottom: -100,
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#FF6B81', // Retro Pink
     opacity: 0.1,
     transform: [{ rotate: '15deg' }],
     zIndex: 0,
@@ -896,13 +897,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     maxWidth: 350,
-    shadowColor: '#000000',
+    shadowColor: '#2E294E', // Deep Indigo shadow
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 8,
     zIndex: 10,
     borderWidth: 1,
+    borderColor: '#D9D9D9', // Soft Gray border
   },
   heroContainer: {
     width: 200,
@@ -920,8 +922,8 @@ const styles = StyleSheet.create({
   ripple1: {
     width: 80,
     height: 80,
-    borderColor: '#FF6B6B', // Bright retro red
-    shadowColor: '#FF6B6B',
+    borderColor: '#4ECDC4', // Neon Turquoise
+    shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 12,
@@ -930,8 +932,8 @@ const styles = StyleSheet.create({
   ripple2: {
     width: 80,
     height: 80,
-    borderColor: '#FF8E8E',
-    shadowColor: '#FF8E8E',
+    borderColor: '#FF6B81', // Retro Pink
+    shadowColor: '#FF6B81',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.7,
     shadowRadius: 10,
@@ -940,8 +942,8 @@ const styles = StyleSheet.create({
   ripple3: {
     width: 80,
     height: 80,
-    borderColor: '#FFB1B1',
-    shadowColor: '#FFB1B1',
+    borderColor: '#2E294E', // Deep Indigo
+    shadowColor: '#2E294E',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
     shadowRadius: 8,
@@ -952,8 +954,8 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FF6B6B', // Bright retro red
-    shadowColor: '#FF6B6B',
+    backgroundColor: '#4ECDC4', // Neon Turquoise
+    shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
     shadowRadius: 25,
@@ -964,11 +966,11 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#FF6B6B', // Bright retro red
+    backgroundColor: '#4ECDC4', // Neon Turquoise
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5,
-    shadowColor: '#FF6B6B',
+    shadowColor: '#4ECDC4',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 18,
