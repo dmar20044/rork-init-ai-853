@@ -1046,13 +1046,13 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                       {
                         scaleX: bubbleExpandAnim.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [1, 12], // Scale to cover the entire bubble width
+                          outputRange: [0, 1], // Scale from 0 to full width
                         }),
                       },
                       {
                         scaleY: bubbleExpandAnim.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [1, 1.8], // Scale to cover the entire bubble height
+                          outputRange: [0, 1], // Scale from 0 to full height
                         }),
                       },
                     ],
@@ -2771,11 +2771,12 @@ const styles = StyleSheet.create({
   },
   retroBubbleExpandingBackground: {
     position: 'absolute',
-    top: 6, // Center vertically in the bubble
-    right: 14, // Position it at the microphone location
-    width: 28,
-    height: 28,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     borderRadius: 25,
+    transformOrigin: 'right center', // Expand from the microphone position
   },
   retroConversationText: {
     fontSize: 14,
