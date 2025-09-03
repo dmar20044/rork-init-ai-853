@@ -26,6 +26,7 @@ import {
 import { Colors } from '@/constants/colors';
 import { useGroceryList, GroceryItem } from '@/contexts/GroceryListContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { AnimatedTabWrapper } from '@/components/AnimatedTabWrapper';
 
 // Retro Tech Pop Color Palette
 const RetroColors = {
