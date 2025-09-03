@@ -4,24 +4,31 @@ import {
   StyleSheet,
   Animated,
   Dimensions,
+  Text,
 } from 'react-native';
 import { Colors } from '@/constants/colors';
 
 interface ARScanningOverlayProps {
   isScanning: boolean;
+  isBarcodeMode: boolean;
   scanProgress?: number;
+  onScanComplete?: () => void;
 }
 
-const { width: screenWidth } = Dimensions.get('window');
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const SCAN_FRAME_SIZE = 280;
 
 export default function ARScanningOverlay({
   isScanning,
+  isBarcodeMode,
   scanProgress = 0,
+  onScanComplete,
 }: ARScanningOverlayProps) {
-  const scanLinePosition = useRef(new Animated.Value(0)).current;
-  const cornerPulse = useRef(new Animated.Value(1)).current;
-  const progressAnimation = useRef(new Animated.Value(0)).current;
-  const glowAnimation = useRef(new Animated.Value(0)).current;
+  const scanLineValue = useRef(new Animated.Value(0)).current;
+  const pulseValue = useRef(new Animated.Value(1)).current;
+  const cornerGlowValue = useRef(new Animated.Value(0)).current;
+  const gridOpacity = useRef(new Animated.Value(0)).current;
+  const progressValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (isScanning) {
@@ -32,7 +39,7 @@ export default function ARScanningOverlay({
   }, [isScanning]);
 
   useEffect(() => {
-    Animated.timing(progressAnimation, {
+    Animated.timing(progressValue, {
       toValue: scanProgress / 100,
       duration: 300,
       useNativeDriver: false,
@@ -41,30 +48,53 @@ export default function ARScanningOverlay({
 
   const startScanningAnimation = () => {
     // Scanning line animation
-    const scanLineLoop = Animated.loop(
+    const scanLineAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(scanLinePosition, {
+        Animated.timing(scanLineValue, {
           toValue: 1,
-          duration: 2000,
+          duration: isBarcodeMode ? 2000 : 1500,
           useNativeDriver: true,
         }),
-        Animated.timing(scanLinePosition, {
+        Animated.timing(scanLineValue, {
           toValue: 0,
-          duration: 0,
+          duration: 100,
           useNativeDriver: true,
         }),
       ])
     );
 
-    // Corner pulse animation
-    const cornerPulseLoop = Animated.loop(
+    // Corner glow animation
+    const cornerGlowAnimation = Animated.loop(
       Animated.sequence([
-        Animated.timing(cornerPulse, {
-          toValue: 1.2,
+        Animated.timing(cornerGlowValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cornerGlowValue, {
+          toValue: 0.3,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    // Grid overlay animation
+    const gridAnimation = Animated.timing(gridOpacity, {
+      toValue: 0.3,
+      duration: 500,
+      useNativeDriver: true,
+    });
+
+    // Pulse animation for frame
+    const pulseAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseValue, {
+          toValue: 1.05,
           duration: 800,
           useNativeDriver: true,
         }),
-        Animated.timing(cornerPulse, {
+        Animated.timing(pulseValue, {
           toValue: 1,
           duration: 800,
           useNativeDriver: true,
@@ -72,131 +102,130 @@ export default function ARScanningOverlay({
       ])
     );
 
-    // Glow animation
-    const glowLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnimation, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(glowAnimation, {
-          toValue: 0,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    scanLineLoop.start();
-    cornerPulseLoop.start();
-    glowLoop.start();
+    scanLineAnimation.start();
+    cornerGlowAnimation.start();
+    gridAnimation.start();
+    pulseAnimation.start();
   };
 
   const stopScanningAnimation = () => {
-    scanLinePosition.stopAnimation();
-    cornerPulse.stopAnimation();
-    glowAnimation.stopAnimation();
+    scanLineValue.stopAnimation();
+    cornerGlowValue.stopAnimation();
+    pulseValue.stopAnimation();
     
-    // Reset to initial positions
     Animated.parallel([
-      Animated.timing(scanLinePosition, {
+      Animated.timing(scanLineValue, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
       }),
-      Animated.timing(cornerPulse, {
+      Animated.timing(cornerGlowValue, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(gridOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(pulseValue, {
         toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(glowAnimation, {
-        toValue: 0,
         duration: 200,
         useNativeDriver: true,
       }),
     ]).start();
   };
 
+  const getScanColor = () => {
+    if (scanProgress > 80) return Colors.scoreExcellent;
+    if (scanProgress > 60) return Colors.retroNeonTurquoise;
+    if (scanProgress > 40) return Colors.scoreMediocre;
+    return Colors.primary;
+  };
+
   return (
     <View style={styles.container} pointerEvents="none">
-      {/* Main scan frame */}
-      <View style={styles.scanFrame}>
-        {/* Animated corners */}
-        <Animated.View
-          style={[
-            styles.scanCorner,
-            styles.scanCornerTL,
-            {
-              transform: [{ scale: cornerPulse }],
-              opacity: isScanning ? 1 : 0.7,
-            },
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.scanCorner,
-            styles.scanCornerTR,
-            {
-              transform: [{ scale: cornerPulse }],
-              opacity: isScanning ? 1 : 0.7,
-            },
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.scanCorner,
-            styles.scanCornerBL,
-            {
-              transform: [{ scale: cornerPulse }],
-              opacity: isScanning ? 1 : 0.7,
-            },
-          ]}
-        />
-        <Animated.View
-          style={[
-            styles.scanCorner,
-            styles.scanCornerBR,
-            {
-              transform: [{ scale: cornerPulse }],
-              opacity: isScanning ? 1 : 0.7,
-            },
-          ]}
-        />
+      {/* AR Grid Overlay */}
+      <Animated.View style={[styles.gridOverlay, { opacity: gridOpacity }]}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <View key={`h-${i}`} style={[styles.gridLine, styles.horizontalLine, { top: (i + 1) * (SCAN_FRAME_SIZE / 9) }]} />
+        ))}
+        {Array.from({ length: 8 }).map((_, i) => (
+          <View key={`v-${i}`} style={[styles.gridLine, styles.verticalLine, { left: (i + 1) * (SCAN_FRAME_SIZE / 9) }]} />
+        ))}
+      </Animated.View>
 
-        {/* Scanning line */}
+      {/* Main Scan Frame */}
+      <Animated.View 
+        style={[
+          styles.scanFrame,
+          {
+            transform: [{ scale: pulseValue }],
+          },
+        ]}
+      >
+        {/* Corner Elements with Glow */}
+        {['TL', 'TR', 'BL', 'BR'].map((corner) => (
+          <Animated.View
+            key={corner}
+            style={[
+              styles.scanCorner,
+              styles[`scanCorner${corner}` as keyof typeof styles],
+              {
+                borderColor: getScanColor(),
+                shadowColor: getScanColor(),
+                shadowOpacity: cornerGlowValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.3, 0.8],
+                }),
+                shadowRadius: cornerGlowValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [4, 12],
+                }),
+                elevation: cornerGlowValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [3, 8],
+                }),
+              },
+            ]}
+          />
+        ))}
+
+        {/* Scanning Line */}
         {isScanning && (
           <Animated.View
             style={[
               styles.scanLine,
               {
+                backgroundColor: getScanColor(),
+                shadowColor: getScanColor(),
                 transform: [
                   {
-                    translateY: scanLinePosition.interpolate({
+                    translateY: scanLineValue.interpolate({
                       inputRange: [0, 1],
-                      outputRange: [0, 280],
+                      outputRange: [-2, SCAN_FRAME_SIZE - 2],
                     }),
                   },
                 ],
-                opacity: glowAnimation.interpolate({
-                  inputRange: [0, 0.5, 1],
-                  outputRange: [0.3, 1, 0.3],
+                opacity: scanLineValue.interpolate({
+                  inputRange: [0, 0.1, 0.9, 1],
+                  outputRange: [0, 1, 1, 0],
                 }),
               },
             ]}
-          >
-            <View style={styles.scanLineGlow} />
-          </Animated.View>
+          />
         )}
 
-        {/* Progress indicator */}
+        {/* Progress Indicator */}
         {scanProgress > 0 && (
           <View style={styles.progressContainer}>
             <Animated.View
               style={[
                 styles.progressBar,
                 {
-                  width: progressAnimation.interpolate({
+                  backgroundColor: getScanColor(),
+                  width: progressValue.interpolate({
                     inputRange: [0, 1],
                     outputRange: ['0%', '100%'],
                   }),
@@ -206,19 +235,46 @@ export default function ARScanningOverlay({
           </View>
         )}
 
-        {/* Glow effect */}
-        {isScanning && (
+        {/* Center Target */}
+        <View style={styles.centerTarget}>
+          <View style={[styles.targetDot, { backgroundColor: getScanColor() }]} />
           <Animated.View
             style={[
-              styles.glowEffect,
+              styles.targetRing,
               {
-                opacity: glowAnimation.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0, 0.3],
+                borderColor: getScanColor(),
+                transform: [
+                  {
+                    scale: pulseValue.interpolate({
+                      inputRange: [1, 1.05],
+                      outputRange: [1, 1.2],
+                    }),
+                  },
+                ],
+                opacity: pulseValue.interpolate({
+                  inputRange: [1, 1.05],
+                  outputRange: [0.8, 0.3],
                 }),
               },
             ]}
           />
+        </View>
+      </Animated.View>
+
+      {/* Status Text */}
+      <View style={styles.statusContainer}>
+        <Text style={styles.statusText}>
+          {isScanning
+            ? isBarcodeMode
+              ? 'Scanning barcode...'
+              : 'Analyzing food...'
+            : isBarcodeMode
+            ? 'Position barcode in frame'
+            : 'Position food in frame'
+          }
+        </Text>
+        {scanProgress > 0 && (
+          <Text style={styles.progressText}>{Math.round(scanProgress)}%</Text>
         )}
       </View>
     </View>
@@ -234,45 +290,60 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 10,
+    zIndex: 100,
+  },
+  gridOverlay: {
+    position: 'absolute',
+    width: SCAN_FRAME_SIZE,
+    height: SCAN_FRAME_SIZE,
+  },
+  gridLine: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  horizontalLine: {
+    width: '100%',
+    height: 1,
+  },
+  verticalLine: {
+    height: '100%',
+    width: 1,
   },
   scanFrame: {
-    width: 280,
-    height: 280,
+    width: SCAN_FRAME_SIZE,
+    height: SCAN_FRAME_SIZE,
     position: 'relative',
-    borderRadius: 24,
   },
   scanCorner: {
     position: 'absolute',
-    width: 50,
-    height: 50,
-    borderColor: Colors.primary,
+    width: 40,
+    height: 40,
     borderWidth: 4,
   },
   scanCornerTL: {
-    top: -2,
-    left: -2,
+    top: 0,
+    left: 0,
     borderRightWidth: 0,
     borderBottomWidth: 0,
     borderTopLeftRadius: 24,
   },
   scanCornerTR: {
-    top: -2,
-    right: -2,
+    top: 0,
+    right: 0,
     borderLeftWidth: 0,
     borderBottomWidth: 0,
     borderTopRightRadius: 24,
   },
   scanCornerBL: {
-    bottom: -2,
-    left: -2,
+    bottom: 0,
+    left: 0,
     borderRightWidth: 0,
     borderTopWidth: 0,
     borderBottomLeftRadius: 24,
   },
   scanCornerBR: {
-    bottom: -2,
-    right: -2,
+    bottom: 0,
+    right: 0,
     borderLeftWidth: 0,
     borderTopWidth: 0,
     borderBottomRightRadius: 24,
@@ -282,58 +353,68 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
-    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
     shadowRadius: 8,
-    elevation: 8,
-  },
-  scanLineGlow: {
-    position: 'absolute',
-    top: -10,
-    left: -20,
-    right: -20,
-    height: 23,
-    backgroundColor: Colors.primary,
-    opacity: 0.2,
-    borderRadius: 12,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 15,
+    elevation: 5,
   },
   progressContainer: {
     position: 'absolute',
-    bottom: -20,
+    bottom: -30,
     left: 0,
     right: 0,
     height: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 2,
+    overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    backgroundColor: Colors.primary,
     borderRadius: 2,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
   },
-  glowEffect: {
+  centerTarget: {
     position: 'absolute',
-    top: -10,
-    left: -10,
-    right: -10,
-    bottom: -10,
-    borderRadius: 34,
+    top: '50%',
+    left: '50%',
+    transform: [{ translateX: -10 }, { translateY: -10 }],
+    width: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  targetDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+  },
+  targetRing: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 2,
-    borderColor: Colors.primary,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 20,
+  },
+  statusContainer: {
+    position: 'absolute',
+    bottom: -80,
+    alignItems: 'center',
+  },
+  statusText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: '500',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
+  progressText: {
+    color: Colors.white,
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 4,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });
