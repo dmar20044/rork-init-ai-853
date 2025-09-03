@@ -118,6 +118,7 @@ export default function AskInItScreen() {
   const typingDotsAnim = useRef(new Animated.Value(0)).current;
   const voiceModeExpandAnim = useRef(new Animated.Value(0)).current;
   const voiceModeBubbleAnim = useRef(new Animated.Value(0)).current;
+  const backgroundExpandAnim = useRef(new Animated.Value(0)).current;
   const soundWaveAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
   const micRotationAnim = useRef(new Animated.Value(0)).current;
   const [showCheckmark, setShowCheckmark] = useState(false);
@@ -895,6 +896,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         useNativeDriver: true,
       }).start();
       
+      // Collapse background
+      Animated.timing(backgroundExpandAnim, {
+        toValue: 0,
+        duration: 400,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+      
       Animated.timing(voiceModeBubbleAnim, {
         toValue: 0,
         duration: 300,
@@ -906,6 +915,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
+      
+      // Start background expansion from microphone
+      Animated.timing(backgroundExpandAnim, {
+        toValue: 1,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
       
       // Start microphone to checkmark rotation animation
       Animated.timing(micRotationAnim, {
@@ -1043,6 +1060,29 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 )}
               </Animated.View>
             </TouchableOpacity>
+            
+            {/* Background Expansion Animation */}
+            {isVoiceModeActive && (
+              <Animated.View 
+                style={[
+                  styles.voiceBackgroundExpansion,
+                  {
+                    transform: [
+                      {
+                        scale: backgroundExpandAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 20],
+                        }),
+                      },
+                    ],
+                    opacity: backgroundExpandAnim.interpolate({
+                      inputRange: [0, 0.2, 1],
+                      outputRange: [0, 0.7, 0.85],
+                    }),
+                  },
+                ]}
+              />
+            )}
             
             {/* Inline Voice Mode Interface */}
             {isVoiceModeActive && (
@@ -2960,10 +3000,25 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   
+  // Voice Background Expansion
+  voiceBackgroundExpansion: {
+    position: 'absolute',
+    top: '50%',
+    left: '85%',
+    width: 28,
+    height: 28,
+    marginTop: -14,
+    marginLeft: -14,
+    backgroundColor: Colors.retroNeonTurquoise,
+    borderRadius: 1000,
+    zIndex: 0,
+  },
+  
   // Inline Voice Mode Styles
   inlineVoiceModeContainer: {
     marginTop: 16,
     alignItems: 'center',
+    zIndex: 1,
   },
   inlineVoiceBubble: {
     backgroundColor: Colors.white,
