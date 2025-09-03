@@ -17,6 +17,7 @@ import {
   Animated,
   Easing,
 } from "react-native";
+import * as Haptics from 'expo-haptics';
 import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic, Check } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
@@ -885,6 +886,11 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   const handleVoiceModeToggle = () => {
+    // Heavy haptic feedback when button is pressed
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    }
+    
     if (isVoiceModeActive) {
       // Close voice mode
       stopSoundWaveAnimation();
