@@ -73,8 +73,7 @@ interface QuickQuestion {
 const suggestionChips = [
   "Dinner Ideas",
   "Quick Snacks", 
-  "Meal Prep",
-  "Post-Workout"
+  "Meal Prep"
 ];
 
 export default function AskInItScreen() {
