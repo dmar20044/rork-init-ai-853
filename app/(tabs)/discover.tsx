@@ -1067,7 +1067,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
             {profile.hasCompletedQuiz && (
               <View style={[styles.retroPersonalizationPill, { backgroundColor: Colors.retroNeonTurquoise }]}>
                 <Heart size={12} color={Colors.white} />
-                <Text style={[styles.retroPersonalizationText, { color: Colors.white }]}>Personalized for {getPersonalizationText()}</Text>
+                <Text style={[styles.retroPersonalizationText, { color: Colors.white }]}>Personalized for your goals</Text>
               </View>
             )}
             
