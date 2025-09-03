@@ -19,7 +19,7 @@ import {
   Image,
 } from "react-native";
 import * as Haptics from 'expo-haptics';
-import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic, Check } from "lucide-react-native";
+import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic, Check } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
