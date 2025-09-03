@@ -23,8 +23,6 @@ import { useScanHistory } from "@/contexts/ScanHistoryContext";
 import { useUser } from "@/contexts/UserContext";
 import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
-import ARScanningOverlay from "@/components/ARScanningOverlay";
-import ParticleEffects from "@/components/ParticleEffects";
 
 export default function ScannerScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -42,8 +40,6 @@ export default function ScannerScreen() {
   const [scanCooldown, setScanCooldown] = useState(false);
   const [apiStatus, setApiStatus] = useState<{ aiAPI: boolean; openFoodFacts: boolean } | null>(null);
   const [showApiTest, setShowApiTest] = useState(false);
-  const [showParticleEffect, setShowParticleEffect] = useState(false);
-  const [particleEffectType, setParticleEffectType] = useState<'confetti' | 'shake' | 'sparkle' | 'burst' | 'glow' | 'warning' | 'none'>('none');
   const cameraRef = useRef<CameraView>(null);
   const { addToHistory } = useScanHistory();
   const { profile, updateScanStreak } = useUser();
@@ -174,9 +170,6 @@ export default function ScannerScreen() {
               console.error('Error updating scan streak:', streakError);
             }
           }
-          
-          // Trigger particle effect based on nutrition score
-          triggerParticleEffect(nutritionData.healthScore || 0);
           
           // Live barcode scan completed successfully - the LoadingScreen onComplete will handle UI transition
           console.log('Live barcode scan completed successfully, waiting for LoadingScreen onComplete');
@@ -387,9 +380,6 @@ export default function ScannerScreen() {
               }
             }
             
-            // Trigger particle effect based on nutrition score
-            triggerParticleEffect(nutritionData.healthScore || 0);
-            
             // Barcode scan from image completed successfully - the LoadingScreen onComplete will handle UI transition
             console.log('Barcode scan from image completed successfully, waiting for LoadingScreen onComplete');
           } else {
@@ -462,9 +452,6 @@ export default function ScannerScreen() {
             }
           }
           
-          // Trigger particle effect based on nutrition score
-          triggerParticleEffect(result.data.healthScore || 0);
-          
           // AI analysis completed successfully - the LoadingScreen onComplete will handle UI transition
           console.log('AI analysis completed successfully, waiting for LoadingScreen onComplete');
         } else {
@@ -486,31 +473,6 @@ export default function ScannerScreen() {
     }
   };
 
-  const triggerParticleEffect = (healthScore: number) => {
-    let effectType: typeof particleEffectType = 'none';
-    
-    if (healthScore >= 80) {
-      effectType = 'confetti';
-    } else if (healthScore >= 60) {
-      effectType = 'sparkle';
-    } else if (healthScore >= 40) {
-      effectType = 'glow';
-    } else if (healthScore >= 20) {
-      effectType = 'warning';
-    } else {
-      effectType = 'shake';
-    }
-    
-    setParticleEffectType(effectType);
-    setShowParticleEffect(true);
-    
-    // Reset after animation
-    setTimeout(() => {
-      setShowParticleEffect(false);
-      setParticleEffectType('none');
-    }, 3000);
-  };
-
   const handleScanAnother = () => {
     setCapturedImage(null);
     setNutritionData(null);
@@ -521,8 +483,6 @@ export default function ScannerScreen() {
     setIsBarcodeMode(false); // Reset barcode mode
     setLastScannedBarcode(null); // Reset last scanned barcode
     setScanCooldown(false); // Reset cooldown
-    setShowParticleEffect(false);
-    setParticleEffectType('none');
   };
 
   const handleSaveToHistory = async () => {
@@ -661,12 +621,12 @@ export default function ScannerScreen() {
                 </View>
               )}
               
-              {/* AR Scanning Overlay */}
-              <ARScanningOverlay
-                isScanning={isScanning || isProcessing}
-                isBarcodeMode={isBarcodeMode}
-                scanProgress={scanProgress}
-              />
+              <View style={styles.scanFrame}>
+                <View style={[styles.scanCorner, styles.scanCornerTL]} />
+                <View style={[styles.scanCorner, styles.scanCornerTR]} />
+                <View style={[styles.scanCorner, styles.scanCornerBL]} />
+                <View style={[styles.scanCorner, styles.scanCornerBR]} />
+              </View>
               
               <Text style={styles.scanHint}>
                 {isBarcodeMode ? (isScanning ? 'Scanning...' : 'Position barcode within frame - automatic detection') : 'Position food item within frame'}
@@ -675,6 +635,12 @@ export default function ScannerScreen() {
               {analysisError && isBarcodeMode && (
                 <View style={styles.errorBanner}>
                   <Text style={styles.errorBannerText}>{analysisError}</Text>
+                </View>
+              )}
+              
+              {isBarcodeMode && (
+                <View style={styles.scanningIndicator}>
+                  <View style={[styles.scanningLine, isScanning && styles.scanningLineActive]} />
                 </View>
               )}
               
@@ -740,17 +706,6 @@ export default function ScannerScreen() {
             </View>
           </View>
         </CameraView>
-        
-        {/* Particle Effects Overlay */}
-        <ParticleEffects
-          type={particleEffectType}
-          trigger={showParticleEffect}
-          nutritionScore={nutritionData?.healthScore || nutritionData?.personalScore || 50}
-          onComplete={() => {
-            setShowParticleEffect(false);
-            setParticleEffectType('none');
-          }}
-        />
         
         {capturedImage && (
           <SafeAreaView style={styles.resultOverlay}>
