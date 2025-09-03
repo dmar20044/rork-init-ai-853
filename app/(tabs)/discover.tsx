@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -106,6 +106,8 @@ export default function AskInItScreen() {
   const [expandedMessages, setExpandedMessages] = useState<Set<string>>(new Set());
   const [isGeneratingRecipe, setIsGeneratingRecipe] = useState(false);
   const [isVoiceModeActive, setIsVoiceModeActive] = useState(false);
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [transcript, setTranscript] = useState<string>("");
   const scrollViewRef = useRef<ScrollView>(null);
   const textInputRef = useRef<TextInput>(null);
   
@@ -117,6 +119,7 @@ export default function AskInItScreen() {
   const rippleAnim = useRef(new Animated.Value(0)).current;
   const typingDotsAnim = useRef(new Animated.Value(0)).current;
   const voiceModeExpandAnim = useRef(new Animated.Value(0)).current;
+  const recognitionRef = useRef<any>(null);
   const voiceModeBubbleAnim = useRef(new Animated.Value(0)).current;
   const soundWaveAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
 
@@ -446,6 +449,10 @@ Rules:
       }
 
       const data = await response.json();
+      if (Platform.OS === 'web') {
+        const toSpeak = String(data.completion ?? '').slice(0, 600);
+        speakWeb(toSpeak);
+      }
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -879,10 +886,94 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     soundWaveAnims.forEach(anim => anim.stopAnimation());
   };
 
+  const stopWebSpeech = useCallback(() => {
+    try {
+      if (Platform.OS === 'web') {
+        const synth: any = (globalThis as any).speechSynthesis;
+        if (synth?.speaking) synth.cancel();
+        const rec = recognitionRef.current;
+        if (rec) {
+          rec.onresult = null;
+          rec.onend = null;
+          rec.onerror = null;
+          try { rec.stop?.(); } catch (e) {}
+        }
+      }
+    } catch (e) {
+      console.log('stopWebSpeech error', e);
+    }
+  }, []);
+
+  const startListeningWeb = useCallback(() => {
+    if (Platform.OS !== 'web') return;
+    try {
+      const W: any = globalThis as any;
+      const Recognition = W.SpeechRecognition || W.webkitSpeechRecognition;
+      if (!Recognition) {
+        Alert.alert('Voice not available', 'Web Speech API not supported in this browser.');
+        return;
+      }
+      const rec = new Recognition();
+      recognitionRef.current = rec;
+      rec.lang = 'en-US';
+      rec.interimResults = true;
+      rec.continuous = true;
+      rec.onresult = (event: any) => {
+        let finalText = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const res = event.results[i];
+          if (res.isFinal) finalText += res[0].transcript;
+          else setTranscript(res[0].transcript);
+        }
+        if (finalText) {
+          const text = (transcript + ' ' + finalText).trim();
+          setTranscript(text);
+        }
+      };
+      rec.onend = () => {
+        setIsListening(false);
+        const final = transcript.trim();
+        if (final.length > 0) {
+          setIsVoiceModeActive(false);
+          setTimeout(() => sendMessage(final), 10);
+        }
+      };
+      rec.onerror = (e: any) => {
+        console.log('Speech error', e);
+        setIsListening(false);
+        Alert.alert('Voice error', 'Microphone permission or recognition failed.');
+      };
+      setTranscript('');
+      setIsListening(true);
+      rec.start();
+    } catch (e) {
+      console.log('startListeningWeb error', e);
+      setIsListening(false);
+    }
+  }, [sendMessage, transcript]);
+
+  const speakWeb = useCallback((text: string) => {
+    if (Platform.OS !== 'web') return;
+    try {
+      const synth: any = (globalThis as any).speechSynthesis;
+      const Utter: any = (globalThis as any).SpeechSynthesisUtterance || (globalThis as any).webkitSpeechSynthesisUtterance;
+      if (!synth || !Utter) return;
+      const u = new Utter(text);
+      u.lang = 'en-US';
+      u.rate = 1;
+      u.pitch = 1;
+      synth.speak(u);
+    } catch (e) {
+      console.log('speakWeb error', e);
+    }
+  }, []);
+
   const handleVoiceModeToggle = () => {
     if (isVoiceModeActive) {
       // Close voice mode
       stopSoundWaveAnimation();
+      stopWebSpeech();
+      setIsListening(false);
       Animated.parallel([
         Animated.timing(voiceModeExpandAnim, {
           toValue: 0,
@@ -1559,10 +1650,25 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   <View style={styles.voiceBubbleIcon}>
                     <Mic size={32} color={'#FF3B30'} />
                   </View>
-                  <Text style={styles.voiceBubbleTitle}>Listening...</Text>
-                  <Text style={styles.voiceBubbleSubtitle}>Ask me anything about nutrition</Text>
+                  <Text style={styles.voiceBubbleTitle}>{isListening ? 'Listening...' : 'Tap to speak'}</Text>
+                  <Text style={styles.voiceBubbleSubtitle}>{transcript ? transcript : 'Ask me anything about nutrition'}</Text>
                   
                   {/* Animated Sound Waves */}
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (Platform.OS === 'web') {
+                        if (isListening) {
+                          try { recognitionRef.current?.stop?.(); } catch (e) {}
+                        } else {
+                          startListeningWeb();
+                        }
+                      } else {
+                        Alert.alert('Voice not available', 'Voice conversation requires a custom build. Use text on mobile preview.');
+                      }
+                    }}
+                    activeOpacity={0.9}
+                    testID="voice-toggle"
+                  >
                   <View style={styles.soundWavesContainer}>
                     {soundWaveAnims.map((anim, index) => (
                       <Animated.View
@@ -1591,6 +1697,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                       />
                     ))}
                   </View>
+                  </TouchableOpacity>
                 </View>
               </Animated.View>
               
@@ -1606,7 +1713,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   },
                 ]}
               >
-                <Text style={styles.voiceInstructionText}>Tap to speak, or say "Hey InIt" to start</Text>
+                <Text style={styles.voiceInstructionText}>{Platform.OS === 'web' ? 'Tap to speak' : 'Voice not supported in Expo Go. Use text input.'}</Text>
               </Animated.View>
             </SafeAreaView>
           </Animated.View>
