@@ -899,8 +899,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       // Reset bubble expand animation
       Animated.timing(bubbleExpandAnim, {
         toValue: 0,
-        duration: 300,
-        easing: Easing.inOut(Easing.cubic),
+        duration: 400,
+        easing: Easing.in(Easing.back(1.2)),
         useNativeDriver: false,
       }).start();
       
@@ -919,8 +919,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       // Start bubble expand animation from microphone
       Animated.timing(bubbleExpandAnim, {
         toValue: 1,
-        duration: 400,
-        easing: Easing.out(Easing.cubic),
+        duration: 600,
+        easing: Easing.out(Easing.back(1.1)),
         useNativeDriver: false,
       }).start();
       
@@ -1044,15 +1044,21 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                     backgroundColor: Colors.retroNeonTurquoise,
                     transform: [
                       {
-                        scale: bubbleExpandAnim.interpolate({
+                        scaleX: bubbleExpandAnim.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [0, 1],
+                          outputRange: [1, 12], // Scale to cover the entire bubble width
+                        }),
+                      },
+                      {
+                        scaleY: bubbleExpandAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.8], // Scale to cover the entire bubble height
                         }),
                       },
                     ],
                     opacity: bubbleExpandAnim.interpolate({
-                      inputRange: [0, 0.5, 1],
-                      outputRange: [0, 0.8, 1],
+                      inputRange: [0, 0.3, 1],
+                      outputRange: [0, 0.9, 1],
                     }),
                   },
                 ]}
@@ -2765,12 +2771,11 @@ const styles = StyleSheet.create({
   },
   retroBubbleExpandingBackground: {
     position: 'absolute',
-    top: 0,
+    top: 6, // Center vertically in the bubble
     right: 14, // Position it at the microphone location
     width: 28,
     height: 28,
     borderRadius: 25,
-    transformOrigin: 'center',
   },
   retroConversationText: {
     fontSize: 14,
