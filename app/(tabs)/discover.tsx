@@ -121,7 +121,9 @@ export default function AskInItScreen() {
   const soundWaveAnims = useRef([...Array(5)].map(() => new Animated.Value(0))).current;
   const micRotationAnim = useRef(new Animated.Value(0)).current;
   const bubbleExpandAnim = useRef(new Animated.Value(0)).current;
+  const textFadeAnim = useRef(new Animated.Value(1)).current;
   const [showCheckmark, setShowCheckmark] = useState(false);
+  const [buttonText, setButtonText] = useState("Talk to InIt");
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -888,6 +890,22 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       stopSoundWaveAnimation();
       setShowCheckmark(false);
       
+      // Fade text back to "Talk to InIt"
+      Animated.timing(textFadeAnim, {
+        toValue: 0,
+        duration: 200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        setButtonText("Talk to InIt");
+        Animated.timing(textFadeAnim, {
+          toValue: 1,
+          duration: 200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      });
+      
       // Reset rotation animation
       Animated.timing(micRotationAnim, {
         toValue: 0,
@@ -915,6 +933,22 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
+      
+      // Fade text to "InIt is listening"
+      Animated.timing(textFadeAnim, {
+        toValue: 0,
+        duration: 200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        setButtonText("InIt is listening");
+        Animated.timing(textFadeAnim, {
+          toValue: 1,
+          duration: 200,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      });
       
       // Start bubble expand animation from microphone
       Animated.timing(bubbleExpandAnim, {
@@ -1063,7 +1097,17 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   },
                 ]}
               />
-              <Text style={[styles.retroConversationText, { color: Colors.white }]}>Talk to InIt</Text>
+              <Animated.Text 
+                style={[
+                  styles.retroConversationText, 
+                  { 
+                    color: Colors.white,
+                    opacity: textFadeAnim,
+                  }
+                ]}
+              >
+                {buttonText}
+              </Animated.Text>
               <Animated.View 
                 style={[
                   styles.retroMicrophoneCircle, 
