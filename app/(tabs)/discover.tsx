@@ -16,6 +16,7 @@ import {
   Modal,
   Animated,
   Easing,
+  Image,
 } from "react-native";
 import * as Haptics from 'expo-haptics';
 import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic, Check } from "lucide-react-native";
@@ -1213,6 +1214,15 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         >
           {messages.length === 0 && (
             <View style={styles.retroQuickQuestionsSection}>
+              {/* Empty State with Coach Image */}
+              <View style={styles.emptyStateContainer}>
+                <Image 
+                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/i7mipb6o63izj4v1ql36g' }}
+                  style={styles.coachImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.coachText}>I'm your personal nutrition coach</Text>
+              </View>
 
               <View style={styles.retroQuestionsGrid}>
                 {quickQuestions.map((question, index) => {
@@ -3122,5 +3132,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30',
     borderRadius: 1,
     minHeight: 2,
+  },
+  
+  // Empty State Styles
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+    paddingVertical: 20,
+  },
+  coachImage: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+  },
+  coachText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.retroCharcoalBlack,
+    textAlign: 'center',
+    letterSpacing: -0.2,
   },
 });
