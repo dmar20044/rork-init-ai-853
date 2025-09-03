@@ -1220,7 +1220,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   style={styles.coachImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.coachText}>I'm your personal nutrition coach</Text>
+                <Text style={styles.coachText}>I'm InIt, your personal nutrition coach</Text>
               </View>
 
               <View style={styles.retroQuestionsGrid}>
