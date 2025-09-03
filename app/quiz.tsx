@@ -1848,7 +1848,7 @@ const styles = StyleSheet.create({
   },
   welcomeContent: {
     flex: 1,
-    backgroundColor: Colors.retroCharcoalBlack,
+    backgroundColor: Colors.background,
   },
   cameraBackground: {
     flex: 1,
@@ -2020,7 +2020,7 @@ const styles = StyleSheet.create({
   brandText: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: Colors.retroNeonTurquoise,
+    color: Colors.primary,
     textAlign: 'center',
     marginBottom: 20,
   },
@@ -2037,7 +2037,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   welcomeTextContainer: {
-    backgroundColor: Colors.retroCreamWhite,
+    backgroundColor: 'white',
     paddingHorizontal: 30,
     paddingTop: 40,
     paddingBottom: 50,
@@ -2047,19 +2047,19 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: Colors.retroCharcoalBlack,
+    color: '#000',
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 38,
   },
   getStartedButton: {
-    backgroundColor: Colors.retroNeonTurquoise,
+    backgroundColor: Colors.primary,
     paddingVertical: 18,
     borderRadius: 25,
     marginBottom: 20,
   },
   getStartedButtonText: {
-    color: Colors.white,
+    color: 'white',
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
@@ -2068,7 +2068,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   signInButtonText: {
-    color: Colors.retroSlateGray,
+    color: '#666',
     fontSize: 16,
     textAlign: 'center',
   },
