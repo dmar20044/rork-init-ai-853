@@ -1129,7 +1129,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#FDFDFD', // Cream White
   },
   scrollView: {
     flex: 1,
@@ -1144,6 +1144,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
+    backgroundColor: '#FDFDFD', // Cream White
+    borderBottomColor: '#D9D9D9', // Soft Gray
   },
   backButton: {
     width: 40,
@@ -1151,17 +1153,19 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#D9D9D9' + '30', // Soft Gray with opacity
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    color: '#1E1E1E', // Charcoal Black
   },
   headerSpacer: {
     width: 40,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#FDFDFD', // Cream White
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -1200,24 +1204,26 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   shimmerCard: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
     width: '100%',
     maxWidth: 350,
-    shadowColor: Colors.shadow,
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     zIndex: 10,
+    borderWidth: 1,
+    borderColor: '#2E294E20', // Deep Indigo with opacity
   },
   shimmerCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: Colors.gray100,
+    backgroundColor: '#D9D9D9', // Soft Gray
     marginBottom: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1227,11 +1233,11 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
   },
   loadingText: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -1241,7 +1247,7 @@ const styles = StyleSheet.create({
   },
   shimmerBar: {
     height: 12,
-    backgroundColor: Colors.gray100,
+    backgroundColor: '#D9D9D9', // Soft Gray
     borderRadius: 6,
   },
   loadingIcons: {
@@ -1262,20 +1268,20 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     width: '100%',
     height: 8,
-    backgroundColor: Colors.gray200,
+    backgroundColor: '#D9D9D9', // Soft Gray
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
     borderRadius: 4,
   },
   progressText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.primary,
+    color: '#4ECDC4', // Neon Turquoise
   },
   cardContainer: {
     flex: 1,
@@ -1286,11 +1292,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    backgroundColor: '#FDFDFD', // Cream White
+    shadowColor: '#D9D9D9', // Soft Gray
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#2E294E15', // Deep Indigo with opacity
   },
   productHeader: {
     flexDirection: 'row',
@@ -1321,11 +1330,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4,
     lineHeight: 24,
+    color: '#1E1E1E', // Charcoal Black
   },
   servingSize: {
     fontSize: 14,
     marginBottom: 12,
     fontStyle: 'italic',
+    color: '#5F5F5F', // Slate Gray
   },
   scoreSection: {
     alignItems: 'center',
@@ -1360,7 +1371,7 @@ const styles = StyleSheet.create({
   
   scoreOutOf: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     marginTop: -4,
   },
   
@@ -1377,6 +1388,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 8,
     fontWeight: '500',
+    color: '#5F5F5F', // Slate Gray
   },
   
   comparisonContainer: {
@@ -1411,17 +1423,18 @@ const styles = StyleSheet.create({
   baseScoreValue: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#1E1E1E', // Charcoal Black
   },
   
   personalScoreChip: {
-    backgroundColor: Colors.primary + '15',
+    backgroundColor: '#4ECDC4' + '15', // Neon Turquoise with opacity
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: 'center',
     minWidth: 80,
     borderWidth: 1,
-    borderColor: Colors.primary + '30',
+    borderColor: '#4ECDC4' + '30', // Neon Turquoise with opacity
   },
   
   personalScoreLabel: {
@@ -1430,11 +1443,13 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.5,
     marginBottom: 2,
+    color: '#4ECDC4', // Neon Turquoise
   },
   
   personalScoreValue: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#4ECDC4', // Neon Turquoise
   },
   
   deltaContainer: {
@@ -1485,7 +1500,7 @@ const styles = StyleSheet.create({
   
   resultMessage: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: '#5F5F5F', // Slate Gray
     textAlign: 'center',
     lineHeight: 22,
     flex: 1,
@@ -1496,11 +1511,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 16,
     padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    backgroundColor: '#FDFDFD', // Cream White
+    shadowColor: '#D9D9D9', // Soft Gray
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+    borderWidth: 1,
+    borderColor: '#2E294E15', // Deep Indigo with opacity
   },
   
   cardHeader: {
@@ -1521,6 +1539,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginLeft: 8,
+    color: '#1E1E1E', // Charcoal Black
   },
   
 
@@ -1649,19 +1668,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: Colors.primary,
+    backgroundColor: '#4ECDC4', // Neon Turquoise
   },
   secondaryButton: {
-    backgroundColor: Colors.surface,
+    backgroundColor: '#FDFDFD', // Cream White
     borderWidth: 2,
-    borderColor: Colors.primary,
+    borderColor: '#4ECDC4', // Neon Turquoise
   },
   primaryButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FDFDFD', // Cream White
   },
   secondaryButtonText: {
-    color: Colors.primary,
+    color: '#4ECDC4', // Neon Turquoise
     fontSize: 16,
     fontWeight: '600',
   },
@@ -1702,6 +1722,7 @@ const styles = StyleSheet.create({
   loadingIngredientsText: {
     fontSize: 14,
     fontStyle: 'italic',
+    color: '#5F5F5F', // Slate Gray
   },
   
   ingredientsScrollView: {
@@ -1714,11 +1735,11 @@ const styles = StyleSheet.create({
   },
   
   ingredientItem: {
-    backgroundColor: Colors.gray50,
+    backgroundColor: '#D9D9D9' + '20', // Soft Gray with opacity
     borderRadius: 12,
     padding: 16,
     borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
+    borderLeftColor: '#4ECDC4', // Neon Turquoise
   },
   
   ingredientHeader: {
@@ -1739,13 +1760,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
     textTransform: 'capitalize',
+    color: '#1E1E1E', // Charcoal Black
   },
   
   ingredientDetails: {
     marginTop: 12,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.gray200,
+    borderTopColor: '#D9D9D9', // Soft Gray
   },
   
   ingredientDescription: {
@@ -1758,6 +1780,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontStyle: 'italic',
     lineHeight: 16,
+    color: '#5F5F5F', // Slate Gray
   },
   
   noIngredientsText: {
@@ -1765,6 +1788,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 20,
     fontStyle: 'italic',
+    color: '#5F5F5F', // Slate Gray
   },
   
   // For You Analysis Styles
@@ -1776,6 +1800,7 @@ const styles = StyleSheet.create({
   loadingAnalysisText: {
     fontSize: 14,
     fontStyle: 'italic',
+    color: '#5F5F5F', // Slate Gray
   },
   
   analysisContent: {
@@ -1786,6 +1811,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'left',
+    color: '#1E1E1E', // Charcoal Black
   },
   
   // Macro Breakdown Styles
@@ -1805,6 +1831,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: '#4ECDC4', // Neon Turquoise
   },
   
   macroLabel: {
@@ -1812,12 +1839,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+    color: '#5F5F5F', // Slate Gray
   },
   
   macroSecondaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: Colors.gray50,
+    backgroundColor: '#D9D9D9' + '30', // Soft Gray with opacity
     borderRadius: 12,
     padding: 16,
     paddingHorizontal: 8,
@@ -1832,12 +1860,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
+    color: '#1E1E1E', // Charcoal Black
   },
   
   macroSecondaryLabel: {
     fontSize: 11,
     fontWeight: '500',
     textAlign: 'center',
+    color: '#5F5F5F', // Slate Gray
   },
   personalReasonsHeader: {
     flexDirection: 'row',
