@@ -921,8 +921,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               <Text style={[styles.retroMagazineTitle, { color: Colors.retroCharcoalBlack }]}>Ask InIt</Text>
               <View style={[styles.retroSubtitleDivider, { backgroundColor: Colors.retroPink }]} />
             </View>
-            <Text style={[styles.retroMagazineSubtitle, { color: Colors.retroSlateGray }]}>Your Personal Wellness Editor</Text>
-            <Text style={[styles.retroTagline, { color: Colors.retroSlateGray }]}>Curated nutrition insights, just for you</Text>
+
             {profile.hasCompletedQuiz && (
               <View style={[styles.retroPersonalizationPill, { backgroundColor: Colors.retroNeonTurquoise }]}>
                 <Heart size={12} color={Colors.white} />
@@ -941,10 +940,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         >
           {messages.length === 0 && (
             <View style={styles.retroQuickQuestionsSection}>
-              <View style={styles.retroSectionHeader}>
-                <Text style={[styles.retroSectionTitle, { color: Colors.retroCharcoalBlack }]}>Featured Articles</Text>
-                <View style={[styles.retroSectionUnderline, { backgroundColor: Colors.retroPink }]} />
-              </View>
+
               <View style={styles.retroQuestionsGrid}>
                 {quickQuestions.map((question, index) => {
                   const techColors = [Colors.retroNeonTurquoise, Colors.retroPink, Colors.retroDeepIndigo];
