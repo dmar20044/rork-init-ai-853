@@ -118,6 +118,8 @@ export interface Database {
           life_goal: string;
           motivation: string;
           referral_source: string;
+          dietary_restrictions: any;
+          dietary_preferences: any;
           created_at: string;
         };
         Insert: {
@@ -130,6 +132,8 @@ export interface Database {
           life_goal: string;
           motivation: string;
           referral_source: string;
+          dietary_restrictions?: any;
+          dietary_preferences?: any;
           created_at?: string;
         };
         Update: {
@@ -142,6 +146,8 @@ export interface Database {
           life_goal?: string;
           motivation?: string;
           referral_source?: string;
+          dietary_restrictions?: any;
+          dietary_preferences?: any;
           created_at?: string;
         };
       };
@@ -330,7 +336,8 @@ export const saveQuizResponse = async (userId: string, quizData: any) => {
     dietGoal: quizData.goals.dietGoal,
     lifeGoal: quizData.goals.lifeGoal,
     motivation: quizData.goals.motivation,
-    referralSource: quizData.referralSource || 'unknown'
+    referralSource: quizData.referralSource || 'unknown',
+    dietaryRestrictions: quizData.dietaryRestrictions || []
   });
   
   const insertData = {
@@ -342,6 +349,8 @@ export const saveQuizResponse = async (userId: string, quizData: any) => {
     life_goal: quizData.goals.lifeGoal,
     motivation: quizData.goals.motivation,
     referral_source: quizData.referralSource || 'unknown',
+    dietary_restrictions: quizData.dietaryRestrictions || [],
+    dietary_preferences: [], // Empty for now, can be expanded later
   };
   
   console.log('[Supabase] Inserting quiz response data:', insertData);

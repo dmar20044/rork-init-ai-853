@@ -184,7 +184,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
                 lifeGoal: supabaseProfile.life_goal as any,
               },
               hasCompletedQuiz: supabaseProfile.has_completed_quiz,
-
+              dietaryRestrictions: supabaseProfile.dietary_restrictions || [],
               currentStreak: supabaseProfile.current_streak || 0,
               longestStreak: supabaseProfile.longest_streak || 0,
               lastScanDate: supabaseProfile.last_scan_date || null,
@@ -289,7 +289,11 @@ export const [UserProvider, useUser] = createContextHook(() => {
           if (updates.goals.healthGoal !== undefined) supabaseUpdates.health_goal = updates.goals.healthGoal;
           if (updates.goals.dietGoal !== undefined) supabaseUpdates.diet_goal = updates.goals.dietGoal;
           if (updates.goals.lifeGoal !== undefined) supabaseUpdates.life_goal = updates.goals.lifeGoal;
-
+        }
+        
+        // Handle dietary restrictions
+        if (updates.dietaryRestrictions !== undefined) {
+          supabaseUpdates.dietary_restrictions = updates.dietaryRestrictions;
         }
         
         if (Object.keys(supabaseUpdates).length > 0) {
@@ -361,6 +365,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
     name: string;
     goals: UserGoals;
     referralSource?: string | null;
+    dietaryRestrictions?: string[];
   }) => {
     console.log('[UserContext] ===== STARTING QUIZ COMPLETION =====');
     console.log('[UserContext] Quiz data received:', {
@@ -397,6 +402,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
       email: userEmail,
       goals: quizData.goals,
       hasCompletedQuiz: true,
+      dietaryRestrictions: quizData.dietaryRestrictions || profile.dietaryRestrictions || [],
     };
     
     console.log('[UserContext] Updating local profile with:', updatedLocalProfile);
@@ -441,7 +447,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
         email: user.email || '',
         goals: quizData.goals,
         hasCompletedQuiz: true,
-
+        dietaryRestrictions: quizData.dietaryRestrictions || profile.dietaryRestrictions || [],
       };
       
       console.log('[UserContext] Profile data for database:', {
@@ -466,6 +472,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
           diet_goal: profileData.goals.dietGoal,
           life_goal: profileData.goals.lifeGoal,
           has_completed_quiz: profileData.hasCompletedQuiz,
+          dietary_restrictions: profileData.dietaryRestrictions,
         });
         console.log('[UserContext] ✅ Updated existing user profile:', updatedProfile?.id);
       } catch (updateError: any) {
