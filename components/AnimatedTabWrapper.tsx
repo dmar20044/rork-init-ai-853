@@ -10,20 +10,21 @@ interface AnimatedTabWrapperProps {
 }
 
 export default function AnimatedTabWrapper({ children, tabName }: AnimatedTabWrapperProps) {
-  const { currentTab, previousTab, tabOrder } = useTabNavigation();
+  const { currentTab, previousTab, isTransitioning, animationDirection } = useTabNavigation();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const isInitialMount = useRef(true);
   
   useEffect(() => {
-    if (currentTab === tabName && previousTab && previousTab !== currentTab && !isInitialMount.current) {
-      const currentIndex = tabOrder.indexOf(currentTab);
-      const prevIndex = tabOrder.indexOf(previousTab);
-      
-      if (currentIndex !== -1 && prevIndex !== -1) {
-        const direction = currentIndex > prevIndex ? 1 : -1;
-        
-        // Start from off-screen
-        slideAnim.setValue(direction * screenWidth);
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (isTransitioning && animationDirection) {
+      if (tabName === currentTab) {
+        // This is the incoming tab
+        const startPosition = animationDirection === 'left' ? screenWidth : -screenWidth;
+        slideAnim.setValue(startPosition);
         
         // Animate to center
         Animated.timing(slideAnim, {
@@ -31,18 +32,36 @@ export default function AnimatedTabWrapper({ children, tabName }: AnimatedTabWra
           duration: 300,
           useNativeDriver: true,
         }).start();
+      } else if (tabName === previousTab) {
+        // This is the outgoing tab
+        const endPosition = animationDirection === 'left' ? -screenWidth : screenWidth;
+        slideAnim.setValue(0);
+        
+        // Animate out
+        Animated.timing(slideAnim, {
+          toValue: endPosition,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
       }
+    } else if (!isTransitioning && tabName === currentTab) {
+      // Ensure current tab is centered when not transitioning
+      slideAnim.setValue(0);
     }
-    
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-    }
-  }, [currentTab, previousTab, tabName, slideAnim, tabOrder]);
+  }, [currentTab, previousTab, isTransitioning, animationDirection, tabName, slideAnim]);
+  
+  // Always render, but control visibility through opacity and position
+  const isVisible = tabName === currentTab || (isTransitioning && (tabName === previousTab || tabName === currentTab));
+  
+  if (!isVisible) {
+    return null;
+  }
   
   return (
     <Animated.View 
       style={[
         styles.container,
+        isTransitioning && styles.transitioning,
         {
           transform: [{ translateX: slideAnim }],
         }
@@ -56,5 +75,12 @@ export default function AnimatedTabWrapper({ children, tabName }: AnimatedTabWra
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  transitioning: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });
