@@ -242,7 +242,7 @@ export default function ScannerScreen() {
     try {
       if (Platform.OS !== "web") {
         try {
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
         } catch (hapticError) {
           console.log('Haptics not available:', hapticError);
         }
