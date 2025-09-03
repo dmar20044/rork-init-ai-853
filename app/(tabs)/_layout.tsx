@@ -1,10 +1,8 @@
 import { Tabs } from "expo-router";
 import { Camera, History, User, MessageCircle, ShoppingCart } from "lucide-react-native";
 import React, { memo, useCallback } from "react";
-import { Platform, View, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useTabNavigation } from "@/contexts/TabNavigationContext";
-import TabContainer from "@/components/TabContainer";
 
 // Memoized icon components for better performance
 const CameraIcon = memo(({ color, size }: { color: string; size: number }) => (
@@ -80,18 +78,14 @@ function TabLayout() {
   }), []);
   
   return (
-    <TabContainer>
-      <Tabs screenOptions={screenOptions}>
-        <Tabs.Screen name="index" options={scannerOptions} />
-        <Tabs.Screen name="grocery-list" options={groceryListOptions} />
-        <Tabs.Screen name="discover" options={discoverOptions} />
-        <Tabs.Screen name="history" options={historyOptions} />
-        <Tabs.Screen name="goals" options={goalsOptions} />
-      </Tabs>
-    </TabContainer>
+    <Tabs screenOptions={screenOptions}>
+      <Tabs.Screen name="index" options={scannerOptions} />
+      <Tabs.Screen name="grocery-list" options={groceryListOptions} />
+      <Tabs.Screen name="discover" options={discoverOptions} />
+      <Tabs.Screen name="history" options={historyOptions} />
+      <Tabs.Screen name="goals" options={goalsOptions} />
+    </Tabs>
   );
 }
-
-
 
 export default memo(TabLayout);

@@ -23,9 +23,8 @@ import { useScanHistory } from "@/contexts/ScanHistoryContext";
 import { useUser } from "@/contexts/UserContext";
 import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
-import AnimatedTabWrapper from "@/components/AnimatedTabWrapper";
 
-function ScannerScreenContent() {
+export default function ScannerScreen() {
   const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
@@ -1351,11 +1350,3 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
 });
-
-export default function ScannerScreen() {
-  return (
-    <AnimatedTabWrapper tabName="index">
-      <ScannerScreenContent />
-    </AnimatedTabWrapper>
-  );
-}
