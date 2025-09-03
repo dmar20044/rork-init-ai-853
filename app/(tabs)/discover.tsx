@@ -17,7 +17,7 @@ import {
   Animated,
   Easing,
 } from "react-native";
-import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2 } from "lucide-react-native";
+import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Leaf, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -928,6 +928,16 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 <Text style={[styles.retroPersonalizationText, { color: Colors.white }]}>Personalized for {getPersonalizationText()}</Text>
               </View>
             )}
+            
+            <TouchableOpacity 
+              style={[styles.retroConversationBubble, { backgroundColor: '#FF3B30' }]}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.retroConversationText, { color: Colors.white }]}>Talk to InIt</Text>
+              <View style={[styles.retroMicrophoneCircle, { backgroundColor: Colors.white }]}>
+                <Mic size={16} color={'#FF3B30'} />
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -2524,6 +2534,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 6,
     letterSpacing: 0.2,
+  },
+  
+  // Retro Conversation Bubble
+  retroConversationBubble: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 25,
+    marginTop: 12,
+    shadowColor: '#FF3B30',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  retroConversationText: {
+    fontSize: 14,
+    color: Colors.white,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    flex: 1,
+  },
+  retroMicrophoneCircle: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
   },
   
   // Retro Tech Pop Quick Questions Section
