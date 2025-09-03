@@ -809,7 +809,7 @@ function QuizScreen() {
             <View style={styles.brandContainer}>
               <Text style={styles.brandText}>InIt AI</Text>
               <Image 
-                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/eneamfx8bso77kp4grft6' }}
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/32o8mj2lj8xq0awy1bj29' }}
                 style={styles.logoImage}
                 resizeMode="contain"
               />
