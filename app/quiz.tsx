@@ -771,7 +771,7 @@ function QuizScreen() {
       case 'bodyGoal':
         return answers.bodyGoal !== null;
       case 'healthGoal':
-        return answers.healthGoal !== null;
+        return answers.healthGoal !== null && answers.healthStrictness !== null;
       case 'dietGoal':
         return answers.dietGoal !== null;
       case 'dietary-restrictions':
