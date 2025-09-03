@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   SafeAreaView,
+  Animated,
 } from "react-native";
 import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
@@ -34,6 +35,7 @@ export default function ScannerScreen() {
   const [nutritionData, setNutritionData] = useState<NutritionInfo | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [flashMode, setFlashMode] = useState<'off' | 'on' | 'auto'>('off');
+  const shutterFill = useRef<Animated.Value>(new Animated.Value(0));
   const [isBarcodeMode, setIsBarcodeMode] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
   const [lastScannedBarcode, setLastScannedBarcode] = useState<string | null>(null);
@@ -212,6 +214,18 @@ export default function ScannerScreen() {
     }
   };
 
+  const triggerShutterFill = useCallback(() => {
+    try {
+      shutterFill.current.setValue(0);
+      Animated.sequence([
+        Animated.timing(shutterFill.current, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.timing(shutterFill.current, { toValue: 0, duration: 400, delay: 150, useNativeDriver: true }),
+      ]).start();
+    } catch (e) {
+      console.log('Shutter fill animation error', e);
+    }
+  }, []);
+
   const handleTakePicture = async () => {
     if (!cameraRef.current) return;
     
@@ -236,6 +250,7 @@ export default function ScannerScreen() {
       
       setIsProcessing(true);
       setScanProgress(0);
+      triggerShutterFill();
       
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8, // Reduced quality for better performance
@@ -653,11 +668,34 @@ export default function ScannerScreen() {
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
+                  testID="capture-button"
                   style={[styles.captureButton, isBarcodeMode && styles.captureButtonDisabled]} 
                   onPress={handleTakePicture}
                   disabled={isProcessing || isBarcodeMode}
                 >
-                  <View style={[styles.captureButtonInner, isBarcodeMode && styles.captureButtonInnerDisabled]} />
+                  <View style={[styles.captureButtonInner, isBarcodeMode && styles.captureButtonInnerDisabled]}>
+                    <Animated.View
+                      testID="capture-button-fill"
+                      style={[
+                        styles.captureButtonFill,
+                        {
+                          transform: [
+                            {
+                              scale: shutterFill.current.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 1],
+                                extrapolate: 'clamp',
+                              }) as unknown as number,
+                            },
+                          ],
+                          opacity: shutterFill.current.interpolate({
+                            inputRange: [0, 0.2, 1],
+                            outputRange: [0.2, 0.6, 1],
+                          }) as unknown as number,
+                        },
+                      ]}
+                    />
+                  </View>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
@@ -1147,6 +1185,16 @@ const styles = StyleSheet.create({
     height: 58,
     borderRadius: 29,
     backgroundColor: Colors.white,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButtonFill: {
+    position: 'absolute',
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: Colors.primary,
   },
   flashButton: {
     width: 60,
