@@ -532,7 +532,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
   
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
         {/* Animated Background Elements */}
         <View style={styles.backgroundAnimations}>
           {loadingAnimations.map((anim, index) => (
@@ -614,6 +614,8 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
         <Animated.View style={[
           styles.shimmerCard,
           {
+            backgroundColor: colors.surface,
+            borderColor: colors.textSecondary + '20',
             transform: [{
               scale: loadingAnimations[0]?.interpolate({
                 inputRange: [0, 1],
@@ -626,6 +628,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
           <Animated.View style={[
             styles.shimmerCircle,
             {
+              backgroundColor: colors.textSecondary + '20',
               transform: [{
                 scale: loadingAnimations[1]?.interpolate({
                   inputRange: [0, 1],
@@ -646,6 +649,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
           <Animated.Text style={[
             styles.loadingText,
             {
+              color: colors.textSecondary,
               opacity: loadingAnimations[3]?.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0.7, 1],
@@ -657,7 +661,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
           
           {/* Progress Bar with Percentage */}
           <View style={styles.progressContainer}>
-            <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBarBackground, { backgroundColor: colors.textSecondary + '20' }]}>
               <Animated.View
                 style={[
                   styles.progressBarFill,
@@ -671,7 +675,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 ]}
               />
             </View>
-            <Text style={styles.progressText}>{Math.round(loadingProgress)}%</Text>
+            <Text style={[styles.progressText, { color: Colors.retroNeonTurquoise }]}>{Math.round(loadingProgress)}%</Text>
           </View>
           
           {/* Animated Progress Bars */}
@@ -682,6 +686,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 style={[
                   styles.shimmerBar,
                   {
+                    backgroundColor: colors.textSecondary + '20',
                     width: `${width}%`,
                     opacity: loadingAnimations[index + 4] || 0.3,
                   },
@@ -881,27 +886,27 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
 
           {/* Macro Breakdown Section */}
-          <View style={[styles.card, { backgroundColor: Colors.retroCreamWhite }]}>
+          <View style={[styles.card, { backgroundColor: colors.surface }]}>
             <View style={styles.cardHeader}>
-              <Zap size={20} color={colors.primary} />
+              <Zap size={20} color={Colors.retroNeonTurquoise} />
               <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
             </View>
             
             <View style={styles.macroGrid}>
               <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary }]}>{nutrition.calories}</Text>
+                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.calories}</Text>
                 <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Calories</Text>
               </View>
               <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary }]}>{nutrition.protein}g</Text>
+                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.protein}g</Text>
                 <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Protein</Text>
               </View>
               <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary }]}>{nutrition.carbs}g</Text>
+                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.carbs}g</Text>
                 <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Carbs</Text>
               </View>
               <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: colors.primary }]}>{nutrition.fat}g</Text>
+                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.fat}g</Text>
                 <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Fat</Text>
               </View>
             </View>
@@ -928,18 +933,18 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
           {/* Ingredient Breakdown Section */}
           {nutrition.ingredients && nutrition.ingredients.length > 0 && (
-            <View style={[styles.card, { backgroundColor: Colors.retroCreamWhite }]}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               <TouchableOpacity 
                 style={styles.cardHeader}
                 onPress={toggleIngredientSection}
                 activeOpacity={0.7}
               >
-                <List size={20} color={colors.primary} />
+                <List size={20} color={Colors.retroNeonTurquoise} />
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Ingredient Breakdown</Text>
                 {isIngredientSectionExpanded ? (
-                  <ChevronDown size={20} color="#5F5F5F" style={styles.sectionChevron} />
+                  <ChevronDown size={20} color={colors.textSecondary} style={styles.sectionChevron} />
                 ) : (
-                  <ChevronRight size={20} color="#5F5F5F" style={styles.sectionChevron} />
+                  <ChevronRight size={20} color={colors.textSecondary} style={styles.sectionChevron} />
                 )}
               </TouchableOpacity>
               
@@ -971,7 +976,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                       ingredientAnalysis.map((analysis, index) => {
                         const isExpanded = expandedIngredients.has(index);
                         return (
-                          <View key={index} style={[styles.ingredientItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: colors.primary }]}>
+                          <View key={index} style={[styles.ingredientItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: Colors.retroNeonTurquoise }]}>
                             <TouchableOpacity 
                               style={styles.ingredientHeader}
                               onPress={() => toggleIngredientExpansion(index)}
@@ -986,9 +991,9 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                               </View>
                               <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{analysis.ingredient}</Text>
                               {isExpanded ? (
-                                <ChevronDown size={20} color="#5F5F5F" />
+                                <ChevronDown size={20} color={colors.textSecondary} />
                               ) : (
-                                <ChevronRight size={20} color="#5F5F5F" />
+                                <ChevronRight size={20} color={colors.textSecondary} />
                               )}
                             </TouchableOpacity>
                             
@@ -1020,18 +1025,18 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
 
           {/* For You Analysis Section */}
           {showPersonalized && (
-            <View style={[styles.card, { backgroundColor: Colors.retroCreamWhite }]}>
+            <View style={[styles.card, { backgroundColor: colors.surface }]}>
               <TouchableOpacity 
                 style={styles.cardHeader}
                 onPress={toggleForYouSection}
                 activeOpacity={0.7}
               >
-                <Heart size={20} color={colors.primary} />
+                <Heart size={20} color={Colors.retroPink} />
                 <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>For You Analysis</Text>
                 {isForYouSectionExpanded ? (
-                  <ChevronDown size={20} color="#5F5F5F" style={styles.sectionChevron} />
+                  <ChevronDown size={20} color={colors.textSecondary} style={styles.sectionChevron} />
                 ) : (
-                  <ChevronRight size={20} color="#5F5F5F" style={styles.sectionChevron} />
+                  <ChevronRight size={20} color={colors.textSecondary} style={styles.sectionChevron} />
                 )}
               </TouchableOpacity>
               
@@ -1064,7 +1069,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
           {/* Call-to-Action Buttons */}
           <View style={styles.ctaSection}>
             <TouchableOpacity 
-              style={[styles.addToGroceryButton, { backgroundColor: colors.surface, borderColor: colors.primary }]}
+              style={[styles.addToGroceryButton, { backgroundColor: colors.surface, borderColor: Colors.retroNeonTurquoise }]}
               onPress={async () => {
                 if (Platform.OS !== 'web') {
                   await Haptics.selectionAsync();
@@ -1085,12 +1090,12 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               }}
               activeOpacity={0.7}
             >
-              <ShoppingCart size={20} color={colors.primary} />
-              <Text style={[styles.addToGroceryButtonText, { color: colors.primary }]}>Add to Grocery List</Text>
+              <ShoppingCart size={20} color={Colors.retroNeonTurquoise} />
+              <Text style={[styles.addToGroceryButtonText, { color: Colors.retroNeonTurquoise }]}>Add to Grocery List</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.ctaButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
+              style={[styles.ctaButton, { backgroundColor: Colors.retroNeonTurquoise, shadowColor: Colors.retroNeonTurquoise }]}
               onPress={async () => {
                 if (Platform.OS !== 'web') {
                   await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -1117,7 +1122,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             </TouchableOpacity>
             
             <TouchableOpacity
-              style={[styles.button, styles.primaryButton, { backgroundColor: colors.primary }]}
+              style={[styles.button, styles.primaryButton, { backgroundColor: Colors.retroNeonTurquoise }]}
               onPress={onScanAnother}
             >
               <Text style={[styles.primaryButtonText, { color: colors.white }]}>Scan Another</Text>
@@ -1175,7 +1180,6 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: Colors.retroCreamWhite,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -1214,7 +1218,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   shimmerCard: {
-    backgroundColor: Colors.retroCreamWhite,
     borderRadius: 24,
     padding: 32,
     alignItems: 'center',
@@ -1227,13 +1230,11 @@ const styles = StyleSheet.create({
     elevation: 4,
     zIndex: 10,
     borderWidth: 1,
-    borderColor: Colors.retroDeepIndigo + '20',
   },
   shimmerCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: Colors.retroSoftGray,
     marginBottom: 24,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1247,7 +1248,6 @@ const styles = StyleSheet.create({
   },
   loadingText: {
     fontSize: 16,
-    color: Colors.retroSlateGray,
     marginBottom: 24,
     textAlign: 'center',
   },
@@ -1257,7 +1257,6 @@ const styles = StyleSheet.create({
   },
   shimmerBar: {
     height: 12,
-    backgroundColor: Colors.retroSoftGray,
     borderRadius: 6,
   },
   loadingIcons: {
@@ -1278,7 +1277,6 @@ const styles = StyleSheet.create({
   progressBarBackground: {
     width: '100%',
     height: 8,
-    backgroundColor: Colors.retroSoftGray,
     borderRadius: 4,
     overflow: 'hidden',
     marginBottom: 8,
@@ -1291,7 +1289,6 @@ const styles = StyleSheet.create({
   progressText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: Colors.retroNeonTurquoise,
   },
   cardContainer: {
     flex: 1,
