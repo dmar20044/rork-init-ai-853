@@ -1098,7 +1098,7 @@ const styles = StyleSheet.create({
   },
   cancelScanButton: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 100,
     left: 80,
     right: 80,
     paddingVertical: 10,
