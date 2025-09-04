@@ -27,16 +27,28 @@ import { Colors } from '@/constants/colors';
 import { useGroceryList, GroceryItem } from '@/contexts/GroceryListContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
-// Retro Tech Pop Color Palette
-const RetroColors = {
+// Retro Tech Pop Color Palette with Dark Mode Support
+const getRetroColors = (isDarkMode: boolean) => ({
+  // Accent colors - brighter in dark mode
   neonTurquoise: '#4ECDC4',
   retroPink: '#FF6B81', 
   deepIndigo: '#2E294E',
-  creamWhite: '#FDFDFD',
-  charcoalBlack: '#1E1E1E',
+  
+  // Background colors
+  background: isDarkMode ? '#1E1E2E' : '#FDFDFD', // Charcoal Indigo for dark mode
+  surface: isDarkMode ? '#2E294E' : '#FDFDFD', // Deep Indigo for cards in dark mode
+  
+  // Text colors
+  textPrimary: isDarkMode ? '#D9D9D9' : '#1E1E1E', // Soft Gray for dark mode text
+  textSecondary: isDarkMode ? '#5F5F5F' : '#5F5F5F', // Slate Gray for both modes
+  textTertiary: isDarkMode ? '#5F5F5F' : '#D9D9D9', // Inverted for timestamps
+  
+  // Legacy colors for compatibility
+  creamWhite: isDarkMode ? '#D9D9D9' : '#FDFDFD',
+  charcoalBlack: isDarkMode ? '#D9D9D9' : '#1E1E1E',
   slateGray: '#5F5F5F',
-  softGray: '#D9D9D9',
-};
+  softGray: isDarkMode ? '#5F5F5F' : '#D9D9D9',
+});
 
 const getHealthGrade = (score: number): { grade: string; color: string; label: string } => {
   if (score >= 95) return { grade: 'A+', color: '#00FF00', label: 'Excellent' };
@@ -90,6 +102,8 @@ interface GroceryCardProps {
 }
 
 function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardProps) {
+  const { isDarkMode } = useTheme();
+  const retroColors = getRetroColors(isDarkMode);
   const [translateX] = useState(new Animated.Value(0));
   const [showDeleteButton, setShowDeleteButton] = useState(false);
   const screenWidth = Dimensions.get('window').width;
@@ -140,7 +154,7 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
   // Get display score (personal score if available, otherwise health score)
   const displayScore = item.personalScore ?? item.healthScore;
   const hasScore = displayScore !== undefined;
-  const { grade, color } = hasScore ? getHealthGrade(displayScore) : { grade: '', color: RetroColors.slateGray };
+  const { grade, color } = hasScore ? getHealthGrade(displayScore) : { grade: '', color: retroColors.slateGray };
 
   return (
     <View style={styles.groceryCardContainer}>
@@ -150,8 +164,8 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
           onPress={handleDelete}
           testID={`delete-${item.id}`}
         >
-          <Trash2 size={20} color={RetroColors.creamWhite} />
-          <Text style={[styles.deleteButtonText, { color: RetroColors.creamWhite }]}>Delete</Text>
+          <Trash2 size={20} color={retroColors.creamWhite} />
+          <Text style={[styles.deleteButtonText, { color: retroColors.creamWhite }]}>Delete</Text>
         </TouchableOpacity>
       </View>
       
@@ -160,7 +174,7 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
           styles.groceryCard,
           {
             transform: [{ translateX }],
-            backgroundColor: RetroColors.creamWhite,
+            backgroundColor: retroColors.surface,
             opacity: item.completed ? 0.7 : 1,
           },
         ]}
@@ -179,8 +193,8 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
               onPress={onToggle}
               activeOpacity={0.7}
             >
-              <View style={[styles.checkbox, { borderColor: RetroColors.softGray }, item.completed && { backgroundColor: RetroColors.neonTurquoise, borderColor: RetroColors.neonTurquoise }]}>
-                {item.completed && <Check size={16} color={RetroColors.creamWhite} />}
+              <View style={[styles.checkbox, { borderColor: retroColors.softGray }, item.completed && { backgroundColor: retroColors.neonTurquoise, borderColor: retroColors.neonTurquoise }]}>
+                {item.completed && <Check size={16} color={retroColors.creamWhite} />}
               </View>
             </TouchableOpacity>
             
@@ -189,33 +203,33 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
               {item.imageUri ? (
                 <Image source={{ uri: item.imageUri }} style={styles.productThumbnail} />
               ) : (
-                <View style={[styles.productImagePlaceholder, { backgroundColor: RetroColors.softGray + '20' }]}>
-                  <ShoppingCart size={24} color={RetroColors.slateGray} />
+                <View style={[styles.productImagePlaceholder, { backgroundColor: retroColors.softGray + '20' }]}>
+                  <ShoppingCart size={24} color={retroColors.slateGray} />
                 </View>
               )}
             </View>
             
             {/* Product Info */}
             <View style={styles.productInfo}>
-              <Text style={[styles.productName, { color: RetroColors.charcoalBlack }, item.completed && { textDecorationLine: 'line-through', color: RetroColors.slateGray }]}>
+              <Text style={[styles.productName, { color: retroColors.textPrimary }, item.completed && { textDecorationLine: 'line-through', color: retroColors.slateGray }]}>
                 {item.name}
               </Text>
               {(item.calories || item.protein) && (
                 <View style={styles.productDetails}>
                   {item.calories && (
                     <>
-                      <Text style={[styles.detailText, { color: RetroColors.slateGray }]}>{item.calories} cal</Text>
-                      {item.protein && <Text style={[styles.detailSeparator, { color: RetroColors.slateGray }]}>•</Text>}
+                      <Text style={[styles.detailText, { color: retroColors.textSecondary }]}>{item.calories} cal</Text>
+                      {item.protein && <Text style={[styles.detailSeparator, { color: retroColors.textSecondary }]}>•</Text>}
                     </>
                   )}
                   {item.protein && (
-                    <Text style={[styles.detailText, { color: RetroColors.slateGray }]}>{item.protein}g protein</Text>
+                    <Text style={[styles.detailText, { color: retroColors.textSecondary }]}>{item.protein}g protein</Text>
                   )}
                 </View>
               )}
               <View style={styles.timeRow}>
-                <Clock size={10} color={RetroColors.softGray} />
-                <Text style={[styles.timeText, { color: RetroColors.softGray }]}>Added {formatDate(item.addedAt)}</Text>
+                <Clock size={10} color={retroColors.textTertiary} />
+                <Text style={[styles.timeText, { color: retroColors.textTertiary }]}>Added {formatDate(item.addedAt)}</Text>
               </View>
             </View>
             
@@ -223,7 +237,7 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
             <View style={styles.actionContainer}>
               {hasScore ? (
                 <View style={styles.scoreRing}>
-                  <View style={[styles.miniScoreRing, { borderColor: color, backgroundColor: RetroColors.creamWhite }]}>
+                  <View style={[styles.miniScoreRing, { borderColor: color, backgroundColor: retroColors.surface }]}>
                     <Text style={[styles.miniGradeText, { color }]}>{grade}</Text>
                   </View>
                 </View>
@@ -233,7 +247,7 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
                   onPress={onEdit}
                   activeOpacity={0.7}
                 >
-                  <Edit3 size={18} color={RetroColors.slateGray} />
+                  <Edit3 size={18} color={retroColors.slateGray} />
                 </TouchableOpacity>
               )}
             </View>
@@ -250,6 +264,8 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
 }
 
 export default function GroceryListScreen() {
+  const { isDarkMode } = useTheme();
+  const retroColors = getRetroColors(isDarkMode);
   const { groceryItems, addItem, toggleItem, deleteItem, updateItem, clearCompleted, isLoading } = useGroceryList();
   const [newItemName, setNewItemName] = useState<string>('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -326,49 +342,49 @@ export default function GroceryListScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: retroColors.background }]}>
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: RetroColors.slateGray }]}>Loading grocery list...</Text>
+          <Text style={[styles.loadingText, { color: retroColors.textSecondary }]}>Loading grocery list...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: RetroColors.creamWhite }]}>
-      <View style={[styles.header, { backgroundColor: RetroColors.creamWhite, borderBottomColor: RetroColors.softGray }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: retroColors.background }]}>
+      <View style={[styles.header, { backgroundColor: retroColors.background, borderBottomColor: retroColors.softGray }]}>
         <View style={styles.headerContent}>
-          <ShoppingCart size={28} color={RetroColors.neonTurquoise} />
-          <Text style={[styles.headerTitle, { color: RetroColors.charcoalBlack }]}>Grocery List</Text>
+          <ShoppingCart size={28} color={retroColors.neonTurquoise} />
+          <Text style={[styles.headerTitle, { color: retroColors.textPrimary }]}>Grocery List</Text>
         </View>
         {completedItems.length > 0 && (
           <TouchableOpacity
-            style={[styles.clearButton, { backgroundColor: RetroColors.retroPink + '15' }]}
+            style={[styles.clearButton, { backgroundColor: retroColors.retroPink + '15' }]}
             onPress={handleClearCompleted}
             activeOpacity={0.7}
           >
-            <Text style={[styles.clearButtonText, { color: RetroColors.retroPink }]}>Clear Completed</Text>
+            <Text style={[styles.clearButtonText, { color: retroColors.retroPink }]}>Clear Completed</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <View style={[styles.addItemContainer, { backgroundColor: RetroColors.creamWhite, borderBottomColor: RetroColors.softGray }]}>
+      <View style={[styles.addItemContainer, { backgroundColor: retroColors.background, borderBottomColor: retroColors.softGray }]}>
         <TextInput
-          style={[styles.addItemInput, { backgroundColor: RetroColors.softGray + '20', color: RetroColors.charcoalBlack }]}
+          style={[styles.addItemInput, { backgroundColor: retroColors.softGray + '20', color: retroColors.textPrimary }]}
           placeholder="Add new item..."
-          placeholderTextColor={RetroColors.slateGray}
+          placeholderTextColor={retroColors.textSecondary}
           value={newItemName}
           onChangeText={setNewItemName}
           onSubmitEditing={handleAddItem}
           returnKeyType="done"
         />
         <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: RetroColors.neonTurquoise }, !newItemName.trim() && { backgroundColor: RetroColors.softGray }]}
+          style={[styles.addButton, { backgroundColor: retroColors.neonTurquoise }, !newItemName.trim() && { backgroundColor: retroColors.softGray }]}
           onPress={handleAddItem}
           disabled={!newItemName.trim()}
           activeOpacity={0.7}
         >
-          <Plus size={24} color={RetroColors.creamWhite} />
+          <Plus size={24} color={retroColors.creamWhite} />
         </TouchableOpacity>
       </View>
 
@@ -380,33 +396,33 @@ export default function GroceryListScreen() {
               style={styles.emptyIllustration}
               resizeMode="contain"
             />
-            <Text style={[styles.emptyTitle, { color: RetroColors.charcoalBlack }]}>Your grocery list is empty</Text>
-            <Text style={[styles.emptySubtitle, { color: RetroColors.slateGray }]}>Add items to get started!</Text>
+            <Text style={[styles.emptyTitle, { color: retroColors.textPrimary }]}>Your grocery list is empty</Text>
+            <Text style={[styles.emptySubtitle, { color: retroColors.textSecondary }]}>Add items to get started!</Text>
           </View>
         ) : (
           <>
             {/* Pending Items */}
             {pendingItems.length > 0 && (
               <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: RetroColors.charcoalBlack }]}>
+                <Text style={[styles.sectionTitle, { color: retroColors.textPrimary }]}>
                   To Buy ({pendingItems.length})
                 </Text>
                 {pendingItems.map((item, index) => (
                   editingId === item.id ? (
-                    <View key={item.id} style={[styles.itemContainer, { backgroundColor: RetroColors.creamWhite }]}>
+                    <View key={item.id} style={[styles.itemContainer, { backgroundColor: retroColors.surface }]}>
                       <TouchableOpacity
                         style={styles.checkboxContainer}
                         onPress={() => handleToggleItem(item.id)}
                         activeOpacity={0.7}
                       >
-                        <View style={[styles.checkbox, { borderColor: RetroColors.softGray }, item.completed && { backgroundColor: RetroColors.neonTurquoise, borderColor: RetroColors.neonTurquoise }]}>
-                          {item.completed && <Check size={16} color={RetroColors.creamWhite} />}
+                        <View style={[styles.checkbox, { borderColor: retroColors.softGray }, item.completed && { backgroundColor: retroColors.neonTurquoise, borderColor: retroColors.neonTurquoise }]}>
+                          {item.completed && <Check size={16} color={retroColors.creamWhite} />}
                         </View>
                       </TouchableOpacity>
 
                       <View style={styles.editContainer}>
                         <TextInput
-                          style={[styles.editInput, { color: RetroColors.charcoalBlack, borderBottomColor: RetroColors.neonTurquoise }]}
+                          style={[styles.editInput, { color: retroColors.textPrimary, borderBottomColor: retroColors.neonTurquoise }]}
                           value={editingName}
                           onChangeText={setEditingName}
                           onSubmitEditing={saveEdit}
@@ -417,14 +433,14 @@ export default function GroceryListScreen() {
                           onPress={saveEdit}
                           activeOpacity={0.7}
                         >
-                          <Check size={20} color={RetroColors.neonTurquoise} />
+                          <Check size={20} color={retroColors.neonTurquoise} />
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.editActionButton}
                           onPress={cancelEdit}
                           activeOpacity={0.7}
                         >
-                          <X size={20} color={RetroColors.retroPink} />
+                          <X size={20} color={retroColors.retroPink} />
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -445,7 +461,7 @@ export default function GroceryListScreen() {
             {/* Completed Items */}
             {completedItems.length > 0 && (
               <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: RetroColors.charcoalBlack }]}>
+                <Text style={[styles.sectionTitle, { color: retroColors.textPrimary }]}>
                   Completed ({completedItems.length})
                 </Text>
                 {completedItems.map((item, index) => (
@@ -629,7 +645,7 @@ const styles = StyleSheet.create({
     zIndex: 0,
   },
   deleteButton: {
-    backgroundColor: RetroColors.retroPink,
+    backgroundColor: '#FF6B81', // Always retro pink for delete
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -639,7 +655,6 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   deleteButtonText: {
-    color: RetroColors.creamWhite,
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
