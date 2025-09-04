@@ -546,12 +546,17 @@ export const [UserProvider, useUser] = createContextHook(() => {
 
   // Helper function to calculate streak using PST timezone
   const calculateStreak = useCallback((scanDates: string[], lastScanDate: string | null): { currentStreak: number; longestStreak: number } => {
+    console.log('[calculateStreak] Input scanDates:', scanDates);
+    console.log('[calculateStreak] Input lastScanDate:', lastScanDate);
+    
     if (scanDates.length === 0) {
+      console.log('[calculateStreak] No scan dates, returning 0 streak');
       return { currentStreak: 0, longestStreak: 0 };
     }
     
     // Sort dates in descending order (most recent first)
     const sortedDates = [...scanDates].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    console.log('[calculateStreak] Sorted dates (most recent first):', sortedDates);
     
     // Calculate current streak using PST timezone
     let currentStreak = 0;
@@ -562,22 +567,33 @@ export const [UserProvider, useUser] = createContextHook(() => {
     const todayStr = format(pstTime, 'yyyy-MM-dd');
     const yesterdayStr = format(subDays(pstTime, 1), 'yyyy-MM-dd');
     
+    console.log('[calculateStreak] Today (PST):', todayStr);
+    console.log('[calculateStreak] Yesterday (PST):', yesterdayStr);
+    console.log('[calculateStreak] Most recent scan date:', sortedDates[0]);
+    
     // Check if user scanned today or yesterday to maintain streak
     if (sortedDates[0] === todayStr || sortedDates[0] === yesterdayStr) {
       currentStreak = 1;
-      let checkDate = new Date(sortedDates[0]);
+      let checkDate = new Date(sortedDates[0] + 'T00:00:00'); // Parse as local date
+      console.log('[calculateStreak] Starting streak calculation from:', format(checkDate, 'yyyy-MM-dd'));
       
       for (let i = 1; i < sortedDates.length; i++) {
         const prevDate = subDays(checkDate, 1);
         const prevDateStr = format(prevDate, 'yyyy-MM-dd');
         
+        console.log('[calculateStreak] Checking if', sortedDates[i], 'equals', prevDateStr);
+        
         if (sortedDates[i] === prevDateStr) {
           currentStreak++;
           checkDate = prevDate;
+          console.log('[calculateStreak] Streak continued, now:', currentStreak);
         } else {
+          console.log('[calculateStreak] Streak broken at', sortedDates[i]);
           break;
         }
       }
+    } else {
+      console.log('[calculateStreak] No recent scan (today or yesterday), streak is 0');
     }
     
     // Calculate longest streak
@@ -585,8 +601,8 @@ export const [UserProvider, useUser] = createContextHook(() => {
     let tempStreak = 1;
     
     for (let i = 1; i < sortedDates.length; i++) {
-      const currentDate = new Date(sortedDates[i]);
-      const prevDate = new Date(sortedDates[i - 1]);
+      const currentDate = new Date(sortedDates[i] + 'T00:00:00');
+      const prevDate = new Date(sortedDates[i - 1] + 'T00:00:00');
       const daysDiff = differenceInDays(prevDate, currentDate);
       
       if (daysDiff === 1) {
@@ -598,11 +614,16 @@ export const [UserProvider, useUser] = createContextHook(() => {
     }
     longestStreak = Math.max(longestStreak, tempStreak);
     
-    
+    console.log('[calculateStreak] Final result - Current:', currentStreak, 'Longest:', longestStreak);
     return { currentStreak, longestStreak };
   }, []);
   
   const updateScanStreak = useCallback(async (score: number) => {
+    console.log('[updateScanStreak] Starting streak update with score:', score);
+    console.log('[updateScanStreak] Current profile scanDates:', profile.scanDates);
+    console.log('[updateScanStreak] Current profile currentStreak:', profile.currentStreak);
+    console.log('[updateScanStreak] Current profile longestStreak:', profile.longestStreak);
+    
     // Update streak tracking without XP using PST timezone
     const now = new Date();
     const pstOffset = -8 * 60; // PST is UTC-8 (in minutes)
@@ -611,23 +632,36 @@ export const [UserProvider, useUser] = createContextHook(() => {
     const today = format(pstTime, 'yyyy-MM-dd');
     const updatedScanDates = [...profile.scanDates];
     
+    console.log('[updateScanStreak] Today (PST):', today);
+    console.log('[updateScanStreak] Current scanDates before update:', updatedScanDates);
+    
     // Only add today's date if it's not already there
     if (!updatedScanDates.includes(today)) {
       updatedScanDates.push(today);
+      console.log('[updateScanStreak] Added today to scanDates');
+    } else {
+      console.log('[updateScanStreak] Today already in scanDates');
     }
+    
+    console.log('[updateScanStreak] Updated scanDates:', updatedScanDates);
     
     // Calculate new streak
     const { currentStreak, longestStreak } = calculateStreak(updatedScanDates, today);
+    const finalLongestStreak = Math.max(longestStreak, profile.longestStreak);
+    
+    console.log('[updateScanStreak] Calculated currentStreak:', currentStreak);
+    console.log('[updateScanStreak] Calculated longestStreak:', longestStreak);
+    console.log('[updateScanStreak] Final longestStreak (max with existing):', finalLongestStreak);
     
     // Update profile with new streak data
     await updateProfile({
       currentStreak,
-      longestStreak: Math.max(longestStreak, profile.longestStreak),
+      longestStreak: finalLongestStreak,
       lastScanDate: today,
       scanDates: updatedScanDates,
     });
     
-    console.log(`[Streak] Current: ${currentStreak}, Longest: ${Math.max(longestStreak, profile.longestStreak)} (PST)`);
+    console.log(`[Streak] Updated - Current: ${currentStreak}, Longest: ${finalLongestStreak} (PST)`);
     
     return { leveledUp: false };
   }, [profile, updateProfile, calculateStreak]);
