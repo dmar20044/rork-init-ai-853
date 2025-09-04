@@ -38,15 +38,27 @@ const CameraIcon = memo(({ color, size, focused }: { color: string; size: number
   );
 });
 
-const ShoppingCartIcon = memo(({ color, size }: { color: string; size: number }) => (
-  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5}>
-    <Path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-    />
-  </Svg>
-));
+const ShoppingCartIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+  if (focused) {
+    // Filled shopping cart icon when active
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+        <Path d="M2.25 2.25a.75.75 0 0 0 0 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 0 0-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 0 0 0-1.5H5.378A2.25 2.25 0 0 1 7.5 15h11.218a.75.75 0 0 0 .674-.421 60.358 60.358 0 0 0 2.96-7.228.75.75 0 0 0-.525-.965A60.864 60.864 0 0 0 5.68 4.509l-.232-.867A1.875 1.875 0 0 0 3.636 2.25H2.25ZM3.75 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM16.5 20.25a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+      </Svg>
+    );
+  }
+  
+  // Outline shopping cart icon when inactive
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5}>
+      <Path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+      />
+    </Svg>
+  );
+});
 
 const MessageCircleIcon = memo(({ color, size }: { color: string; size: number }) => (
   <MessageCircle color={color} size={size} />
@@ -56,9 +68,27 @@ const HistoryIcon = memo(({ color, size }: { color: string; size: number }) => (
   <History color={color} size={size} />
 ));
 
-const UserIcon = memo(({ color, size }: { color: string; size: number }) => (
-  <User color={color} size={size} />
-));
+const ProfileIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+  if (focused) {
+    // Filled profile icon when active
+    return (
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+        <Path fillRule="evenodd" d="M4.5 3.75a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3V6.75a3 3 0 0 0-3-3h-15Zm4.125 3a2.25 2.25 0 1 0 0 4.5 2.25 2.25 0 0 0 0-4.5Zm-3.873 8.703a4.126 4.126 0 0 1 7.746 0 .75.75 0 0 1-.351.92 7.47 7.47 0 0 1-3.522.877 7.47 7.47 0 0 1-3.522-.877.75.75 0 0 1-.351-.92ZM15 8.25a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H15ZM14.25 12a.75.75 0 0 1 .75-.75h3.75a.75.75 0 0 1 0 1.5H15a.75.75 0 0 1-.75-.75Zm.75 2.25a.75.75 0 0 0 0 1.5h3.75a.75.75 0 0 0 0-1.5H15Z" clipRule="evenodd" />
+      </Svg>
+    );
+  }
+  
+  // Outline profile icon when inactive
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.5}>
+      <Path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
+      />
+    </Svg>
+  );
+});
 
 function TabLayout() {
   const { colors } = useTheme();
@@ -101,7 +131,7 @@ function TabLayout() {
 
   const groceryListOptions = React.useMemo(() => ({
     title: "Grocery List",
-    tabBarIcon: ({ color, size }: { color: string; size: number }) => <ShoppingCartIcon color={color} size={size} />,
+    tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => <ShoppingCartIcon color={color} size={size} focused={focused} />,
   }), []);
 
   const discoverOptions = React.useMemo(() => ({
@@ -116,7 +146,7 @@ function TabLayout() {
 
   const goalsOptions = React.useMemo(() => ({
     title: "Profile",
-    tabBarIcon: ({ color, size }: { color: string; size: number }) => <UserIcon color={color} size={size} />,
+    tabBarIcon: ({ color, size, focused }: { color: string; size: number; focused: boolean }) => <ProfileIcon color={color} size={size} focused={focused} />,
   }), []);
   
   return (
