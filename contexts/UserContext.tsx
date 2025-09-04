@@ -255,10 +255,18 @@ export const [UserProvider, useUser] = createContextHook(() => {
 
   const saveProfile = async (newProfile: UserProfile) => {
     try {
-      console.log('[UserContext] Saving profile:', { hasCompletedQuiz: newProfile.hasCompletedQuiz, name: newProfile.name });
+      console.log('[UserContext] Saving profile:', { 
+        hasCompletedQuiz: newProfile.hasCompletedQuiz, 
+        name: newProfile.name,
+        currentStreak: newProfile.currentStreak,
+        longestStreak: newProfile.longestStreak,
+        lastScanDate: newProfile.lastScanDate,
+        scanDatesLength: newProfile.scanDates?.length || 0
+      });
       await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newProfile));
+      console.log('[UserContext] About to call setProfile with new streak data');
       setProfile(newProfile);
-      console.log('[UserContext] Profile saved successfully');
+      console.log('[UserContext] Profile saved successfully - setProfile called');
     } catch (error) {
       console.error('Error saving user profile:', error);
     }
@@ -619,10 +627,12 @@ export const [UserProvider, useUser] = createContextHook(() => {
   }, []);
   
   const updateScanStreak = useCallback(async (score: number) => {
+    console.log('[updateScanStreak] ===== STARTING STREAK UPDATE =====');
     console.log('[updateScanStreak] Starting streak update with score:', score);
     console.log('[updateScanStreak] Current profile scanDates:', profile.scanDates);
     console.log('[updateScanStreak] Current profile currentStreak:', profile.currentStreak);
     console.log('[updateScanStreak] Current profile longestStreak:', profile.longestStreak);
+    console.log('[updateScanStreak] Current profile lastScanDate:', profile.lastScanDate);
     
     // Update streak tracking without XP using PST timezone
     const now = new Date();
@@ -654,6 +664,13 @@ export const [UserProvider, useUser] = createContextHook(() => {
     console.log('[updateScanStreak] Final longestStreak (max with existing):', finalLongestStreak);
     
     // Update profile with new streak data
+    console.log('[updateScanStreak] About to call updateProfile with:', {
+      currentStreak,
+      longestStreak: finalLongestStreak,
+      lastScanDate: today,
+      scanDatesLength: updatedScanDates.length
+    });
+    
     await updateProfile({
       currentStreak,
       longestStreak: finalLongestStreak,
@@ -662,6 +679,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
     });
     
     console.log(`[Streak] Updated - Current: ${currentStreak}, Longest: ${finalLongestStreak} (PST)`);
+    console.log('[updateScanStreak] ===== STREAK UPDATE COMPLETED =====');
     
     return { leveledUp: false };
   }, [profile, updateProfile, calculateStreak]);

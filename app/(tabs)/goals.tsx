@@ -133,6 +133,16 @@ export default function GoalsScreen() {
   const longestStreak = profile.longestStreak;
   const streakHistory = getStreakHistory(7);
   
+  // Debug logging to track streak updates
+  useEffect(() => {
+    console.log('[GoalsScreen] Profile streak updated:', {
+      currentStreak: profile.currentStreak,
+      longestStreak: profile.longestStreak,
+      lastScanDate: profile.lastScanDate,
+      scanDatesCount: profile.scanDates?.length || 0
+    });
+  }, [profile.currentStreak, profile.longestStreak, profile.lastScanDate, profile.scanDates]);
+  
   // Get day letters for Cal AI style display using PST timezone
   const getDayLetter = (dateStr: string) => {
     // Parse the date string and ensure we're using PST timezone
