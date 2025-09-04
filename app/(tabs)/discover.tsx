@@ -1621,12 +1621,9 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               multiline
               maxLength={500}
               editable={!isLoading}
-              returnKeyType="send"
-              blurOnSubmit={false}
+              returnKeyType="return"
+              blurOnSubmit={true}
               onSubmitEditing={() => {
-                if (inputText.trim() && !isLoading) {
-                  sendMessage(inputText);
-                }
                 Keyboard.dismiss();
               }}
               onFocus={() => {
