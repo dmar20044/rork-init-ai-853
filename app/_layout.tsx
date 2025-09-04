@@ -9,6 +9,7 @@ import { ScanHistoryProvider } from "@/contexts/ScanHistoryContext";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import { GroceryListProvider, useGroceryList } from "@/contexts/GroceryListContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { ToastNotification } from "@/components/ToastNotification";
 import { Colors } from "@/constants/colors";
 import "@/constants/production"; // Initialize production config
@@ -155,13 +156,15 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
           <UserProvider>
-            <ScanHistoryProvider>
-              <GroceryListProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <RootLayoutNav />
-                </GestureHandlerRootView>
-              </GroceryListProvider>
-            </ScanHistoryProvider>
+            <SubscriptionProvider>
+              <ScanHistoryProvider>
+                <GroceryListProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </GroceryListProvider>
+              </ScanHistoryProvider>
+            </SubscriptionProvider>
           </UserProvider>
           </ThemeProvider>
         </QueryClientProvider>
