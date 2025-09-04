@@ -1469,39 +1469,39 @@ export default function GoalsScreen() {
 const createStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.background,
   },
   brandingHeader: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.background,
   },
   brandingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: '#1E1E1E', // Charcoal Black
+    color: colors.textPrimary,
   },
   
   // Hero Profile Card
   heroCard: {
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.surface,
     marginHorizontal: 20,
     marginVertical: 16,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#D9D9D9',
+    shadowColor: colors.textSecondary,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
     elevation: 12,
     position: 'relative',
     borderWidth: 1,
-    borderColor: '#2E294E', // Deep Indigo outline
+    borderColor: '#4ECDC4', // Neon Turquoise outline
   },
   heroBackground: {
     position: 'absolute',
@@ -1509,7 +1509,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     left: 0,
     right: 0,
     height: '100%',
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.surface,
     opacity: 0.8,
   },
   heroContent: {
@@ -1562,12 +1562,12 @@ const createStyles = (colors: any) => StyleSheet.create({
   heroName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: colors.textPrimary,
     marginBottom: 8,
   },
   heroSubtitle: {
     fontSize: 16,
-    color: '#5F5F5F', // Slate Gray
+    color: colors.textSecondary,
     fontWeight: '500',
   },
   heroSettingsButton: {
@@ -1868,11 +1868,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   goalCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 12,
-    shadowColor: '#D9D9D9', // Soft Gray shadows
+    shadowColor: colors.textSecondary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
@@ -1912,18 +1912,18 @@ const createStyles = (colors: any) => StyleSheet.create({
   goalTitle: {
     fontSize: 17,
     fontWeight: "bold",
-    color: '#1E1E1E', // Charcoal Black
+    color: colors.textPrimary,
     marginBottom: 6,
   },
   goalProgress: {
     fontSize: 14,
-    color: '#5F5F5F', // Slate Gray
+    color: colors.textSecondary,
     marginBottom: 10,
     fontWeight: '500',
   },
   goalProgressBar: {
     height: 6,
-    backgroundColor: '#D9D9D9', // Soft Gray
+    backgroundColor: colors.textSecondary + '40',
     borderRadius: 3,
   },
   goalProgressFill: {
@@ -2090,11 +2090,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   streakCountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.surface,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: colors.textSecondary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -2108,19 +2108,19 @@ const createStyles = (colors: any) => StyleSheet.create({
   streakCount: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: colors.textPrimary,
   },
   calAiStreakCard: {
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: colors.textSecondary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
     elevation: 8,
     borderWidth: 1,
-    borderColor: '#2E294E', // Deep Indigo outline
+    borderColor: '#4ECDC4', // Neon Turquoise outline
   },
   calAiDaysContainer: {
     flexDirection: 'row',
