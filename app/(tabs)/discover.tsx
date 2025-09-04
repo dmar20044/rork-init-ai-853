@@ -1051,7 +1051,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       <KeyboardAvoidingView 
         style={[styles.container, { backgroundColor: Colors.retroCreamWhite }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
         <View style={[styles.retroHeaderBanner, { backgroundColor: Colors.retroCreamWhite }]}>
           <View style={styles.retroGradientOverlay} />
