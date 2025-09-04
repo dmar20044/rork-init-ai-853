@@ -15,6 +15,7 @@ import {
   User,
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '@/contexts/ThemeContext';
 
 
 interface LoadingScreenProps {
@@ -53,19 +54,21 @@ const progressSteps = [
 
 export default function LoadingScreen({ isVisible, onCancel, onComplete, onProductNotFound, progress }: LoadingScreenProps) {
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
+  const { isDarkMode } = useTheme();
 
-  // Retro Tech Pop Color Scheme
-  const colors = {
+  // Dynamic color scheme based on theme
+  const themeColors = useMemo(() => ({
     primary: '#4ECDC4', // Neon Turquoise
     secondary: '#FF6B81', // Retro Pink
     accent: '#2E294E', // Deep Indigo
-    background: '#FDFDFD', // Cream White
-    surface: '#FDFDFD', // Cream White
-    text: '#1E1E1E', // Charcoal Black
+    background: isDarkMode ? '#1E1E2E' : '#FDFDFD', // Charcoal Indigo or Cream White
+    surface: isDarkMode ? '#2E294E' : '#FDFDFD', // Deep Indigo or Cream White
+    text: isDarkMode ? '#D9D9D9' : '#1E1E1E', // Soft Gray or Charcoal Black
     textSecondary: '#5F5F5F', // Slate Gray
-    textTertiary: '#D9D9D9', // Soft Gray
-    white: '#FDFDFD'
-  };
+    textTertiary: isDarkMode ? '#5F5F5F' : '#D9D9D9', // Slate Gray or Soft Gray
+    white: '#FDFDFD',
+    gradientBg: isDarkMode ? '#2E294E' : '#FF6B81', // Deep Indigo or Retro Pink
+  }), [isDarkMode]);
   
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
@@ -612,11 +615,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
   const currentMessage = motivationalQuotes[currentMessageIndex];
   
   return (
-    <View style={[styles.loadingContainer, { backgroundColor: colors.background }]}>
+    <View style={[styles.loadingContainer, { backgroundColor: themeColors.background }]}>
       {/* Dynamic Gradient Background */}
       <Animated.View style={[
         styles.gradientBackground,
         {
+          backgroundColor: themeColors.gradientBg,
           opacity: animatedValues.gradientAnimation.interpolate({
             inputRange: [0, 1],
             outputRange: [0.3, 0.7],
@@ -635,8 +639,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       <Animated.View style={[
         styles.shimmerCard,
         {
-          backgroundColor: colors.surface,
-          borderColor: colors.textTertiary,
+          backgroundColor: themeColors.surface,
+          borderColor: themeColors.textTertiary,
           transform: [
             { translateY: animatedValues.slideUpValue },
             { scale: animatedValues.cardScale },
@@ -646,7 +650,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       ]}>
         {/* Minimal Branding - Init AI Logo */}
         <View style={styles.brandingContainer}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
+          <Text style={[styles.brandingText, { color: themeColors.primary }]}>InIt AI</Text>
         </View>
         {/* Hero Animation - AI Scanning Ripples */}
         <View style={styles.heroContainer}>
@@ -696,19 +700,19 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
               transform: [{ scale: animatedValues.centerPulse }],
             },
           ]}>
-            <Target size={24} color={colors.white} strokeWidth={1.5} />
+            <Target size={24} color={themeColors.white} strokeWidth={1.5} />
           </Animated.View>
         </View>
         
         {/* Category Badge */}
         <View style={[styles.categoryBadge, {
-          backgroundColor: colors.primary + '20', // Primary color with transparency
-          borderColor: colors.primary,
+          backgroundColor: themeColors.primary + '20', // Primary color with transparency
+          borderColor: themeColors.primary,
         }]}>
           <View style={styles.categoryBadgeContent}>
-            <Target size={14} color={colors.primary} strokeWidth={1.5} />
+            <Target size={14} color={themeColors.primary} strokeWidth={1.5} />
             <Text style={[styles.categoryBadgeText, {
-              color: colors.primary,
+              color: themeColors.primary,
             }]}>
               Smart Insights
             </Text>
@@ -724,11 +728,11 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           },
         ]}>
           {showProductNotFound ? (
-            <Text style={[styles.loadingText, styles.productNotFoundText, { color: colors.primary }]}>
+            <Text style={[styles.loadingText, styles.productNotFoundText, { color: themeColors.primary }]}>
               Product not found
             </Text>
           ) : (
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+            <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>
               {currentMessage}
             </Text>
           )}
@@ -753,9 +757,9 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                     <Animated.View style={[
                       styles.horizontalStepIndicator,
                       {
-                        backgroundColor: shouldBeHighlighted ? colors.primary : 'transparent',
-                        borderColor: shouldBeHighlighted ? colors.primary : colors.textTertiary,
-                        shadowColor: shouldBeHighlighted ? colors.primary : 'transparent',
+                        backgroundColor: shouldBeHighlighted ? themeColors.primary : 'transparent',
+                        borderColor: shouldBeHighlighted ? themeColors.primary : themeColors.textTertiary,
+                        shadowColor: shouldBeHighlighted ? themeColors.primary : 'transparent',
                         shadowOffset: { width: 0, height: 0 },
                         shadowOpacity: shouldBeHighlighted ? 0.6 : 0,
                         shadowRadius: shouldBeHighlighted ? 8 : 0,
@@ -788,7 +792,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                         }}>
                           <IconComponent 
                             size={16} 
-                            color={shouldBeHighlighted ? colors.white : colors.textTertiary} 
+                            color={shouldBeHighlighted ? themeColors.white : themeColors.textTertiary} 
                             strokeWidth={1}
                           />
                         </Animated.View>
@@ -800,7 +804,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                       style={[
                         styles.horizontalStepLabel,
                         {
-                          color: shouldBeHighlighted ? colors.primary : colors.textTertiary,
+                          color: shouldBeHighlighted ? themeColors.primary : themeColors.textTertiary,
                           fontWeight: shouldBeHighlighted ? '600' : '400',
                         }
                       ]}
@@ -816,7 +820,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                     <View style={[
                       styles.stepConnector,
                       {
-                        backgroundColor: (completedSteps.has(index) || (index < currentStep)) ? colors.primary : colors.textTertiary,
+                        backgroundColor: (completedSteps.has(index) || (index < currentStep)) ? themeColors.primary : themeColors.textTertiary,
                       }
                     ]} />
                   )}
@@ -827,12 +831,12 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           
           {/* Percentage-style progress bar */}
           <View style={styles.percentageProgressContainer}>
-            <View style={[styles.percentageProgressBar, { backgroundColor: colors.textTertiary }]}>
+            <View style={[styles.percentageProgressBar, { backgroundColor: themeColors.textTertiary }]}>
               <Animated.View
                 style={[
                   styles.percentageProgressFill,
                   {
-                    backgroundColor: colors.primary,
+                    backgroundColor: themeColors.primary,
                     width: animatedValues.progressBarWidth.interpolate({
                       inputRange: [0, 100],
                       outputRange: ['0%', '100%'],
@@ -842,7 +846,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                 ]}
               />
             </View>
-            <Text style={[styles.percentageText, { color: colors.primary }]}>
+            <Text style={[styles.percentageText, { color: themeColors.primary }]}>
               {Math.round(currentProgress)}%
             </Text>
           </View>
@@ -853,8 +857,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       {onCancel && (
         <TouchableOpacity 
           style={[styles.cancelScanButton, {
-            backgroundColor: colors.primary + '20',
-            borderColor: colors.primary,
+            backgroundColor: themeColors.primary + '20',
+            borderColor: themeColors.primary,
           }]} 
           onPress={() => {
             if (Platform.OS !== 'web') {
@@ -864,7 +868,7 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
           }}
           activeOpacity={0.7}
         >
-          <Text style={[styles.cancelScanButtonText, { color: colors.primary }]}>Cancel Scan</Text>
+          <Text style={[styles.cancelScanButtonText, { color: themeColors.primary }]}>Cancel Scan</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -885,7 +889,6 @@ const styles = StyleSheet.create({
     left: -200,
     right: -200,
     bottom: -100,
-    backgroundColor: '#FF6B81', // Retro Pink
     opacity: 0.1,
     transform: [{ rotate: '15deg' }],
     zIndex: 0,
