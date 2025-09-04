@@ -562,9 +562,10 @@ export const [UserProvider, useUser] = createContextHook(() => {
       return { currentStreak: 0, longestStreak: 0 };
     }
     
-    // Sort dates in descending order (most recent first)
-    const sortedDates = [...scanDates].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-    console.log('[calculateStreak] Sorted dates (most recent first):', sortedDates);
+    // Remove duplicates and sort dates in descending order (most recent first)
+    const uniqueDates = [...new Set(scanDates)];
+    const sortedDates = uniqueDates.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    console.log('[calculateStreak] Sorted unique dates (most recent first):', sortedDates);
     
     // Calculate current streak using PST timezone
     let currentStreak = 0;
@@ -581,22 +582,23 @@ export const [UserProvider, useUser] = createContextHook(() => {
     
     // Check if user scanned today or yesterday to maintain streak
     if (sortedDates[0] === todayStr || sortedDates[0] === yesterdayStr) {
+      // Start counting from the most recent scan date
+      let streakStartDate = new Date(sortedDates[0] + 'T00:00:00');
       currentStreak = 1;
-      let checkDate = new Date(sortedDates[0] + 'T00:00:00'); // Parse as local date
-      console.log('[calculateStreak] Starting streak calculation from:', format(checkDate, 'yyyy-MM-dd'));
+      console.log('[calculateStreak] Starting streak calculation from:', format(streakStartDate, 'yyyy-MM-dd'));
       
+      // Count consecutive days backwards from the most recent scan
       for (let i = 1; i < sortedDates.length; i++) {
-        const prevDate = subDays(checkDate, 1);
-        const prevDateStr = format(prevDate, 'yyyy-MM-dd');
+        const expectedPrevDate = subDays(streakStartDate, i);
+        const expectedPrevDateStr = format(expectedPrevDate, 'yyyy-MM-dd');
         
-        console.log('[calculateStreak] Checking if', sortedDates[i], 'equals', prevDateStr);
+        console.log('[calculateStreak] Looking for date:', expectedPrevDateStr, 'Found:', sortedDates[i]);
         
-        if (sortedDates[i] === prevDateStr) {
+        if (sortedDates[i] === expectedPrevDateStr) {
           currentStreak++;
-          checkDate = prevDate;
           console.log('[calculateStreak] Streak continued, now:', currentStreak);
         } else {
-          console.log('[calculateStreak] Streak broken at', sortedDates[i]);
+          console.log('[calculateStreak] Streak broken - expected', expectedPrevDateStr, 'but found', sortedDates[i]);
           break;
         }
       }
