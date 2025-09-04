@@ -35,24 +35,24 @@ export const Colors = {
     primaryLight: '#FF4070',
     primaryDark: '#CC0033',
     
-    // Core theme colors - Bright Retro Red and Charcoal
+    // Core theme colors - Bright Retro Red and Charcoal Indigo
     retroRed: '#FF0040', // Bright retro red
     white: '#FFFFFF', // Pure white (for text and accents)
     
-    // Background colors using charcoal
-    background: '#2C2C2C', // Charcoal as main background
-    backgroundSecondary: '#2C2C2C', // Charcoal as secondary
-    backgroundTertiary: '#3A3A3A', // Lighter charcoal
+    // Background colors using Charcoal Indigo
+    background: '#1E1E2E', // Charcoal Indigo as main background
+    backgroundSecondary: '#2A2A2A', // Soft Graphite as secondary
+    backgroundTertiary: '#2E294E', // Deep Indigo for card surfaces
     
     // Surface colors
-    surface: '#363636', // Dark charcoal for cards
-    surfaceSecondary: '#363636', // Dark charcoal
-    surfaceTertiary: '#3A3A3A', // Lighter charcoal
+    surface: '#2E294E', // Deep Indigo for cards
+    surfaceSecondary: '#2A2A2A', // Soft Graphite
+    surfaceTertiary: '#1E1E2E', // Charcoal Indigo
     
     // Text colors
-    textPrimary: '#FFFFFF', // White for primary text
-    textSecondary: '#CCCCCC', // Light gray for secondary text
-    textTertiary: '#999999', // Medium gray for tertiary text
+    textPrimary: '#D9D9D9', // Soft Gray for primary text
+    textSecondary: '#5F5F5F', // Slate Gray for secondary text
+    textTertiary: '#5F5F5F', // Slate Gray for tertiary text
     textLight: '#FFFFFF', // White text
     textDark: '#000000', // Black text (for use on light surfaces)
   },
@@ -172,6 +172,13 @@ const darkColorsCache = {
   gradeGood: Colors.gradeGood,
   gradeMediocre: Colors.gradeMediocre,
   gradePoor: Colors.gradePoor,
+  // Dark mode specific retro colors
+  retroCharcoalIndigo: '#1E1E2E',
+  retroMidnight: '#121212',
+  retroSoftGraphite: '#2A2A2A',
+  retroDeepIndigoSurface: '#2E294E',
+  retroSoftGrayText: '#D9D9D9',
+  retroSlateGrayText: '#5F5F5F',
 };
 
 // Helper function to get theme-specific colors

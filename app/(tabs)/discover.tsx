@@ -1047,20 +1047,20 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: Colors.retroCreamWhite }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}>
       <KeyboardAvoidingView 
-        style={[styles.container, { backgroundColor: Colors.retroCreamWhite }]} 
+        style={[styles.container, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
       >
-        <View style={[styles.retroHeaderBanner, { backgroundColor: Colors.retroCreamWhite }]}>
+        <View style={[styles.retroHeaderBanner, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}>
           <View style={styles.retroGradientOverlay} />
           <View style={styles.retroHeaderContent}>
             <View style={styles.retroTitleContainer}>
               <View style={[styles.retroIconAccent, { backgroundColor: Colors.retroNeonTurquoise }]}>
                 <Feather size={24} color={Colors.white} />
               </View>
-              <Text style={[styles.retroMagazineTitle, { color: Colors.retroCharcoalBlack }]}>Ask InIt</Text>
+              <Text style={[styles.retroMagazineTitle, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>Ask InIt</Text>
               <View style={[styles.retroSubtitleDivider, { backgroundColor: Colors.retroPink }]} />
             </View>
 
@@ -1206,7 +1206,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
 
         <ScrollView 
           ref={scrollViewRef}
-          style={[styles.messagesContainer, { backgroundColor: Colors.retroCreamWhite }]}
+          style={[styles.messagesContainer, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -1220,7 +1220,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   style={styles.coachImage}
                   resizeMode="contain"
                 />
-                <Text style={styles.coachText}>I'm InIt, your personal nutrition coach</Text>
+                <Text style={[styles.coachText, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>I'm InIt, your personal nutrition coach</Text>
               </View>
 
               <View style={styles.retroQuestionsGrid}>
@@ -1249,7 +1249,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                       ]}
                     >
                       <TouchableOpacity
-                        style={[styles.retroQuestionCard, { backgroundColor: Colors.white, borderLeftColor: accentColor }]}
+                        style={[styles.retroQuestionCard, { backgroundColor: isDarkMode ? '#2E294E' : Colors.white, borderLeftColor: accentColor }]}
                         onPress={() => handleQuickQuestion(question.text)}
                         activeOpacity={0.8}
                       >
@@ -1268,8 +1268,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                           <View style={[styles.retroQuestionIcon, { backgroundColor: accentColor + '20' }]}>
                             {question.icon}
                           </View>
-                          <Text style={[styles.retroQuestionTitle, { color: Colors.retroCharcoalBlack }]}>{question.text}</Text>
-                          <Text style={[styles.retroQuestionSubtext, { color: Colors.retroSlateGray }]}>Wellness insight</Text>
+                          <Text style={[styles.retroQuestionTitle, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>{question.text}</Text>
+                          <Text style={[styles.retroQuestionSubtext, { color: isDarkMode ? '#5F5F5F' : Colors.retroSlateGray }]}>Wellness insight</Text>
                         </View>
                         <Animated.View 
                           style={[
@@ -1564,7 +1564,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { backgroundColor: Colors.retroCreamWhite, borderTopColor: Colors.retroSoftGray + '50' }]}>
+        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite, borderTopColor: Colors.retroSoftGray + '50' }]}>
           {showSuggestions && messages.length === 0 && (
             <View style={styles.retroSuggestionChips}>
               {suggestionChips.map((chip, index) => {
@@ -1603,10 +1603,10 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               })}
             </View>
           )}
-          <View style={[styles.retroInputWrapper, { backgroundColor: Colors.white, borderColor: Colors.retroNeonTurquoise }]}>
+          <View style={[styles.retroInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : Colors.white, borderColor: Colors.retroNeonTurquoise }]}>
             <TextInput
               ref={textInputRef}
-              style={[styles.retroTextInput, { color: Colors.retroCharcoalBlack }]}
+              style={[styles.retroTextInput, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}
               value={inputText}
               onChangeText={(text) => {
                 setInputText(text);
@@ -1617,7 +1617,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 }
               }}
               placeholder="What wellness wisdom can I share with you today?"
-              placeholderTextColor={Colors.retroSlateGray}
+              placeholderTextColor={isDarkMode ? '#5F5F5F' : Colors.retroSlateGray}
               multiline
               maxLength={500}
               editable={!isLoading}
@@ -1636,7 +1636,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               style={[
                 styles.retroSendButton,
                 { backgroundColor: Colors.retroNeonTurquoise },
-                (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: Colors.retroSoftGray }],
+                (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: isDarkMode ? '#5F5F5F' : Colors.retroSoftGray }],
               ]}
               onPress={() => {
                 // Tap ripple effect for send button
@@ -2855,7 +2855,6 @@ const styles = StyleSheet.create({
   retroQuickQuestionsSection: {
     paddingHorizontal: 20,
     paddingVertical: 24,
-    backgroundColor: Colors.retroCreamWhite,
   },
   retroSectionHeader: {
     alignItems: 'center',
