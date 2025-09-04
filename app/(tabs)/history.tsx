@@ -271,7 +271,11 @@ export default function HistoryScreen() {
         </View>
         <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
           <View style={styles.emptyBasket}>
-            <ShoppingBasket size={64} color="#4ECDC4" />
+            <Image 
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/sgfostw7yg66k1o3ys4oe' }}
+              style={styles.emptyImage}
+              resizeMode="contain"
+            />
           </View>
           <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No scans yet!</Text>
           <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
@@ -922,6 +926,10 @@ const styles = StyleSheet.create({
   // Empty state styles
   emptyBasket: {
     marginBottom: 16,
+  },
+  emptyImage: {
+    width: 120,
+    height: 120,
   },
   startScanningButton: {
     backgroundColor: '#4ECDC4', // Neon Turquoise
