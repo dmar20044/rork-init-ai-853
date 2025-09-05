@@ -1554,77 +1554,11 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
             </View>
           )}
           
-          {/* Talk to InIt button - positioned below Dinner Ideas but above text input */}
-          <TouchableOpacity 
-            style={[styles.retroConversationBubble, { backgroundColor: '#FF3B30', marginBottom: 12 }]}
-            activeOpacity={0.8}
-            onPress={handleVoiceModeToggle}
-          >
-            {/* Expanding teal background */}
-            <Animated.View 
-              style={[
-                styles.retroBubbleExpandingBackground,
-                {
-                  backgroundColor: Colors.retroNeonTurquoise,
-                  transform: [
-                    {
-                      scaleX: bubbleExpandAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, 1], // Scale from 0 to full width
-                      }),
-                    },
-                    {
-                      scaleY: bubbleExpandAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, 1], // Scale from 0 to full height
-                      }),
-                    },
-                  ],
-                  opacity: bubbleExpandAnim.interpolate({
-                    inputRange: [0, 0.3, 1],
-                    outputRange: [0, 0.9, 1],
-                  }),
-                },
-              ]}
-            />
-            <Animated.Text 
-              style={[
-                styles.retroConversationText, 
-                { 
-                  color: Colors.white,
-                  opacity: textFadeAnim,
-                }
-              ]}
-            >
-              {buttonText}
-            </Animated.Text>
-            <Animated.View 
-              style={[
-                styles.retroMicrophoneCircle, 
-                { backgroundColor: Colors.white },
-                {
-                  transform: [
-                    {
-                      rotate: micRotationAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ['0deg', '360deg'],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              {showCheckmark ? (
-                <Check size={16} color={'#FF3B30'} />
-              ) : (
-                <Mic size={16} color={'#FF3B30'} />
-              )}
-            </Animated.View>
-          </TouchableOpacity>
-          <View style={[styles.retroInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : Colors.white, borderColor: Colors.retroNeonTurquoise }]}>
+          {/* Combined input bar with voice button and text input */}
+          <View style={[styles.combinedInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5', borderColor: isDarkMode ? '#5F5F5F' : '#E0E0E0' }]}>
             <TextInput
               ref={textInputRef}
-              style={[styles.retroTextInput, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}
+              style={[styles.combinedTextInput, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}
               value={inputText}
               onChangeText={(text) => {
                 setInputText(text);
@@ -1634,8 +1568,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   setShowSuggestions(true);
                 }
               }}
-              placeholder="What wellness wisdom can I share with you today?"
-              placeholderTextColor={isDarkMode ? '#5F5F5F' : Colors.retroSlateGray}
+              placeholder="Ask anything"
+              placeholderTextColor={isDarkMode ? '#5F5F5F' : '#999999'}
               multiline
               maxLength={500}
               editable={!isLoading}
@@ -1651,10 +1585,62 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               }}
             />
             <TouchableOpacity
+              style={[styles.combinedMicButton, { backgroundColor: isDarkMode ? '#5F5F5F' : '#E0E0E0' }]}
+              activeOpacity={0.8}
+              onPress={handleVoiceModeToggle}
+            >
+              <Animated.View 
+                style={[
+                  styles.retroBubbleExpandingBackground,
+                  {
+                    backgroundColor: Colors.retroNeonTurquoise,
+                    transform: [
+                      {
+                        scaleX: bubbleExpandAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 1],
+                        }),
+                      },
+                      {
+                        scaleY: bubbleExpandAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, 1],
+                        }),
+                      },
+                    ],
+                    opacity: bubbleExpandAnim.interpolate({
+                      inputRange: [0, 0.3, 1],
+                      outputRange: [0, 0.9, 1],
+                    }),
+                  },
+                ]}
+              />
+              <Animated.View 
+                style={[
+                  {
+                    transform: [
+                      {
+                        rotate: micRotationAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '360deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                {showCheckmark ? (
+                  <Check size={20} color={isDarkMode ? '#D9D9D9' : '#666666'} />
+                ) : (
+                  <Mic size={20} color={isDarkMode ? '#D9D9D9' : '#666666'} />
+                )}
+              </Animated.View>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[
-                styles.retroSendButton,
-                { backgroundColor: Colors.retroNeonTurquoise },
-                (!inputText.trim() || isLoading) && [styles.retroSendButtonDisabled, { backgroundColor: isDarkMode ? '#5F5F5F' : Colors.retroSoftGray }],
+                styles.combinedSendButton,
+                { backgroundColor: Colors.white },
+                (!inputText.trim() || isLoading) && [styles.combinedSendButtonDisabled, { backgroundColor: isDarkMode ? '#5F5F5F' : Colors.retroSoftGray }],
               ]}
               onPress={() => {
                 // Tap ripple effect for send button
@@ -1699,7 +1685,9 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   },
                 ]}
               />
-              <Send size={18} color={Colors.white} />
+              <View style={[styles.combinedSendIcon, { backgroundColor: isDarkMode ? '#D9D9D9' : '#000000' }]}>
+                <Text style={[styles.combinedSendIconText, { color: Colors.white }]}>▶</Text>
+              </View>
             </TouchableOpacity>
           </View>
         </View>
@@ -3197,5 +3185,75 @@ const styles = StyleSheet.create({
     color: Colors.retroCharcoalBlack,
     textAlign: 'center',
     letterSpacing: -0.2,
+  },
+  
+  // Combined Input Bar Styles
+  combinedInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 25,
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    shadowColor: 'rgba(0,0,0,0.05)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  combinedTextInput: {
+    flex: 1,
+    fontSize: 16,
+    color: Colors.retroCharcoalBlack,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    maxHeight: 80,
+    fontWeight: '400',
+  },
+  combinedMicButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E0E0E0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  combinedSendButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: 'rgba(0,0,0,0.1)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  combinedSendButtonDisabled: {
+    backgroundColor: Colors.retroSoftGray,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  combinedSendIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  combinedSendIconText: {
+    fontSize: 10,
+    color: Colors.white,
+    fontWeight: '600',
   },
 });
