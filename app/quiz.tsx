@@ -342,9 +342,9 @@ function QuizScreen() {
 
     setIsAuthenticating(true);
     try {
-      console.log('[Quiz] Sending OTP to email:', email);
+      console.log('[Quiz] Sending OTP to email:', email.trim().toLowerCase());
       const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         options: {
           shouldCreateUser: true,
         },
@@ -392,16 +392,26 @@ function QuizScreen() {
     setOtpError('');
     
     try {
-      console.log('[Quiz] Auto-verifying OTP:', otpCode);
+      console.log('[Quiz] Auto-verifying OTP:', otpCode, 'for email:', email.trim());
       const { data, error } = await supabase.auth.verifyOtp({
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         token: otpCode.trim(),
         type: 'email',
       });
 
       if (error) {
         console.error('[Quiz] Error verifying OTP:', error);
-        setOtpError('Invalid verification code. Please try again.');
+        
+        // Handle specific error cases
+        if (error.message?.includes('expired') || error.message?.includes('invalid')) {
+          if (error.message?.includes('expired')) {
+            setOtpError('Verification code has expired. Please request a new one.');
+          } else {
+            setOtpError('Invalid verification code. Please check and try again.');
+          }
+        } else {
+          setOtpError('Verification failed. Please try again or request a new code.');
+        }
         return;
       }
 
@@ -506,16 +516,26 @@ function QuizScreen() {
     setSignInOtpError('');
     
     try {
-      console.log('[Quiz] Auto-verifying sign-in OTP:', otpCode);
+      console.log('[Quiz] Auto-verifying sign-in OTP:', otpCode, 'for email:', signInEmail.trim());
       const { data, error } = await supabase.auth.verifyOtp({
-        email: signInEmail.trim(),
+        email: signInEmail.trim().toLowerCase(),
         token: otpCode.trim(),
         type: 'email',
       });
 
       if (error) {
         console.error('[Quiz] Error verifying sign-in OTP:', error);
-        setSignInOtpError('Invalid verification code. Please try again.');
+        
+        // Handle specific error cases
+        if (error.message?.includes('expired') || error.message?.includes('invalid')) {
+          if (error.message?.includes('expired')) {
+            setSignInOtpError('Verification code has expired. Please request a new one.');
+          } else {
+            setSignInOtpError('Invalid verification code. Please check and try again.');
+          }
+        } else {
+          setSignInOtpError('Verification failed. Please try again or request a new code.');
+        }
         return;
       }
 
@@ -869,7 +889,7 @@ function QuizScreen() {
             </View>
             <Text style={styles.title}>{currentStepData.title}</Text>
             <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
-            <Text style={styles.emailDisplay}>Sent to: {email}</Text>
+            <Text style={styles.emailDisplay}>Sent to: {email.trim().toLowerCase()}</Text>
             <TextInput
               style={[
                 styles.textInput, 
@@ -1660,7 +1680,7 @@ function QuizScreen() {
               </View>
               <Text style={styles.modalMainTitle}>Verify Your Email</Text>
               <Text style={styles.modalSubtitle}>Enter the 6-digit code we sent to your email</Text>
-              <Text style={styles.modalEmailDisplay}>Sent to: {signInEmail}</Text>
+              <Text style={styles.modalEmailDisplay}>Sent to: {signInEmail.trim().toLowerCase()}</Text>
               
               <TextInput
                 style={[
