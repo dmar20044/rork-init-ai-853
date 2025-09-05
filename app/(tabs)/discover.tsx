@@ -70,7 +70,7 @@ interface QuickQuestion {
 
 
 
-const suggestionChips = [];
+const suggestionChips: string[] = [];
 
 export default function AskInItScreen() {
   const { profile } = useUser();
