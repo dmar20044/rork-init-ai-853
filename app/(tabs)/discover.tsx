@@ -890,24 +890,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
     
     if (isVoiceModeActive) {
       // Close voice mode
-      stopSoundWaveAnimation();
       setShowCheckmark(false);
-      
-      // Fade text back to "Talk to InIt"
-      Animated.timing(textFadeAnim, {
-        toValue: 0,
-        duration: 200,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start(() => {
-        setButtonText("Talk to InIt");
-        Animated.timing(textFadeAnim, {
-          toValue: 1,
-          duration: 200,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }).start();
-      });
       
       // Reset rotation animation
       Animated.timing(micRotationAnim, {
@@ -915,14 +898,6 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         duration: 300,
         easing: Easing.inOut(Easing.cubic),
         useNativeDriver: true,
-      }).start();
-      
-      // Reset bubble expand animation
-      Animated.timing(bubbleExpandAnim, {
-        toValue: 0,
-        duration: 400,
-        easing: Easing.in(Easing.back(1.2)),
-        useNativeDriver: false,
       }).start();
       
       // Reset bar expand animation
@@ -933,41 +908,10 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         useNativeDriver: false,
       }).start();
       
-      Animated.timing(voiceModeBubbleAnim, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.inOut(Easing.cubic),
-        useNativeDriver: true,
-      }).start(() => {
-        setIsVoiceModeActive(false);
-      });
+      setIsVoiceModeActive(false);
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
-      
-      // Fade text to "InIt is listening"
-      Animated.timing(textFadeAnim, {
-        toValue: 0,
-        duration: 200,
-        easing: Easing.inOut(Easing.ease),
-        useNativeDriver: true,
-      }).start(() => {
-        setButtonText("InIt is listening");
-        Animated.timing(textFadeAnim, {
-          toValue: 1,
-          duration: 200,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }).start();
-      });
-      
-      // Start bubble expand animation from microphone
-      Animated.timing(bubbleExpandAnim, {
-        toValue: 1,
-        duration: 600,
-        easing: Easing.out(Easing.back(1.1)),
-        useNativeDriver: false,
-      }).start();
       
       // Start bar expand animation from microphone
       Animated.timing(barExpandAnim, {
@@ -986,19 +930,6 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       }).start(() => {
         // Show checkmark after rotation completes
         setShowCheckmark(true);
-      });
-      
-      Animated.timing(voiceModeBubbleAnim, {
-        toValue: 1,
-        duration: 600,
-        delay: 200,
-        easing: Easing.out(Easing.back(1.2)),
-        useNativeDriver: true,
-      }).start(() => {
-        // Start sound wave animation after bubble appears
-        setTimeout(() => {
-          startSoundWaveAnimation();
-        }, 300);
       });
     }
   };
@@ -1090,86 +1021,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           </View>
         </View>
 
-        {/* Full-screen Voice Mode Overlay */}
-        {isVoiceModeActive && (
-          <Animated.View 
-            style={[
-              styles.fullScreenVoiceModeOverlay,
-              {
-                backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite,
-                opacity: voiceModeBubbleAnim,
-              },
-            ]}
-          >
-            <Animated.View 
-              style={[
-                styles.fullScreenVoiceBubble,
-                {
-                  transform: [
-                    {
-                      scale: voiceModeBubbleAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0.8, 1],
-                      }),
-                    },
-                    {
-                      translateY: voiceModeBubbleAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [50, 0],
-                      }),
-                    },
-                  ],
-                },
-              ]}
-            >
-              <View style={[styles.fullScreenVoiceIcon, { backgroundColor: '#FF3B30' + '20', borderColor: '#FF3B30' + '40' }]}>
-                <Mic size={32} color={'#FF3B30'} />
-              </View>
-              <Text style={[styles.fullScreenVoiceTitle, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>InIt is Listening</Text>
-              <Text style={[styles.fullScreenVoiceSubtitle, { color: isDarkMode ? '#5F5F5F' : Colors.retroSlateGray }]}>Ask me anything about nutrition and wellness</Text>
-              
-              {/* Animated Sound Waves */}
-              <View style={styles.fullScreenSoundWavesContainer}>
-                {soundWaveAnims.map((anim, index) => (
-                  <Animated.View
-                    key={index}
-                    style={[
-                      styles.fullScreenSoundWave,
-                      {
-                        backgroundColor: '#FF3B30',
-                        height: anim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [6, 24 + (index % 3) * 8],
-                        }),
-                        opacity: anim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.4, 1],
-                        }),
-                        transform: [
-                          {
-                            scaleY: anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0.5, 1.3],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  />
-                ))}
-              </View>
-              
-              <TouchableOpacity 
-                style={[styles.fullScreenCloseButton, { backgroundColor: isDarkMode ? '#2A2A2A' : Colors.white }]}
-                onPress={handleVoiceModeToggle}
-                activeOpacity={0.8}
-              >
-                <X size={20} color={isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack} />
-                <Text style={[styles.fullScreenCloseButtonText, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>Close</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          </Animated.View>
-        )}
+
 
         <ScrollView 
           ref={scrollViewRef}
@@ -1602,11 +1454,11 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   setShowSuggestions(true);
                 }
               }}
-              placeholder="Ask anything"
-              placeholderTextColor={isDarkMode ? '#5F5F5F' : '#999999'}
+              placeholder={isVoiceModeActive ? "InIt Is listening" : "Ask anything"}
+              placeholderTextColor={isVoiceModeActive ? Colors.white : (isDarkMode ? '#5F5F5F' : '#999999')}
               multiline
               maxLength={500}
-              editable={!isLoading}
+              editable={!isLoading && !isVoiceModeActive}
               returnKeyType="done"
               blurOnSubmit={true}
               onSubmitEditing={() => {
