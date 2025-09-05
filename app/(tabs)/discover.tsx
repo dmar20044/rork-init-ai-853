@@ -888,9 +888,10 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     }
     
-    if (isVoiceModeActive) {
-      // Close voice mode
+    if (isVoiceModeActive || showCheckmark) {
+      // Close voice mode (whether it's active or showing checkmark)
       setShowCheckmark(false);
+      setIsVoiceModeActive(false);
       
       // Reset rotation animation
       Animated.timing(micRotationAnim, {
@@ -907,8 +908,6 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         easing: Easing.in(Easing.cubic),
         useNativeDriver: false,
       }).start();
-      
-      setIsVoiceModeActive(false);
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
