@@ -1071,72 +1071,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               </View>
             )}
             
-            <TouchableOpacity 
-              style={[styles.retroConversationBubble, { backgroundColor: '#FF3B30' }]}
-              activeOpacity={0.8}
-              onPress={handleVoiceModeToggle}
-            >
-              {/* Expanding teal background */}
-              <Animated.View 
-                style={[
-                  styles.retroBubbleExpandingBackground,
-                  {
-                    backgroundColor: Colors.retroNeonTurquoise,
-                    transform: [
-                      {
-                        scaleX: bubbleExpandAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, 1], // Scale from 0 to full width
-                        }),
-                      },
-                      {
-                        scaleY: bubbleExpandAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, 1], // Scale from 0 to full height
-                        }),
-                      },
-                    ],
-                    opacity: bubbleExpandAnim.interpolate({
-                      inputRange: [0, 0.3, 1],
-                      outputRange: [0, 0.9, 1],
-                    }),
-                  },
-                ]}
-              />
-              <Animated.Text 
-                style={[
-                  styles.retroConversationText, 
-                  { 
-                    color: Colors.white,
-                    opacity: textFadeAnim,
-                  }
-                ]}
-              >
-                {buttonText}
-              </Animated.Text>
-              <Animated.View 
-                style={[
-                  styles.retroMicrophoneCircle, 
-                  { backgroundColor: Colors.white },
-                  {
-                    transform: [
-                      {
-                        rotate: micRotationAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '360deg'],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                {showCheckmark ? (
-                  <Check size={16} color={'#FF3B30'} />
-                ) : (
-                  <Mic size={16} color={'#FF3B30'} />
-                )}
-              </Animated.View>
-            </TouchableOpacity>
+
             
             {/* Inline Voice Mode Interface */}
             {isVoiceModeActive && (
@@ -1603,6 +1538,74 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               })}
             </View>
           )}
+          
+          {/* Talk to InIt button - positioned below Dinner Ideas but above text input */}
+          <TouchableOpacity 
+            style={[styles.retroConversationBubble, { backgroundColor: '#FF3B30', marginBottom: 12 }]}
+            activeOpacity={0.8}
+            onPress={handleVoiceModeToggle}
+          >
+            {/* Expanding teal background */}
+            <Animated.View 
+              style={[
+                styles.retroBubbleExpandingBackground,
+                {
+                  backgroundColor: Colors.retroNeonTurquoise,
+                  transform: [
+                    {
+                      scaleX: bubbleExpandAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 1], // Scale from 0 to full width
+                      }),
+                    },
+                    {
+                      scaleY: bubbleExpandAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 1], // Scale from 0 to full height
+                      }),
+                    },
+                  ],
+                  opacity: bubbleExpandAnim.interpolate({
+                    inputRange: [0, 0.3, 1],
+                    outputRange: [0, 0.9, 1],
+                  }),
+                },
+              ]}
+            />
+            <Animated.Text 
+              style={[
+                styles.retroConversationText, 
+                { 
+                  color: Colors.white,
+                  opacity: textFadeAnim,
+                }
+              ]}
+            >
+              {buttonText}
+            </Animated.Text>
+            <Animated.View 
+              style={[
+                styles.retroMicrophoneCircle, 
+                { backgroundColor: Colors.white },
+                {
+                  transform: [
+                    {
+                      rotate: micRotationAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              {showCheckmark ? (
+                <Check size={16} color={'#FF3B30'} />
+              ) : (
+                <Mic size={16} color={'#FF3B30'} />
+              )}
+            </Animated.View>
+          </TouchableOpacity>
           <View style={[styles.retroInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : Colors.white, borderColor: Colors.retroNeonTurquoise }]}>
             <TextInput
               ref={textInputRef}
