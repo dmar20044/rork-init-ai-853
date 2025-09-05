@@ -121,6 +121,7 @@ export default function AskInItScreen() {
   const textFadeAnim = useRef(new Animated.Value(1)).current;
   const [showCheckmark, setShowCheckmark] = useState(false);
   const [buttonText, setButtonText] = useState("Talk to InIt");
+  const barExpandAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -924,6 +925,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         useNativeDriver: false,
       }).start();
       
+      // Reset bar expand animation
+      Animated.timing(barExpandAnim, {
+        toValue: 0,
+        duration: 400,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: false,
+      }).start();
+      
       Animated.timing(voiceModeBubbleAnim, {
         toValue: 0,
         duration: 300,
@@ -957,6 +966,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         toValue: 1,
         duration: 600,
         easing: Easing.out(Easing.back(1.1)),
+        useNativeDriver: false,
+      }).start();
+      
+      // Start bar expand animation from microphone
+      Animated.timing(barExpandAnim, {
+        toValue: 1,
+        duration: 800,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
       }).start();
       
@@ -1556,6 +1573,23 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           
           {/* Combined input bar with voice button and text input */}
           <View style={[styles.combinedInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5', borderColor: isDarkMode ? '#5F5F5F' : '#E0E0E0' }]}>
+            {/* Expanding teal background */}
+            <Animated.View 
+              style={[
+                styles.expandingTealBackground,
+                {
+                  backgroundColor: Colors.retroNeonTurquoise,
+                  width: barExpandAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1000], // Large enough to cover the entire bar
+                  }),
+                  opacity: barExpandAnim.interpolate({
+                    inputRange: [0, 0.1, 1],
+                    outputRange: [0, 0.8, 0.9],
+                  }),
+                },
+              ]}
+            />
             <TextInput
               ref={textInputRef}
               style={[styles.combinedTextInput, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}
@@ -3255,5 +3289,15 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.white,
     fontWeight: '600',
+  },
+  
+  // Expanding teal background for the input bar
+  expandingTealBackground: {
+    position: 'absolute',
+    top: 0,
+    right: 0, // Start from the right side where the microphone is
+    bottom: 0,
+    borderRadius: 25,
+    zIndex: 1,
   },
 });
