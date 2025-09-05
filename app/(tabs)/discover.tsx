@@ -1531,7 +1531,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 ]}
               >
                 {showCheckmark ? (
-                  <Check size={20} color={'#FF3B30'} />
+                  <Check size={20} color={'#DC2626'} />
                 ) : (
                   <Mic size={20} color={isDarkMode ? '#D9D9D9' : '#666666'} />
                 )}
