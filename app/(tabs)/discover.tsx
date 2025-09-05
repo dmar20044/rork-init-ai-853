@@ -1073,71 +1073,90 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
             
 
             
-            {/* Inline Voice Mode Interface */}
-            {isVoiceModeActive && (
-              <Animated.View 
-                style={[
-                  styles.inlineVoiceModeContainer,
-                  {
-                    opacity: voiceModeBubbleAnim,
-                    transform: [
-                      {
-                        scale: voiceModeBubbleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.8, 1],
-                        }),
-                      },
-                      {
-                        translateY: voiceModeBubbleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [20, 0],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <View style={styles.inlineVoiceBubble}>
-                  <View style={styles.inlineVoiceIcon}>
-                    <Mic size={24} color={'#FF3B30'} />
-                  </View>
-                  <Text style={styles.inlineVoiceTitle}>Listening...</Text>
-                  <Text style={styles.inlineVoiceSubtitle}>Ask me anything about nutrition</Text>
-                  
-                  {/* Animated Sound Waves */}
-                  <View style={styles.inlineSoundWavesContainer}>
-                    {soundWaveAnims.map((anim, index) => (
-                      <Animated.View
-                        key={index}
-                        style={[
-                          styles.inlineSoundWave,
-                          {
-                            height: anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [4, 16 + (index % 3) * 4],
-                            }),
-                            opacity: anim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0.4, 1],
-                            }),
-                            transform: [
-                              {
-                                scaleY: anim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: [0.5, 1.2],
-                                }),
-                              },
-                            ],
-                          },
-                        ]}
-                      />
-                    ))}
-                  </View>
-                </View>
-              </Animated.View>
-            )}
+
           </View>
         </View>
+
+        {/* Full-screen Voice Mode Overlay */}
+        {isVoiceModeActive && (
+          <Animated.View 
+            style={[
+              styles.fullScreenVoiceModeOverlay,
+              {
+                backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite,
+                opacity: voiceModeBubbleAnim,
+              },
+            ]}
+          >
+            <Animated.View 
+              style={[
+                styles.fullScreenVoiceBubble,
+                {
+                  transform: [
+                    {
+                      scale: voiceModeBubbleAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.8, 1],
+                      }),
+                    },
+                    {
+                      translateY: voiceModeBubbleAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [50, 0],
+                      }),
+                    },
+                  ],
+                },
+              ]}
+            >
+              <View style={[styles.fullScreenVoiceIcon, { backgroundColor: '#FF3B30' + '20', borderColor: '#FF3B30' + '40' }]}>
+                <Mic size={32} color={'#FF3B30'} />
+              </View>
+              <Text style={[styles.fullScreenVoiceTitle, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>InIt is Listening</Text>
+              <Text style={[styles.fullScreenVoiceSubtitle, { color: isDarkMode ? '#5F5F5F' : Colors.retroSlateGray }]}>Ask me anything about nutrition and wellness</Text>
+              
+              {/* Animated Sound Waves */}
+              <View style={styles.fullScreenSoundWavesContainer}>
+                {soundWaveAnims.map((anim, index) => (
+                  <Animated.View
+                    key={index}
+                    style={[
+                      styles.fullScreenSoundWave,
+                      {
+                        backgroundColor: '#FF3B30',
+                        height: anim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [6, 24 + (index % 3) * 8],
+                        }),
+                        opacity: anim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.4, 1],
+                        }),
+                        transform: [
+                          {
+                            scaleY: anim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [0.5, 1.3],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  />
+                ))}
+              </View>
+              
+              <TouchableOpacity 
+                style={[styles.fullScreenCloseButton, { backgroundColor: isDarkMode ? '#2A2A2A' : Colors.white }]}
+                onPress={handleVoiceModeToggle}
+                activeOpacity={0.8}
+              >
+                <X size={20} color={isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack} />
+                <Text style={[styles.fullScreenCloseButtonText, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>Close</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </Animated.View>
+        )}
 
         <ScrollView 
           ref={scrollViewRef}
@@ -1146,7 +1165,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {messages.length === 0 && (
+          {messages.length === 0 && !isVoiceModeActive && (
             <View style={styles.retroQuickQuestionsSection}>
               {/* Empty State with Coach Image */}
               <View style={styles.emptyStateContainer}>
@@ -3073,63 +3092,95 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   
-  // Inline Voice Mode Styles
-  inlineVoiceModeContainer: {
-    marginTop: 16,
+  // Full-screen Voice Mode Styles
+  fullScreenVoiceModeOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 1000,
+    justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  inlineVoiceBubble: {
+  fullScreenVoiceBubble: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
-    padding: 24,
+    borderRadius: 32,
+    padding: 40,
     alignItems: 'center',
-    shadowColor: 'rgba(0, 0, 0, 0.15)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 8,
-    minWidth: 280,
-    maxWidth: 320,
-    borderWidth: 2,
-    borderColor: '#FF3B30' + '20',
+    shadowColor: 'rgba(0, 0, 0, 0.25)',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.3,
+    shadowRadius: 24,
+    elevation: 12,
+    minWidth: 320,
+    maxWidth: 360,
+    borderWidth: 3,
+    borderColor: '#FF3B30' + '30',
   },
-  inlineVoiceIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+  fullScreenVoiceIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: '#FF3B30' + '20',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 2,
+    marginBottom: 24,
+    borderWidth: 3,
     borderColor: '#FF3B30' + '40',
   },
-  inlineVoiceTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+  fullScreenVoiceTitle: {
+    fontSize: 28,
+    fontWeight: '800',
     color: Colors.retroCharcoalBlack,
-    marginBottom: 6,
-    letterSpacing: -0.3,
+    marginBottom: 8,
+    letterSpacing: -0.5,
+    textAlign: 'center',
   },
-  inlineVoiceSubtitle: {
-    fontSize: 14,
+  fullScreenVoiceSubtitle: {
+    fontSize: 16,
     color: Colors.retroSlateGray,
     textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 20,
+    marginBottom: 32,
+    lineHeight: 24,
+    paddingHorizontal: 20,
   },
-  inlineSoundWavesContainer: {
+  fullScreenSoundWavesContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 3,
-    height: 24,
+    gap: 4,
+    height: 40,
+    marginBottom: 32,
   },
-  inlineSoundWave: {
-    width: 2,
+  fullScreenSoundWave: {
+    width: 3,
     backgroundColor: '#FF3B30',
-    borderRadius: 1,
-    minHeight: 2,
+    borderRadius: 2,
+    minHeight: 4,
+  },
+  fullScreenCloseButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    shadowColor: 'rgba(0, 0, 0, 0.1)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.retroSoftGray,
+  },
+  fullScreenCloseButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.retroCharcoalBlack,
+    marginLeft: 8,
+    letterSpacing: 0.1,
   },
   
   // Empty State Styles
