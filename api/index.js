@@ -20,8 +20,7 @@ app.get('/', (c) => {
     status: 'ok', 
     message: 'API is running',
     timestamp: new Date().toISOString(),
-    hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-    keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
+    usingRorkAPI: true,
     environment: process.env.NODE_ENV || 'unknown'
   });
 });
@@ -33,8 +32,7 @@ app.get('/api', (c) => {
     message: 'API is running', 
     endpoints: ['/api/trpc', '/debug'],
     timestamp: new Date().toISOString(),
-    hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-    keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
+    usingRorkAPI: true,
     environment: process.env.NODE_ENV || 'unknown'
   });
 });
@@ -45,9 +43,7 @@ app.get('/debug', (c) => {
   return c.json({
     status: 'debug',
     environment: {
-      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-      keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0,
-      keyPreview: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 10) + '...' : 'none',
+      usingRorkAPI: true,
       nodeEnv: process.env.NODE_ENV,
       timestamp: new Date().toISOString(),
       vercelRegion: process.env.VERCEL_REGION || 'unknown',
@@ -116,34 +112,20 @@ You MUST respond with ONLY a valid JSON object, no additional text or formatting
 
           const userMessage = 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.';
 
-          console.log('Making request to Anthropic API...');
+          console.log('Making request to Rork AI API...');
           
-          // Check if API key is available
-          if (!process.env.ANTHROPIC_API_KEY) {
-            console.error('ANTHROPIC_API_KEY environment variable is not set');
-            throw new Error('API key not configured. Please set ANTHROPIC_API_KEY in Vercel environment variables.');
-          }
-          
-          if (process.env.ANTHROPIC_API_KEY.length < 50) {
-            console.error('ANTHROPIC_API_KEY appears to be invalid (too short)');
-            throw new Error('API key appears to be invalid. Please check your ANTHROPIC_API_KEY in Vercel environment variables.');
-          }
-          
-          console.log('API Key length:', process.env.ANTHROPIC_API_KEY.length);
-          console.log('API Key prefix:', process.env.ANTHROPIC_API_KEY.substring(0, 15) + '...');
-          
-          const response = await fetch('https://api.anthropic.com/v1/messages', {
+          // Use Rork's built-in AI API - no API key needed!
+          const response = await fetch('https://toolkit.rork.com/text/llm/', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': process.env.ANTHROPIC_API_KEY,
-              'anthropic-version': '2023-06-01'
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              model: 'claude-3-sonnet-20240229',
-              max_tokens: 4000,
-              system: systemPrompt,
               messages: [
+                {
+                  role: 'system',
+                  content: systemPrompt
+                },
                 {
                   role: 'user',
                   content: [
@@ -153,11 +135,7 @@ You MUST respond with ONLY a valid JSON object, no additional text or formatting
                     },
                     {
                       type: 'image',
-                      source: {
-                        type: 'base64',
-                        media_type: 'image/jpeg',
-                        data: compressedImage
-                      }
+                      image: compressedImage // base64 image data
                     }
                   ]
                 }
@@ -167,16 +145,16 @@ You MUST respond with ONLY a valid JSON object, no additional text or formatting
           
           if (!response.ok) {
             const errorText = await response.text().catch(() => 'Unable to read error response');
-            console.error('Anthropic API error:', errorText);
+            console.error('Rork AI API error:', errorText);
             throw new Error(`API request failed: ${response.status} - ${errorText}`);
           }
 
           const result = await response.json();
-          console.log('Anthropic Analysis result received');
+          console.log('Rork AI Analysis result received');
           
-          // Parse the Anthropic response
-          const completion = result.content?.[0]?.text || '';
-          console.log('Raw Anthropic response length:', completion.length);
+          // Parse the Rork AI response
+          const completion = result.completion || '';
+          console.log('Raw AI response length:', completion.length);
           
           // Clean the response - remove any markdown formatting or extra text
           let cleanedResponse = completion.trim();
@@ -319,8 +297,7 @@ module.exports = async (req, res) => {
       hasBody: !!req.body,
       bodyType: typeof req.body,
       contentType: req.headers['content-type'],
-      hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-      keyLength: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.length : 0
+      usingRorkAPI: true
     });
     
     // Create a proper Request object for Hono
