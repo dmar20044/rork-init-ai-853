@@ -128,7 +128,7 @@ export default function AskInItScreen() {
       () => {
         setTimeout(() => {
           scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+        }, 50);
       }
     );
 
@@ -1047,7 +1047,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       <KeyboardAvoidingView 
         style={[styles.container, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
       >
         <View style={[styles.retroHeaderBanner, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}>
           <View style={styles.retroGradientOverlay} />
@@ -1647,7 +1647,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               onFocus={() => {
                 setTimeout(() => {
                   scrollViewRef.current?.scrollToEnd({ animated: true });
-                }, 300);
+                }, 150);
               }}
             />
             <TouchableOpacity
@@ -2995,10 +2995,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     backgroundColor: Colors.white,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minHeight: 44,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    minHeight: 40,
     shadowColor: 'rgba(0,0,0,0.08)',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.12,
@@ -3011,8 +3011,8 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: Colors.retroCharcoalBlack,
-    maxHeight: 80,
-    paddingVertical: 6,
+    maxHeight: 70,
+    paddingVertical: 4,
     fontWeight: '500',
     letterSpacing: 0.1,
   },
