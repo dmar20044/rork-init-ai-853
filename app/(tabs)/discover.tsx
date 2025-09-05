@@ -1448,7 +1448,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   backgroundColor: Colors.retroNeonTurquoise,
                   width: barExpandAnim.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 1000], // Large enough to cover the entire bar
+                    outputRange: [0, '100%'], // Only fill the input container
                   }),
                   opacity: barExpandAnim.interpolate({
                     inputRange: [0, 0.1, 1],
