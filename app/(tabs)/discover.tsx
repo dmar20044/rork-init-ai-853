@@ -1554,7 +1554,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
             </View>
           )}
           
-          {/* Combined input bar with voice button and text input */}
+          {/* Combined input bar with text input and send button */}
           <View style={[styles.combinedInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5', borderColor: isDarkMode ? '#5F5F5F' : '#E0E0E0' }]}>
             <TextInput
               ref={textInputRef}
@@ -1584,58 +1584,6 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 }, 150);
               }}
             />
-            <TouchableOpacity
-              style={[styles.combinedMicButton, { backgroundColor: isDarkMode ? '#5F5F5F' : '#E0E0E0' }]}
-              activeOpacity={0.8}
-              onPress={handleVoiceModeToggle}
-            >
-              <Animated.View 
-                style={[
-                  styles.retroBubbleExpandingBackground,
-                  {
-                    backgroundColor: Colors.retroNeonTurquoise,
-                    transform: [
-                      {
-                        scaleX: bubbleExpandAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, 1],
-                        }),
-                      },
-                      {
-                        scaleY: bubbleExpandAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0, 1],
-                        }),
-                      },
-                    ],
-                    opacity: bubbleExpandAnim.interpolate({
-                      inputRange: [0, 0.3, 1],
-                      outputRange: [0, 0.9, 1],
-                    }),
-                  },
-                ]}
-              />
-              <Animated.View 
-                style={[
-                  {
-                    transform: [
-                      {
-                        rotate: micRotationAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '360deg'],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                {showCheckmark ? (
-                  <Check size={20} color={'#FF3B30'} />
-                ) : (
-                  <Mic size={20} color={isDarkMode ? '#D9D9D9' : '#666666'} />
-                )}
-              </Animated.View>
-            </TouchableOpacity>
             <TouchableOpacity
               style={[
                 styles.combinedSendButton,
