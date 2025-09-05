@@ -908,6 +908,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         easing: Easing.in(Easing.cubic),
         useNativeDriver: false,
       }).start();
+      
+      // Reset text fade animation to show normal placeholder
+      Animated.timing(textFadeAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
     } else {
       // Open voice mode
       setIsVoiceModeActive(true);
@@ -930,6 +938,14 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         // Show checkmark after rotation completes
         setShowCheckmark(true);
       });
+      
+      // Fade text to show listening state
+      Animated.timing(textFadeAnim, {
+        toValue: 0.7,
+        duration: 300,
+        easing: Easing.inOut(Easing.cubic),
+        useNativeDriver: true,
+      }).start();
     }
   };
 
