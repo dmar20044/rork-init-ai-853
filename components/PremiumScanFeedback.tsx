@@ -240,8 +240,8 @@ export default function PremiumScanFeedback({
     if (score >= 86) return 'Excellent';
     if (score >= 75) return 'Good';
     if (score >= 55) return 'Mediocre';
-    if (score >= 41) return 'Bad';
-    return 'Be Aware!';
+    if (score >= 41) return 'Poor';
+    return 'Caution';
   };
   
   const handleScoreAnimationComplete = () => {
@@ -832,55 +832,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               )}
             </View>
             
-            {/* Result Label */}
-            <View style={styles.resultSection}>
-              <View style={[styles.resultBadge, { 
-                backgroundColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) + '20',
-                borderColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore)
-              }]}>
-                <AlertTriangle size={16} color={getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore)} />
-                <Text style={[styles.resultBadgeText, { 
-                  color: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore)
-                }]}>
-                  {getScoreStatus(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore)}
-                </Text>
-              </View>
-              <View style={styles.resultMessageContainer}>
-                {(() => {
-                  const score = showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore;
-                  if (score >= 86) return (
-                    <>
-                      <Award size={16} color={Colors.scoreExcellent} />
-                      <Text style={[styles.resultMessage, { color: colors.textSecondary }]}>Excellent choice! This aligns perfectly with your goals.</Text>
-                    </>
-                  );
-                  if (score >= 75) return (
-                    <>
-                      <CheckCircle size={16} color={Colors.scoreGood} />
-                      <Text style={[styles.resultMessage, { color: colors.textSecondary }]}>Good pick! This works well for your health goals.</Text>
-                    </>
-                  );
-                  if (score >= 55) return (
-                    <>
-                      <AlertCircle size={16} color={Colors.scoreMediocre} />
-                      <Text style={[styles.resultMessage, { color: colors.textSecondary }]}>This could work better for your goals — consider alternatives.</Text>
-                    </>
-                  );
-                  if (score >= 41) return (
-                    <>
-                      <Target size={16} color={Colors.scorePoor} />
-                      <Text style={[styles.resultMessage, { color: colors.textSecondary }]}>This doesn&apos;t align well with your goals — try a better swap?</Text>
-                    </>
-                  );
-                  return (
-                    <>
-                      <Shield size={16} color={Colors.error} />
-                      <Text style={[styles.resultMessage, { color: colors.textSecondary }]}>Be aware! This product may not support your health goals.</Text>
-                    </>
-                  );
-                })()}
-              </View>
-            </View>
+
           </View>
 
 
