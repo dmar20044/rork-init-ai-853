@@ -1105,7 +1105,7 @@ const styles = StyleSheet.create({
   percentageText: {
     fontSize: 18,
     fontWeight: '600' as const,
-    marginBottom: 80,
+    marginBottom: 60,
   },
   cancelScanButton: {
     position: 'absolute',

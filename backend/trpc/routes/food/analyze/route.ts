@@ -195,34 +195,59 @@ If you cannot identify the food clearly, respond with:
 
       console.log('Making request to Rork AI API...');
       
-      // Use Rork's built-in AI API - no API key needed!
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: systemPrompt
-            },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: userMessage
-                },
-                {
-                  type: 'image',
-                  image: compressedImage // base64 image data
-                }
-              ]
-            }
-          ]
-        }),
-      });
+      // Create an AbortController for timeout handling
+      const abortController = new AbortController();
+      const timeoutId = setTimeout(() => {
+        console.log('Request timeout, aborting...');
+        abortController.abort();
+      }, 60000); // 60 second timeout
+      
+      let response;
+      try {
+        // Use Rork's built-in AI API - no API key needed!
+        response = await fetch('https://toolkit.rork.com/text/llm/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'system',
+                content: systemPrompt
+              },
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: userMessage
+                  },
+                  {
+                    type: 'image',
+                    image: compressedImage // base64 image data
+                  }
+                ]
+              }
+            ]
+          }),
+          signal: abortController.signal
+        });
+        
+        clearTimeout(timeoutId);
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        
+        if (fetchError instanceof Error) {
+          if (fetchError.name === 'AbortError') {
+            console.error('Request was aborted (likely timeout)');
+            throw new Error('Analysis request timed out. Please try again.');
+          }
+          console.error('Fetch error:', fetchError.message);
+          throw new Error(`Network error: ${fetchError.message}`);
+        }
+        throw fetchError;
+      }
       
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unable to read error response');
@@ -334,9 +359,33 @@ If you cannot identify the food clearly, respond with:
     } catch (error) {
       console.error('Food analysis error:', error);
       
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          return {
+            success: false,
+            error: 'Analysis request was cancelled or timed out. Please try again.'
+          };
+        }
+        
+        if (error.message.includes('timeout') || error.message.includes('timed out')) {
+          return {
+            success: false,
+            error: 'Analysis timed out. Please try again with a clearer image.'
+          };
+        }
+        
+        if (error.message.includes('Network error') || error.message.includes('fetch')) {
+          return {
+            success: false,
+            error: 'Network connection failed. Please check your internet connection and try again.'
+          };
+        }
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Unknown error occurred during analysis'
       };
     }
   });

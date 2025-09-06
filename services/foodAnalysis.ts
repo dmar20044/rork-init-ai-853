@@ -217,6 +217,24 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
     } catch (trpcError) {
       console.error('tRPC request failed:', trpcError);
       
+      // Handle AbortError specifically
+      if (trpcError instanceof Error && trpcError.name === 'AbortError') {
+        console.error('Request was aborted:', trpcError.message);
+        return {
+          success: false,
+          error: 'Analysis request was cancelled or timed out. Please try again.'
+        };
+      }
+      
+      // Handle timeout errors
+      if (trpcError instanceof Error && (trpcError.message.includes('timeout') || trpcError.message.includes('timed out'))) {
+        console.error('Request timed out:', trpcError.message);
+        return {
+          success: false,
+          error: 'Analysis timed out. Please try again with a clearer image.'
+        };
+      }
+      
       // Check if it's a JSON parsing error
       if (trpcError instanceof Error && trpcError.message.includes('JSON Parse error')) {
         console.error('Backend returned non-JSON response, likely HTML error page');
@@ -236,14 +254,41 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
         };
       }
       
-      throw trpcError; // Re-throw if it's not a JSON parsing error
+      // Handle network errors
+      if (trpcError instanceof Error && (trpcError.message.includes('Network request failed') || trpcError.message.includes('fetch'))) {
+        console.error('Network error:', trpcError.message);
+        return {
+          success: false,
+          error: 'Network connection failed. Please check your internet connection and try again.'
+        };
+      }
+      
+      throw trpcError; // Re-throw if it's not a handled error type
     }
     
   } catch (error) {
     console.error('Food analysis error:', error);
     
+    // Handle AbortError specifically
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('Analysis was aborted:', error.message);
+      return {
+        success: false,
+        error: 'Analysis was cancelled or timed out. Please try again.'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error instanceof Error && (error.message.includes('timeout') || error.message.includes('timed out'))) {
+      console.error('Analysis timed out:', error.message);
+      return {
+        success: false,
+        error: 'Analysis timed out. Please try again with a clearer image.'
+      };
+    }
+    
     // Provide a fallback mock analysis if backend fails
-    if (error instanceof Error && (error.message.includes('Network request failed') || error.message.includes('fetch'))) {
+    if (error instanceof Error && (error.message.includes('Network request failed') || error.message.includes('fetch') || error.message.includes('Network connection failed'))) {
       console.log('Backend failed, providing fallback analysis');
       
       const fallbackData: NutritionInfo = {
@@ -287,7 +332,7 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
     
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: error instanceof Error ? error.message : 'Unknown error occurred during analysis'
     };
   }
 }
@@ -1249,7 +1294,6 @@ export async function analyzeFoodImageWithPersonalization(
         healthGoal: userGoals.healthGoal || undefined,
         dietGoal: userGoals.dietGoal || undefined,
         lifeGoal: userGoals.lifeGoal || undefined,
-        motivation: userGoals.motivation || undefined,
       } : undefined,
     });
     
@@ -1284,8 +1328,26 @@ export async function analyzeFoodImageWithPersonalization(
   } catch (error) {
     console.error('Personalized food analysis error:', error);
     
+    // Handle AbortError specifically
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.error('Personalized analysis was aborted:', error.message);
+      return {
+        success: false,
+        error: 'Analysis was cancelled or timed out. Please try again.'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error instanceof Error && (error.message.includes('timeout') || error.message.includes('timed out'))) {
+      console.error('Personalized analysis timed out:', error.message);
+      return {
+        success: false,
+        error: 'Analysis timed out. Please try again with a clearer image.'
+      };
+    }
+    
     // Provide a fallback mock analysis if backend fails
-    if (error instanceof Error && (error.message.includes('Network request failed') || error.message.includes('fetch'))) {
+    if (error instanceof Error && (error.message.includes('Network request failed') || error.message.includes('fetch') || error.message.includes('Network connection failed'))) {
       console.log('Backend failed, providing fallback analysis');
       
       const fallbackData: NutritionInfo = {
@@ -1345,7 +1407,7 @@ export async function analyzeFoodImageWithPersonalization(
     
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred'
+      error: error instanceof Error ? error.message : 'Unknown error occurred during analysis'
     };
   }
 }
