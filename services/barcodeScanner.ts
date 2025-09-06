@@ -729,7 +729,19 @@ export function convertBarcodeToNutrition(
     bodyGoal?: string | null;
   }
 ): NutritionInfo | null {
-  if (!barcodeData) return null;
+  if (!barcodeData) {
+    console.log('convertBarcodeToNutrition: No barcode data provided');
+    return null;
+  }
+  
+  // Validate that we have a real product name (not unknown/error)
+  if (!barcodeData.productName || 
+      barcodeData.productName === 'Unknown Product' ||
+      barcodeData.productName.includes('Unknown') ||
+      barcodeData.productName.includes('Product not found')) {
+    console.log('convertBarcodeToNutrition: Invalid or unknown product name:', barcodeData.productName);
+    return null;
+  }
   
   const nutrition = barcodeData.nutritionInfo;
   
@@ -755,6 +767,8 @@ export function convertBarcodeToNutrition(
   if (userGoals && nutrition) {
     personalScore = calculatePersonalizedScore(nutrition, userGoals, healthScore);
   }
+  
+  console.log('convertBarcodeToNutrition: Creating nutrition data for valid product:', barcodeData.productName);
   
   return {
     name: `${barcodeData.productName}${barcodeData.brand ? ` (${barcodeData.brand})` : ''}`,

@@ -144,8 +144,15 @@ export default function ScannerScreen() {
           console.log('Barcode scan: Setting capturedImage to', nutritionData.imageUrl || 'barcode-scan');
           console.log('Barcode scan successful:', nutritionData);
           
-          // Automatically add to history when scan is successful (but not for unknown items)
-          if (nutritionData.name !== 'Unknown Food Item' && !nutritionData.name.includes('Unknown')) {
+          // Only add to history if we have a valid product with a real name (not unknown/error items)
+          const isValidProduct = nutritionData.name && 
+            nutritionData.name !== 'Unknown Food Item' && 
+            !nutritionData.name.includes('Unknown') && 
+            !nutritionData.name.includes('Backend Error') && 
+            !nutritionData.name.includes('Product not found') &&
+            nutritionData.healthScore > 0; // Ensure we have a valid health score
+          
+          if (isValidProduct) {
             try {
               await addToHistory({
                 nutrition: nutritionData,
@@ -162,12 +169,12 @@ export default function ScannerScreen() {
               // Don't show error to user since the main scan was successful
             }
           } else {
-            console.log('Unknown food item detected, not adding to history:', nutritionData.name);
+            console.log('Invalid or unknown product detected, not adding to history:', nutritionData.name);
             
-            // Still update scan streak for unknown items (user attempted a scan)
+            // Still update scan streak for scan attempts (user tried to scan)
             try {
-              await updateScanStreak(nutritionData.healthScore || 0);
-              console.log('Scan streak updated for unknown barcode item');
+              await updateScanStreak(0); // Use 0 score for failed scans
+              console.log('Scan streak updated for failed barcode scan');
             } catch (streakError) {
               console.error('Error updating scan streak:', streakError);
             }
@@ -366,8 +373,15 @@ export default function ScannerScreen() {
             setNutritionData(nutritionData);
             console.log('Barcode scan successful:', nutritionData);
             
-            // Automatically add to history when scan is successful (but not for unknown items)
-            if (nutritionData.name !== 'Unknown Food Item' && !nutritionData.name.includes('Unknown')) {
+            // Only add to history if we have a valid product with a real name (not unknown/error items)
+            const isValidProduct = nutritionData.name && 
+              nutritionData.name !== 'Unknown Food Item' && 
+              !nutritionData.name.includes('Unknown') && 
+              !nutritionData.name.includes('Backend Error') && 
+              !nutritionData.name.includes('Product not found') &&
+              nutritionData.healthScore > 0; // Ensure we have a valid health score
+            
+            if (isValidProduct) {
               try {
                 await addToHistory({
                   nutrition: nutritionData,
@@ -384,12 +398,12 @@ export default function ScannerScreen() {
                 // Don't show error to user since the main scan was successful
               }
             } else {
-              console.log('Unknown food item detected, not adding to history:', nutritionData.name);
+              console.log('Invalid or unknown product detected, not adding to history:', nutritionData.name);
               
-              // Still update scan streak for unknown items (user attempted a scan)
+              // Still update scan streak for scan attempts (user tried to scan)
               try {
-                await updateScanStreak(nutritionData.healthScore || 0);
-                console.log('Scan streak updated for unknown barcode item from image');
+                await updateScanStreak(0); // Use 0 score for failed scans
+                console.log('Scan streak updated for failed barcode scan from image');
               } catch (streakError) {
                 console.error('Error updating scan streak:', streakError);
               }
@@ -438,8 +452,15 @@ export default function ScannerScreen() {
           setNutritionData(result.data);
           console.log('Analysis successful:', result.data);
           
-          // Automatically add to history when scan is successful (but not for unknown items)
-          if (result.data.name !== 'Unknown Food Item' && !result.data.name.includes('Unknown')) {
+          // Only add to history if we have a valid product with a real name (not unknown/error items)
+          const isValidProduct = result.data.name && 
+            result.data.name !== 'Unknown Food Item' && 
+            !result.data.name.includes('Unknown') && 
+            !result.data.name.includes('Backend Error') && 
+            !result.data.name.includes('Product not found') &&
+            result.data.healthScore > 0; // Ensure we have a valid health score
+          
+          if (isValidProduct) {
             try {
               await addToHistory({
                 nutrition: result.data,
@@ -456,12 +477,12 @@ export default function ScannerScreen() {
               // Don't show error to user since the main scan was successful
             }
           } else {
-            console.log('Unknown food item detected, not adding to history:', result.data.name);
+            console.log('Invalid or unknown product detected, not adding to history:', result.data.name);
             
-            // Still update scan streak for unknown items (user attempted a scan)
+            // Still update scan streak for scan attempts (user tried to scan)
             try {
-              await updateScanStreak(result.data.healthScore || 0);
-              console.log('Scan streak updated for unknown AI analysis item');
+              await updateScanStreak(0); // Use 0 score for failed scans
+              console.log('Scan streak updated for failed AI analysis');
             } catch (streakError) {
               console.error('Error updating scan streak:', streakError);
             }
