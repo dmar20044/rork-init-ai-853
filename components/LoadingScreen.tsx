@@ -342,28 +342,36 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     // Minimum display duration of 3 seconds
     const MINIMUM_DURATION = 3000;
     
-    // Product not found timeout (8 seconds) - increased to give more time for analysis
-    const productNotFoundTimeout = setTimeout(() => {
-      console.log('LoadingScreen: Product not found timeout triggered after 8 seconds');
-      setShowProductNotFound(true);
-      
-      // Wait 2 more seconds to show the message, then go back
-      setTimeout(() => {
-        if (onProductNotFound) {
-          onProductNotFound();
-        } else if (onCancel) {
-          onCancel();
-        }
-      }, 2000);
-    }, 8000);
+    // Only set timeouts if no external progress is provided
+    // This allows the analysis to complete naturally without artificial limits
+    let productNotFoundTimeout: ReturnType<typeof setTimeout> | null = null;
+    let fallbackTimeout: ReturnType<typeof setTimeout> | null = null;
     
-    // Fallback timeout to prevent infinite loading (12 seconds max)
-    const fallbackTimeout = setTimeout(() => {
-      console.log('LoadingScreen: Fallback timeout triggered after 12 seconds, calling onComplete');
-      if (onComplete) {
-        onComplete();
-      }
-    }, 12000);
+    // Only use timeouts for internal progress (when no external progress is provided)
+    if (typeof progress !== 'number') {
+      // Product not found timeout (20 seconds) - much longer to allow for slow analysis
+      productNotFoundTimeout = setTimeout(() => {
+        console.log('LoadingScreen: Product not found timeout triggered after 20 seconds');
+        setShowProductNotFound(true);
+        
+        // Wait 2 more seconds to show the message, then go back
+        setTimeout(() => {
+          if (onProductNotFound) {
+            onProductNotFound();
+          } else if (onCancel) {
+            onCancel();
+          }
+        }, 2000);
+      }, 20000);
+      
+      // Fallback timeout to prevent infinite loading (30 seconds max)
+      fallbackTimeout = setTimeout(() => {
+        console.log('LoadingScreen: Fallback timeout triggered after 30 seconds, calling onComplete');
+        if (onComplete) {
+          onComplete();
+        }
+      }, 30000);
+    }
     
     // If external progress is provided, use controlled timing
     if (typeof progress === 'number') {
@@ -398,8 +406,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       // When progress reaches 100%, ensure minimum duration before completing
       if (clampedProgress >= 100) {
         console.log('LoadingScreen: Progress reached 100%, clearing timeouts and completing');
-        clearTimeout(productNotFoundTimeout);
-        clearTimeout(fallbackTimeout);
+        if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
+        if (fallbackTimeout) clearTimeout(fallbackTimeout);
         const elapsedTime = Date.now() - startTimeRef.current;
         const remainingTime = Math.max(0, MINIMUM_DURATION - elapsedTime);
         
@@ -412,14 +420,14 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
         
         return () => {
           clearTimeout(completeTimeout);
-          clearTimeout(fallbackTimeout);
-          clearTimeout(productNotFoundTimeout);
+          if (fallbackTimeout) clearTimeout(fallbackTimeout);
+          if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
         };
       }
       
       return () => {
-        clearTimeout(fallbackTimeout);
-        clearTimeout(productNotFoundTimeout);
+        if (fallbackTimeout) clearTimeout(fallbackTimeout);
+        if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
       };
     }
     
@@ -559,8 +567,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       // Complete after a short delay
       timeouts.push(setTimeout(() => {
         console.log('LoadingScreen: Auto progress completed, clearing timeouts and calling onComplete');
-        clearTimeout(productNotFoundTimeout);
-        clearTimeout(fallbackTimeout);
+        if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
+        if (fallbackTimeout) clearTimeout(fallbackTimeout);
         if (onComplete) {
           onComplete();
         }
@@ -569,8 +577,8 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
     
     return () => {
       timeouts.forEach(timeout => clearTimeout(timeout));
-      clearTimeout(fallbackTimeout);
-      clearTimeout(productNotFoundTimeout);
+      if (fallbackTimeout) clearTimeout(fallbackTimeout);
+      if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
     };
   }, [isVisible, animatedValues.progressBarWidth, progress, onComplete, onCancel, onProductNotFound]);
   
