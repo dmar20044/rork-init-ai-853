@@ -1045,7 +1045,7 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 {
                   maxHeight: forYouSectionHeight.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 200], // Fixed max height for analysis content
+                    outputRange: [0, 300], // Increased max height to prevent cutoff
                   }),
                   opacity: forYouSectionHeight.interpolate({
                     inputRange: [0, 0.5, 1],
@@ -1058,9 +1058,16 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                     <Text style={[styles.loadingAnalysisText, { color: colors.textSecondary }]}>Generating personalized analysis...</Text>
                   </View>
                 ) : (
-                  <View style={styles.analysisContent}>
-                    <Text style={[styles.analysisText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
-                  </View>
+                  <ScrollView 
+                    style={styles.analysisScrollView}
+                    contentContainerStyle={styles.analysisContent}
+                    showsVerticalScrollIndicator={false}
+                    nestedScrollEnabled={true}
+                  >
+                    <View style={[styles.analysisTextContainer, { backgroundColor: colors.textSecondary + '03' }]}>
+                      <Text style={[styles.analysisText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
+                    </View>
+                  </ScrollView>
                 )}
               </Animated.View>
             </View>
@@ -1810,15 +1817,36 @@ const styles = StyleSheet.create({
     color: Colors.retroSlateGray,
   },
   
+  analysisScrollView: {
+    maxHeight: 280,
+  },
+  
   analysisContent: {
-    padding: 4,
+    padding: 20,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  
+  analysisTextContainer: {
+    borderRadius: 12,
+    padding: 18,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.retroPink,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 1,
   },
   
   analysisText: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 26,
     textAlign: 'left',
     color: Colors.retroCharcoalBlack,
+    fontWeight: '400',
+    letterSpacing: 0.3,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   
   // Macro Breakdown Styles
