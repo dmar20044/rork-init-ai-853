@@ -50,7 +50,10 @@ CREATE TABLE IF NOT EXISTS public.quiz_responses (
 -- Backfill-safe: ensure columns exist if tables were created before
 ALTER TABLE public.user_profiles
   ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb;
+  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS health_strictness TEXT DEFAULT 'neutral',
+  ADD COLUMN IF NOT EXISTS diet_strictness TEXT DEFAULT 'neutral',
+  ADD COLUMN IF NOT EXISTS life_strictness TEXT DEFAULT 'neutral';
 
 ALTER TABLE public.quiz_responses
   ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,

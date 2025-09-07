@@ -185,6 +185,9 @@ export const [UserProvider, useUser] = createContextHook(() => {
                 healthGoal: supabaseProfile.health_goal as any,
                 dietGoal: supabaseProfile.diet_goal as any,
                 lifeGoal: supabaseProfile.life_goal as any,
+                healthStrictness: supabaseProfile.health_strictness as any,
+                dietStrictness: supabaseProfile.diet_strictness as any,
+                lifeStrictness: supabaseProfile.life_strictness as any,
               },
               hasCompletedQuiz: supabaseProfile.has_completed_quiz,
               dietaryRestrictions: supabaseProfile.dietary_restrictions || [],
@@ -300,6 +303,9 @@ export const [UserProvider, useUser] = createContextHook(() => {
           if (updates.goals.healthGoal !== undefined) supabaseUpdates.health_goal = updates.goals.healthGoal;
           if (updates.goals.dietGoal !== undefined) supabaseUpdates.diet_goal = updates.goals.dietGoal;
           if (updates.goals.lifeGoal !== undefined) supabaseUpdates.life_goal = updates.goals.lifeGoal;
+          if (updates.goals.healthStrictness !== undefined) supabaseUpdates.health_strictness = updates.goals.healthStrictness;
+          if (updates.goals.dietStrictness !== undefined) supabaseUpdates.diet_strictness = updates.goals.dietStrictness;
+          if (updates.goals.lifeStrictness !== undefined) supabaseUpdates.life_strictness = updates.goals.lifeStrictness;
         }
         
         // Handle dietary restrictions
@@ -344,6 +350,9 @@ export const [UserProvider, useUser] = createContextHook(() => {
           health_goal: newGoals.healthGoal,
           diet_goal: newGoals.dietGoal,
           life_goal: newGoals.lifeGoal,
+          health_strictness: newGoals.healthStrictness,
+          diet_strictness: newGoals.dietStrictness,
+          life_strictness: newGoals.lifeStrictness,
         });
         console.log('[UserContext] Goals updated in Supabase successfully');
       } catch (error: any) {
@@ -482,6 +491,9 @@ export const [UserProvider, useUser] = createContextHook(() => {
           health_goal: profileData.goals.healthGoal,
           diet_goal: profileData.goals.dietGoal,
           life_goal: profileData.goals.lifeGoal,
+          health_strictness: profileData.goals.healthStrictness,
+          diet_strictness: profileData.goals.dietStrictness,
+          life_strictness: profileData.goals.lifeStrictness,
           has_completed_quiz: profileData.hasCompletedQuiz,
           dietary_restrictions: profileData.dietaryRestrictions,
         });

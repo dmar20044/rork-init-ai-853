@@ -45,6 +45,7 @@ export default function GoalsScreen() {
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [allergensModalVisible, setAllergensModalVisible] = useState(false);
   const [newAllergen, setNewAllergen] = useState('');
+  const [preferencesModalVisible, setPreferencesModalVisible] = useState(false);
   
   // Animation values
   const flameAnim = useRef(new Animated.Value(1)).current;
@@ -93,7 +94,7 @@ export default function GoalsScreen() {
     setSelectedGoalType(null);
   };
 
-  const getGoalLabel = (goalType: string, goalValue: string | null) => {
+  const getGoalLabel = (goalType: string, goalValue: string | null | undefined) => {
     if (!goalValue) return 'Not set';
     
     const labels: Record<string, Record<string, string>> = {
@@ -536,6 +537,34 @@ export default function GoalsScreen() {
             <ChevronRight size={20} color={'#D9D9D9'} />
           </View>
         </TouchableOpacity>
+
+        {/* Preferences Strictness Card */}
+        <TouchableOpacity 
+          style={styles.goalCard} 
+          onPress={() => {
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
+            setPreferencesModalVisible(true);
+          }}
+          activeOpacity={0.9}
+        >
+          <View style={styles.goalContent}>
+            <Text style={styles.goalTitle}>Preference Strictness</Text>
+            <Text style={styles.goalProgress}>
+              Health: {profile.goals.healthStrictness || 'neutral'} • Diet: {profile.goals.dietStrictness || 'neutral'} • Life: {profile.goals.lifeStrictness || 'neutral'}
+            </Text>
+            <View style={styles.goalProgressBar}>
+              <View style={[styles.goalProgressFill, { 
+                width: (profile.goals.healthStrictness || profile.goals.dietStrictness || profile.goals.lifeStrictness) ? "100%" : "0%", 
+                backgroundColor: '#FF6B81' 
+              }]} />
+            </View>
+          </View>
+          <View style={styles.goalArrow}>
+            <ChevronRight size={20} color={'#D9D9D9'} />
+          </View>
+        </TouchableOpacity>
       </View>
       
 
@@ -551,7 +580,7 @@ export default function GoalsScreen() {
           visible={modalVisible}
           onClose={handleModalClose}
           goalType={selectedGoalType}
-          currentValue={profile.goals[selectedGoalType]}
+          currentValue={profile.goals[selectedGoalType] || null}
           onSelect={handleGoalSelect}
         />
       )}
@@ -1423,6 +1452,163 @@ export default function GoalsScreen() {
                         <Text style={[styles.commonAllergenChipText, isAdded && styles.commonAllergenChipTextAdded]}>
                           {allergen}
                         </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+      
+      {/* Preferences Strictness Modal */}
+      <Modal
+        visible={preferencesModalVisible}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setPreferencesModalVisible(false)}
+      >
+        <SafeAreaView style={styles.preferencesScreen}>
+          {/* Header */}
+          <View style={styles.preferencesScreenHeader}>
+            <TouchableOpacity 
+              onPress={() => setPreferencesModalVisible(false)}
+              style={styles.backButton}
+            >
+              <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+            <Text style={styles.preferencesScreenTitle}>Preference Strictness</Text>
+            <View style={styles.headerSpacer} />
+          </View>
+          
+          <ScrollView style={styles.preferencesScreenContent}>
+            <View style={styles.preferencesCard}>
+              <Text style={styles.preferencesTitle}>How Strict Should We Be?</Text>
+              <Text style={styles.preferencesSubtitle}>
+                Adjust how strictly we evaluate products based on your goals. This affects your personalized scores and recommendations.
+              </Text>
+              
+              {/* Health Focus Strictness */}
+              <View style={styles.strictnessSection}>
+                <Text style={styles.strictnessSectionTitle}>Health Focus</Text>
+                <Text style={styles.strictnessSectionSubtitle}>
+                  How strictly should we evaluate products based on your health goal: {getGoalLabel('healthGoal', profile.goals.healthGoal)}
+                </Text>
+                <View style={styles.strictnessOptions}>
+                  {['not-strict', 'neutral', 'very-strict'].map((level) => {
+                    const isSelected = profile.goals.healthStrictness === level;
+                    return (
+                      <TouchableOpacity
+                        key={level}
+                        style={[styles.strictnessOption, isSelected && styles.strictnessOptionSelected]}
+                        onPress={async () => {
+                          await updateGoals({ healthStrictness: level as any });
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                        }}
+                      >
+                        <View style={[styles.strictnessOptionCircle, isSelected && styles.strictnessOptionCircleSelected]}>
+                          {isSelected && <View style={styles.strictnessOptionDot} />}
+                        </View>
+                        <View style={styles.strictnessOptionContent}>
+                          <Text style={[styles.strictnessOptionTitle, isSelected && styles.strictnessOptionTitleSelected]}>
+                            {level === 'not-strict' ? 'Relaxed' : level === 'neutral' ? 'Balanced' : 'Strict'}
+                          </Text>
+                          <Text style={[styles.strictnessOptionDescription, isSelected && styles.strictnessOptionDescriptionSelected]}>
+                            {level === 'not-strict' 
+                              ? 'More lenient scoring, occasional treats are okay'
+                              : level === 'neutral' 
+                              ? 'Balanced approach, moderate standards'
+                              : 'High standards, prioritize optimal health choices'
+                            }
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+              
+              {/* Diet Preference Strictness */}
+              <View style={styles.strictnessSection}>
+                <Text style={styles.strictnessSectionTitle}>Diet Preference</Text>
+                <Text style={styles.strictnessSectionSubtitle}>
+                  How strictly should we evaluate products based on your diet: {getGoalLabel('dietGoal', profile.goals.dietGoal)}
+                </Text>
+                <View style={styles.strictnessOptions}>
+                  {['not-strict', 'neutral', 'very-strict'].map((level) => {
+                    const isSelected = profile.goals.dietStrictness === level;
+                    return (
+                      <TouchableOpacity
+                        key={level}
+                        style={[styles.strictnessOption, isSelected && styles.strictnessOptionSelected]}
+                        onPress={async () => {
+                          await updateGoals({ dietStrictness: level as any });
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                        }}
+                      >
+                        <View style={[styles.strictnessOptionCircle, isSelected && styles.strictnessOptionCircleSelected]}>
+                          {isSelected && <View style={styles.strictnessOptionDot} />}
+                        </View>
+                        <View style={styles.strictnessOptionContent}>
+                          <Text style={[styles.strictnessOptionTitle, isSelected && styles.strictnessOptionTitleSelected]}>
+                            {level === 'not-strict' ? 'Relaxed' : level === 'neutral' ? 'Balanced' : 'Strict'}
+                          </Text>
+                          <Text style={[styles.strictnessOptionDescription, isSelected && styles.strictnessOptionDescriptionSelected]}>
+                            {level === 'not-strict' 
+                              ? 'Flexible with diet preferences, some exceptions okay'
+                              : level === 'neutral' 
+                              ? 'Moderate adherence to diet preferences'
+                              : 'Strict adherence to diet preferences, no exceptions'
+                            }
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+              
+              {/* Life Goal Strictness */}
+              <View style={styles.strictnessSection}>
+                <Text style={styles.strictnessSectionTitle}>Life Goal</Text>
+                <Text style={styles.strictnessSectionSubtitle}>
+                  How strictly should we evaluate products based on your life goal: {getGoalLabel('lifeGoal', profile.goals.lifeGoal)}
+                </Text>
+                <View style={styles.strictnessOptions}>
+                  {['not-strict', 'neutral', 'very-strict'].map((level) => {
+                    const isSelected = profile.goals.lifeStrictness === level;
+                    return (
+                      <TouchableOpacity
+                        key={level}
+                        style={[styles.strictnessOption, isSelected && styles.strictnessOptionSelected]}
+                        onPress={async () => {
+                          await updateGoals({ lifeStrictness: level as any });
+                          if (Platform.OS !== 'web') {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }
+                        }}
+                      >
+                        <View style={[styles.strictnessOptionCircle, isSelected && styles.strictnessOptionCircleSelected]}>
+                          {isSelected && <View style={styles.strictnessOptionDot} />}
+                        </View>
+                        <View style={styles.strictnessOptionContent}>
+                          <Text style={[styles.strictnessOptionTitle, isSelected && styles.strictnessOptionTitleSelected]}>
+                            {level === 'not-strict' ? 'Relaxed' : level === 'neutral' ? 'Balanced' : 'Strict'}
+                          </Text>
+                          <Text style={[styles.strictnessOptionDescription, isSelected && styles.strictnessOptionDescriptionSelected]}>
+                            {level === 'not-strict' 
+                              ? 'Flexible approach to life goals, progress over perfection'
+                              : level === 'neutral' 
+                              ? 'Balanced approach to achieving life goals'
+                              : 'Focused approach, prioritize choices that align with life goals'
+                            }
+                          </Text>
+                        </View>
                       </TouchableOpacity>
                     );
                   })}
@@ -2919,5 +3105,131 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   commonAllergenChipTextAdded: {
     color: colors.white,
+  },
+  
+  // Preferences Screen Styles
+  preferencesScreen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  preferencesScreenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.textTertiary + '30',
+  },
+  preferencesScreenTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    textAlign: 'center',
+  },
+  preferencesScreenContent: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  preferencesCard: {
+    backgroundColor: colors.surface,
+    marginHorizontal: 20,
+    marginTop: 24,
+    marginBottom: 32,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: colors.textSecondary + '20',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: colors.textTertiary + '30',
+  },
+  preferencesTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  preferencesSubtitle: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  strictnessSection: {
+    marginBottom: 32,
+  },
+  strictnessSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 8,
+  },
+  strictnessSectionSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  strictnessOptions: {
+    gap: 12,
+  },
+  strictnessOption: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: colors.backgroundTertiary,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  strictnessOptionSelected: {
+    backgroundColor: colors.primary + '10',
+    borderColor: colors.primary,
+  },
+  strictnessOptionCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.textTertiary,
+    marginRight: 12,
+    marginTop: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  strictnessOptionCircleSelected: {
+    borderColor: colors.primary,
+  },
+  strictnessOptionDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+  },
+  strictnessOptionContent: {
+    flex: 1,
+  },
+  strictnessOptionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  strictnessOptionTitleSelected: {
+    color: colors.primary,
+  },
+  strictnessOptionDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  strictnessOptionDescriptionSelected: {
+    color: colors.textSecondary,
   },
 });
