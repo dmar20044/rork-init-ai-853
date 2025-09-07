@@ -11,6 +11,7 @@ export interface UserGoals {
   healthGoal: 'low-sugar' | 'high-protein' | 'low-fat' | 'keto' | 'balanced' | null;
   dietGoal: 'whole-foods' | 'vegan' | 'carnivore' | 'gluten-free' | 'vegetarian' | 'balanced' | null;
   lifeGoal: 'eat-healthier' | 'boost-energy' | 'feel-better' | 'clear-skin' | null;
+  healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
 }
 
 export interface UserProfile {

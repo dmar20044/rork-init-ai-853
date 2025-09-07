@@ -619,6 +619,7 @@ function QuizScreen() {
         healthGoal: answers.healthGoal as UserGoals['healthGoal'],
         dietGoal: answers.dietGoal as UserGoals['dietGoal'],
         lifeGoal: answers.lifeGoal as UserGoals['lifeGoal'],
+        ...(answers.healthStrictness ? { healthStrictness: answers.healthStrictness as 'not-strict' | 'neutral' | 'very-strict' } : {}),
       };
       const result = await completeQuiz({
         name: '',
@@ -1573,7 +1574,7 @@ function QuizScreen() {
           return null;
         };
         
-        const setStrictnessValue = (level: string) => {
+        const setStrictnessValue = (level: 'not-strict' | 'neutral' | 'very-strict') => {
           if (currentStepData.id === 'healthGoal') {
             setAnswers(prev => ({ ...prev, healthStrictness: level }));
           } else if (currentStepData.id === 'dietGoal') {
@@ -1621,8 +1622,8 @@ function QuizScreen() {
               <View style={styles.strictnessContainer}>
                 <Text style={styles.strictnessTitle}>How strict are you?</Text>
                 <View style={styles.strictnessSlider}>
-                  {['not-strict', 'neutral', 'very-strict'].map((level, index) => {
-                    const labels = ['Not too strict', 'Neutral', 'Very strict'];
+                  {(['not-strict', 'neutral', 'very-strict'] as const).map((level, index) => {
+                    const labels = ['Not too strict', 'Neutral', 'Very strict'] as const;
                     const isSelected = getStrictnessValue() === level;
                     return (
                       <TouchableOpacity

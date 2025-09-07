@@ -822,16 +822,18 @@ interface Product {
 interface Profile {
   bodyGoal: 'lose' | 'slightly-lose' | 'maintain' | 'slightly-gain' | 'gain';
   healthFocus: 'low_sugar' | 'high_protein' | 'low_fat' | 'keto' | 'balanced';
+  healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   dietPreference: 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
 }
 
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
 
-function deltaHealth(product: Product, focus: Profile['healthFocus']) {
+function deltaHealth(product: Product, focus: Profile['healthFocus'], strictness: Profile['healthStrictness'] = 'neutral') {
   const m = product.macros;
   let d = 0;
   const why: string[] = [];
+  const mult = strictness === 'very-strict' ? 1.4 : strictness === 'not-strict' ? 0.6 : 1.0;
   
   switch (focus) {
     case 'low_sugar': {
@@ -902,7 +904,12 @@ function deltaHealth(product: Product, focus: Profile['healthFocus']) {
       break;
     }
   }
-  return { d: Math.round(d), why };
+  if (strictness === 'very-strict') {
+    why.push('Strict setting amplifies your Health Focus impact');
+  } else if (strictness === 'not-strict') {
+    why.push('Not too strict setting softens your Health Focus impact');
+  }
+  return { d: Math.round(d * mult), why };
 }
 
 function fitsDiet(product: Product, diet: Profile['dietPreference']): { d: number; why: string[]; forceZero?: boolean } {
@@ -1154,6 +1161,7 @@ function convertUserGoalsToProfile(goals: UserGoals): Profile {
   return {
     bodyGoal: bodyGoalMap[goals.bodyGoal || ''] || 'maintain',
     healthFocus: healthGoalMap[goals.healthGoal || ''] || 'balanced',
+    healthStrictness: goals.healthStrictness ?? 'neutral',
     dietPreference: dietGoalMap[goals.dietGoal || ''] || 'balanced',
     lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier'
   };
@@ -1188,7 +1196,7 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
   
   const reasons: string[] = [];
 
-  const { d: h, why: wh } = deltaHealth(product, profile.healthFocus);
+  const { d: h, why: wh } = deltaHealth(product, profile.healthFocus, profile.healthStrictness);
   const dietResult = fitsDiet(product, profile.dietPreference);
   const { d: df, why: wf, forceZero } = dietResult;
   const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
