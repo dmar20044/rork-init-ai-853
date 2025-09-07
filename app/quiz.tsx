@@ -45,7 +45,7 @@ interface QuizStep {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection' | 'tags-input';
+  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection' | 'tags-input' | 'ingredient-confusion';
   options?: {
     id: string;
     label: string;
@@ -130,6 +130,14 @@ const quizSteps: QuizStep[] = [
       { id: 'feel-better', label: 'Feel Better About My Body', description: 'Improve body confidence' },
       { id: 'clear-skin', label: 'Clear Up My Skin', description: 'Better skin through nutrition' },
     ],
+  },
+
+  {
+    id: 'ingredient-confusion',
+    title: 'Did you know?',
+    subtitle: '83% of consumers are confused by food ingredients',
+    icon: <Sparkles size={48} color={Colors.primary} />,
+    type: 'ingredient-confusion',
   },
 
   {
@@ -800,6 +808,8 @@ function QuizScreen() {
         return answers.dietGoal !== null && answers.dietStrictness !== null;
       case 'dietary-restrictions':
         return true;
+      case 'ingredient-confusion':
+        return true;
       case 'privacy-trust':
         return true;
       case 'rating-request':
@@ -934,6 +944,62 @@ function QuizScreen() {
           </View>
         );
 
+      case 'ingredient-confusion':
+        return (
+          <View style={styles.ingredientConfusionContent}>
+            <View style={styles.ingredientConfusionGraphic}>
+              <View style={styles.confusionCircle}>
+                <View style={styles.confusionInnerCircle}>
+                  <Text style={styles.confusionPercentage}>83%</Text>
+                  <Text style={styles.confusionLabel}>confused</Text>
+                </View>
+              </View>
+              
+              <View style={styles.confusionIcons}>
+                <View style={styles.confusionIcon}>
+                  <Text style={styles.confusionEmoji}>😵‍💫</Text>
+                </View>
+                <View style={styles.confusionIcon}>
+                  <Text style={styles.confusionEmoji}>🤔</Text>
+                </View>
+                <View style={styles.confusionIcon}>
+                  <Text style={styles.confusionEmoji}>😰</Text>
+                </View>
+              </View>
+              
+              <View style={styles.ingredientsList}>
+                <View style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>Sodium Benzoate</Text>
+                  <Text style={styles.questionMark}>?</Text>
+                </View>
+                <View style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>Carrageenan</Text>
+                  <Text style={styles.questionMark}>?</Text>
+                </View>
+                <View style={styles.ingredientItem}>
+                  <Text style={styles.ingredientText}>BHT</Text>
+                  <Text style={styles.questionMark}>?</Text>
+                </View>
+              </View>
+            </View>
+            
+            <Text style={styles.ingredientConfusionTitle}>{currentStepData.title}</Text>
+            <Text style={styles.ingredientConfusionSubtitle}>{currentStepData.subtitle}</Text>
+            
+            <View style={styles.solutionCard}>
+              <View style={styles.solutionHeader}>
+                <View style={styles.solutionIcon}>
+                  <Sparkles size={24} color={Colors.primary} />
+                </View>
+                <Text style={styles.solutionTitle}>We&apos;re here to help!</Text>
+              </View>
+              <Text style={styles.solutionText}>
+                InIt AI breaks down complex ingredients into simple, personalized insights just for you.
+              </Text>
+            </View>
+          </View>
+        );
+        
       case 'privacy-trust':
         return (
           <View style={styles.privacyContent}>
@@ -3819,6 +3885,176 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.gray600,
     marginRight: 8,
+  },
+  // Ingredient confusion page styles
+  ingredientConfusionContent: {
+    flex: 1,
+    paddingTop: 20,
+    alignItems: 'center',
+  },
+  ingredientConfusionGraphic: {
+    alignItems: 'center',
+    marginBottom: 40,
+    width: '100%',
+  },
+  confusionCircle: {
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+    shadowColor: '#ef4444',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  confusionInnerCircle: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#ef4444',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  confusionPercentage: {
+    fontSize: 42,
+    fontWeight: 'bold',
+    color: '#ef4444',
+    lineHeight: 46,
+  },
+  confusionLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#6b7280',
+    marginTop: -4,
+  },
+  confusionIcons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '80%',
+    marginBottom: 30,
+  },
+  confusionIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  confusionEmoji: {
+    fontSize: 28,
+  },
+  ingredientsList: {
+    width: '90%',
+    gap: 12,
+  },
+  ingredientItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  ingredientText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#374151',
+    flex: 1,
+  },
+  questionMark: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ef4444',
+    width: 24,
+    textAlign: 'center',
+  },
+  ingredientConfusionTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 12,
+    lineHeight: 38,
+  },
+  ingredientConfusionSubtitle: {
+    fontSize: 18,
+    color: '#ef4444',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+    fontWeight: '600',
+  },
+  solutionCard: {
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
+    borderRadius: 20,
+    padding: 24,
+    width: '100%',
+    borderWidth: 2,
+    borderColor: 'rgba(239, 68, 68, 0.1)',
+    alignItems: 'center',
+  },
+  solutionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 12,
+  },
+  solutionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  solutionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+  solutionText: {
+    fontSize: 16,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    lineHeight: 22,
+    fontWeight: '500',
   },
   // Strictness slider styles
   strictnessContainer: {
