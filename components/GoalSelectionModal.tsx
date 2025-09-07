@@ -81,7 +81,7 @@ export default function GoalSelectionModal({
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
     onSelect(value);
-    onClose();
+    // Don't automatically close the modal - let user close it manually
   };
 
   return (
