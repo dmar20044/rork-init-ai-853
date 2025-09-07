@@ -192,9 +192,9 @@ function TabLayout() {
         tabPress: handleTabPress,
       }}
     >
-      <Tabs.Screen name="index" options={scannerOptions} />
       <Tabs.Screen name="grocery-list" options={groceryListOptions} />
       <Tabs.Screen name="discover" options={discoverOptions} />
+      <Tabs.Screen name="index" options={scannerOptions} />
       <Tabs.Screen name="history" options={historyOptions} />
       <Tabs.Screen name="goals" options={goalsOptions} />
     </Tabs>
