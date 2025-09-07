@@ -56,7 +56,21 @@ const goalOptions: Record<GoalType, GoalOption[]> = {
     { value: 'feel-better', label: 'Feel Better', description: 'Improve overall wellbeing' },
     { value: 'clear-skin', label: 'Clear Skin', description: 'Improve skin health through diet' },
   ],
-
+  healthStrictness: [
+    { value: 'not-strict', label: 'Not Strict', description: 'Flexible approach to health goals' },
+    { value: 'neutral', label: 'Neutral', description: 'Balanced approach to health goals' },
+    { value: 'very-strict', label: 'Very Strict', description: 'Strict adherence to health goals' },
+  ],
+  dietStrictness: [
+    { value: 'not-strict', label: 'Not Strict', description: 'Flexible approach to diet preferences' },
+    { value: 'neutral', label: 'Neutral', description: 'Balanced approach to diet preferences' },
+    { value: 'very-strict', label: 'Very Strict', description: 'Strict adherence to diet preferences' },
+  ],
+  lifeStrictness: [
+    { value: 'not-strict', label: 'Not Strict', description: 'Flexible approach to life goals' },
+    { value: 'neutral', label: 'Neutral', description: 'Balanced approach to life goals' },
+    { value: 'very-strict', label: 'Very Strict', description: 'Strict adherence to life goals' },
+  ],
 };
 
 const goalTitles: Record<GoalType, string> = {
@@ -64,6 +78,9 @@ const goalTitles: Record<GoalType, string> = {
   healthGoal: 'Health Focus',
   dietGoal: 'Diet Preference',
   lifeGoal: 'Life Goal',
+  healthStrictness: 'Health Strictness',
+  dietStrictness: 'Diet Strictness',
+  lifeStrictness: 'Life Strictness',
 };
 
 export default function GoalSelectionModal({
