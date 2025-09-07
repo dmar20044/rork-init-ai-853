@@ -392,7 +392,7 @@ export default function GroceryListScreen() {
         {groceryItems.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Image 
-              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/jxsx9m2fbqi0gr743afgz' }}
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/2rprpff2lu5hm1k7w3ku7' }}
               style={styles.emptyIllustration}
               resizeMode="contain"
             />
