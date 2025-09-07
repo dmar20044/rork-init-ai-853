@@ -525,7 +525,7 @@ Be thorough and educational - this information helps me make informed food choic
       const messages = [
         {
           role: 'system' as const,
-          content: `You are a Gen Z nutrition expert providing ultra-personalized food analysis. Write 1-2 short, punchy sentences (max 25 words total) explaining why this product fits or doesn't fit their vibe. Be direct, trendy, and use modern language. Focus on the main impact only.`
+          content: `You are a professional nutrition expert providing personalized food analysis. Write 2-3 clear, informative sentences (max 40 words total) explaining how this product aligns with their health goals. Be direct, professional, and focus on the key nutritional impact for their specific objectives.`
         },
         {
           role: 'user' as const,
@@ -533,7 +533,7 @@ Be thorough and educational - this information helps me make informed food choic
 Score: ${score}/100
 Goals: ${goalsContext}
 
-Give me the tea - ${score >= 66 ? 'why this hits different for my goals' : 'why this ain\'t it for my goals'}. Keep it short and real.`
+Provide a concise analysis of ${score >= 66 ? 'how this product supports my health goals' : 'why this product may not align with my health goals'}. Focus on the most relevant nutritional factors.`
         }
       ];
 
@@ -1052,7 +1052,7 @@ Give me the tea - ${score >= 66 ? 'why this hits different for my goals' : 'why 
                 activeOpacity={0.7}
               >
                 <Sparkles size={20} color={Colors.retroPink} />
-                <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Your Vibe Check</Text>
+                <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>For You Analysis</Text>
                 {isForYouSectionExpanded ? (
                   <ChevronDown size={20} color={colors.textSecondary} style={styles.sectionChevron} />
                 ) : (
@@ -1090,7 +1090,7 @@ Give me the tea - ${score >= 66 ? 'why this hits different for my goals' : 'why 
                           <View style={[styles.vibeCheckIcon, { backgroundColor: Colors.retroPink + '15' }]}>
                             <Sparkles size={16} color={Colors.retroPink} />
                           </View>
-                          <Text style={[styles.vibeCheckTitle, { color: colors.textPrimary }]}>The Real Talk</Text>
+                          <Text style={[styles.vibeCheckTitle, { color: colors.textPrimary }]}>Personalized Insights</Text>
                         </View>
                         <Text style={[styles.vibeCheckText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
                       </View>
@@ -1888,16 +1888,17 @@ const styles = StyleSheet.create({
   
   vibeCheckTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   
   vibeCheckText: {
-    fontSize: 18,
-    lineHeight: 28,
-    fontWeight: '500',
-    letterSpacing: 0.2,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: '400',
+    letterSpacing: 0.1,
     textAlign: 'left',
+    color: Colors.retroCharcoalBlack,
   },
   
   // Macro Breakdown Styles
