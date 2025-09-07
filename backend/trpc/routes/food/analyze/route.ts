@@ -12,41 +12,8 @@ const FoodAnalysisInput = z.object({
   }).optional(),
 });
 
-const NutritionInfo = z.object({
-  name: z.string(),
-  calories: z.number(),
-  protein: z.number(),
-  carbs: z.number(),
-  fat: z.number(),
-  saturatedFat: z.number(),
-  fiber: z.number(),
-  sugar: z.number(),
-  sodium: z.number(),
-  servingSize: z.string().optional(),
-  servingsPerContainer: z.number().optional(),
-  healthScore: z.number(),
-  personalScore: z.number().optional(),
-  personalReasons: z.array(z.string()).optional(),
-  ingredients: z.array(z.string()).optional(),
-  allergens: z.array(z.string()).optional(),
-  recommendations: z.array(z.string()).optional(),
-  warnings: z.array(z.string()).optional(),
-  additives: z.array(z.string()).optional(),
-  isOrganic: z.boolean().optional(),
-  grade: z.enum(['poor', 'mediocre', 'good', 'excellent']).optional(),
-  personalGrade: z.enum(['poor', 'mediocre', 'good', 'excellent']).optional(),
-  scoreBreakdown: z.object({
-    nutritionScore: z.number(),
-    additivesScore: z.number(),
-    organicScore: z.number(),
-    totalScore: z.number(),
-    personalAdjustment: z.number().optional(),
-    personalTotal: z.number().optional(),
-  }).optional(),
-  reasons: z.array(z.string()).optional(),
-  flags: z.array(z.string()).optional(),
-  imageUrl: z.string().optional(),
-});
+// Unused NutritionInfo schema - kept for reference
+// const NutritionInfo = z.object({ ... });
 
 // Helper function to compress base64 image
 function compressBase64Image(base64Data: string, maxSizeKB: number = 500): string {
@@ -261,6 +228,7 @@ If you cannot identify the food clearly, respond with:
       // Parse the Rork AI response
       const completion = result.completion || '';
       console.log('Raw AI response length:', completion.length);
+      console.log('Raw AI response preview:', completion.substring(0, 200));
       
       // Clean the response - remove any markdown formatting or extra text
       let cleanedResponse = completion.trim();
@@ -283,9 +251,31 @@ If you cannot identify the food clearly, respond with:
         }
       }
       
-      console.log('Cleaned response for parsing');
+      console.log('Cleaned response for parsing:', cleanedResponse.substring(0, 200));
       
-      const nutritionData = JSON.parse(cleanedResponse);
+      let nutritionData;
+      try {
+        nutritionData = JSON.parse(cleanedResponse);
+      } catch (parseError) {
+        console.error('JSON parsing failed:', parseError);
+        console.error('Failed to parse response:', cleanedResponse);
+        
+        // Try to extract JSON more aggressively
+        const fallbackMatch = completion.match(/{[^{}]*(?:{[^{}]*}[^{}]*)*}/g);
+        if (fallbackMatch && fallbackMatch.length > 0) {
+          // Try the largest JSON-like string
+          const largestMatch = fallbackMatch.reduce((a: string, b: string) => a.length > b.length ? a : b);
+          console.log('Trying fallback JSON extraction:', largestMatch.substring(0, 200));
+          try {
+            nutritionData = JSON.parse(largestMatch);
+          } catch (fallbackError) {
+            console.error('Fallback JSON parsing also failed:', fallbackError);
+            throw new Error(`Failed to parse AI response as JSON. Response preview: ${completion.substring(0, 500)}`);
+          }
+        } else {
+          throw new Error(`No valid JSON found in AI response. Response preview: ${completion.substring(0, 500)}`);
+        }
+      }
       
       // Validate the response structure
       if (!nutritionData.name || typeof nutritionData.healthScore !== 'number') {
