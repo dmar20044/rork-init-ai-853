@@ -43,6 +43,7 @@ export default function ScannerScreen() {
   const [scanCooldown, setScanCooldown] = useState(false);
   const [apiStatus, setApiStatus] = useState<{ aiAPI: boolean; openFoodFacts: boolean } | null>(null);
   const [showApiTest, setShowApiTest] = useState(false);
+  const scanBeamAnimation = useRef<Animated.Value>(new Animated.Value(0));
   const cameraRef = useRef<CameraView>(null);
   const { addToHistory } = useScanHistory();
   const { profile, updateScanStreak } = useUser();
@@ -52,6 +53,22 @@ export default function ScannerScreen() {
   // Test API status on component mount
   useEffect(() => {
     testAPIs();
+  }, []);
+
+  // Animate scan beam continuously
+  useEffect(() => {
+    const animateBeam = () => {
+      scanBeamAnimation.current.setValue(0);
+      Animated.loop(
+        Animated.timing(scanBeamAnimation.current, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        })
+      ).start();
+    };
+
+    animateBeam();
   }, []);
   
 
@@ -667,6 +684,30 @@ export default function ScannerScreen() {
                 <View style={[styles.scanCorner, styles.scanCornerTR]} />
                 <View style={[styles.scanCorner, styles.scanCornerBL]} />
                 <View style={[styles.scanCorner, styles.scanCornerBR]} />
+                
+                {/* Animated Scan Beam */}
+                <Animated.View
+                  style={[
+                    styles.scanBeam,
+                    {
+                      transform: [
+                        {
+                          translateY: scanBeamAnimation.current.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-10, 270],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={['#00FFFF', '#FF1493']} // neon turquoise to retro pink
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.scanBeamGradient}
+                  />
+                </Animated.View>
               </View>
               
               <Text style={styles.scanHint}>
@@ -1134,6 +1175,7 @@ const styles = StyleSheet.create({
     height: 280,
     position: "relative",
     borderRadius: 24,
+    overflow: 'hidden',
   },
   scanCorner: {
     position: "absolute",
@@ -1396,5 +1438,21 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: Colors.backgroundSecondary,
     zIndex: 1000,
+  },
+  scanBeam: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 4,
+    zIndex: 1,
+  },
+  scanBeamGradient: {
+    flex: 1,
+    height: 4,
+    shadowColor: '#00FFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
+    elevation: 5,
   },
 });
