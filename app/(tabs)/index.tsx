@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   Animated,
 } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
 import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon, X, Upload, Scan, ImageIcon as LibraryIcon, Zap, ZapOff, QrCode, CheckCircle, XCircle } from "lucide-react-native";
@@ -45,11 +46,68 @@ export default function ScannerScreen() {
   const cameraRef = useRef<CameraView>(null);
   const { addToHistory } = useScanHistory();
   const { profile, updateScanStreak } = useUser();
+  
+  // Animated scan beam refs
+  const scanBeamPosition = useRef(new Animated.Value(0)).current;
+  const scanBeamOpacity = useRef(new Animated.Value(0)).current;
+  const scanBeamGlow = useRef(new Animated.Value(0)).current;
 
   // Test API status on component mount
   useEffect(() => {
     testAPIs();
   }, []);
+  
+  // Animated scan beam effect
+  useEffect(() => {
+    if (isBarcodeMode && !isScanning) {
+      // Start the scanning animation
+      scanBeamOpacity.setValue(1);
+      
+      const animateBeam = () => {
+        // Reset position
+        scanBeamPosition.setValue(0);
+        scanBeamGlow.setValue(0);
+        
+        // Animate beam moving down with glow effect
+        Animated.parallel([
+          Animated.sequence([
+            Animated.timing(scanBeamPosition, {
+              toValue: 1,
+              duration: 2000,
+              useNativeDriver: true,
+            }),
+            Animated.delay(200),
+          ]),
+          Animated.sequence([
+            Animated.timing(scanBeamGlow, {
+              toValue: 1,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+            Animated.timing(scanBeamGlow, {
+              toValue: 0,
+              duration: 1000,
+              useNativeDriver: true,
+            }),
+          ]),
+        ]).start(() => {
+          // Repeat animation if still in barcode mode and not scanning
+          if (isBarcodeMode && !isScanning) {
+            setTimeout(animateBeam, 500);
+          }
+        });
+      };
+      
+      animateBeam();
+    } else {
+      // Hide beam when not in barcode mode
+      Animated.timing(scanBeamOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isBarcodeMode, isScanning]);
 
   const testAPIs = async () => {
     console.log('Testing API connections...');
@@ -675,9 +733,56 @@ export default function ScannerScreen() {
               )}
               
               {isBarcodeMode && (
-                <View style={styles.scanningIndicator}>
-                  <View style={[styles.scanningLine, isScanning && styles.scanningLineActive]} />
-                </View>
+                <Animated.View 
+                  style={[
+                    styles.scanBeamContainer,
+                    {
+                      opacity: scanBeamOpacity,
+                      transform: [
+                        {
+                          translateY: scanBeamPosition.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-140, 140], // Move from top to bottom of scan frame
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                >
+                  <LinearGradient
+                    colors={['#00FFFF', '#FF1493']} // Neon turquoise to retro pink
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={[
+                      styles.scanBeam,
+                      {
+                        shadowOpacity: scanBeamGlow.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.3, 0.8],
+                        }) as unknown as number,
+                      },
+                    ]}
+                  />
+                  {/* Additional glow effect */}
+                  <Animated.View
+                    style={[
+                      styles.scanBeamGlow,
+                      {
+                        opacity: scanBeamGlow.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.2, 0.6],
+                        }) as unknown as number,
+                      },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={['rgba(0, 255, 255, 0.4)', 'rgba(255, 20, 147, 0.4)']} // Semi-transparent gradient
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.scanBeamGlowInner}
+                    />
+                  </Animated.View>
+                </Animated.View>
               )}
               
               <View style={styles.cameraControls}>
@@ -1362,28 +1467,38 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     lineHeight: 20,
   },
-  scanningIndicator: {
+  scanBeamContainer: {
     position: 'absolute',
     top: '50%',
     left: 0,
     right: 0,
-    height: 2,
+    height: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  scanBeam: {
+    width: '85%',
+    height: 4,
+    borderRadius: 2,
+    shadowColor: '#00FFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  scanBeamGlow: {
+    position: 'absolute',
+    top: -8,
+    left: 0,
+    right: 0,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scanningLine: {
-    width: '80%',
-    height: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 1,
-  },
-  scanningLineActive: {
-    backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 4,
-    elevation: 4,
+  scanBeamGlowInner: {
+    width: '90%',
+    height: 20,
+    borderRadius: 10,
   },
   captureButtonDisabled: {
     backgroundColor: "rgba(255, 255, 255, 0.1)",
