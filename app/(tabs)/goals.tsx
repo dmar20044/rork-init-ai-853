@@ -45,7 +45,7 @@ export default function GoalsScreen() {
   const [isPickingImage, setIsPickingImage] = useState(false);
   const [allergensModalVisible, setAllergensModalVisible] = useState(false);
   const [newAllergen, setNewAllergen] = useState('');
-  const [preferencesModalVisible, setPreferencesModalVisible] = useState(false);
+
   
   // Animation values
   const flameAnim = useRef(new Animated.Value(1)).current;
@@ -87,6 +87,37 @@ export default function GoalsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     }
+  };
+  
+  const handleStrictnessSelect = async (value: string) => {
+    if (!selectedGoalType) return;
+    
+    // Map goal type to strictness type
+    const strictnessMap: Record<string, keyof UserGoals> = {
+      healthGoal: 'healthStrictness',
+      dietGoal: 'dietStrictness',
+      lifeGoal: 'lifeStrictness',
+    };
+    
+    const strictnessType = strictnessMap[selectedGoalType];
+    if (strictnessType) {
+      await updateGoals({ [strictnessType]: value });
+      
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    }
+  };
+  
+  const getCurrentStrictness = (goalType: keyof UserGoals): string | null => {
+    const strictnessMap: Record<string, keyof UserGoals> = {
+      healthGoal: 'healthStrictness',
+      dietGoal: 'dietStrictness',
+      lifeGoal: 'lifeStrictness',
+    };
+    
+    const strictnessType = strictnessMap[goalType];
+    return strictnessType ? (profile.goals[strictnessType] || null) : null;
   };
   
   const handleModalClose = () => {
@@ -538,33 +569,7 @@ export default function GoalsScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* Preferences Strictness Card */}
-        <TouchableOpacity 
-          style={styles.goalCard} 
-          onPress={() => {
-            if (Platform.OS !== 'web') {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-            setPreferencesModalVisible(true);
-          }}
-          activeOpacity={0.9}
-        >
-          <View style={styles.goalContent}>
-            <Text style={styles.goalTitle}>Preference Strictness</Text>
-            <Text style={styles.goalProgress}>
-              Health: {profile.goals.healthStrictness || 'neutral'} • Diet: {profile.goals.dietStrictness || 'neutral'} • Life: {profile.goals.lifeStrictness || 'neutral'}
-            </Text>
-            <View style={styles.goalProgressBar}>
-              <View style={[styles.goalProgressFill, { 
-                width: (profile.goals.healthStrictness || profile.goals.dietStrictness || profile.goals.lifeStrictness) ? "100%" : "0%", 
-                backgroundColor: '#FF6B81' 
-              }]} />
-            </View>
-          </View>
-          <View style={styles.goalArrow}>
-            <ChevronRight size={20} color={'#D9D9D9'} />
-          </View>
-        </TouchableOpacity>
+
       </View>
       
 
@@ -581,7 +586,9 @@ export default function GoalsScreen() {
           onClose={handleModalClose}
           goalType={selectedGoalType}
           currentValue={profile.goals[selectedGoalType] || null}
+          currentStrictness={getCurrentStrictness(selectedGoalType)}
           onSelect={handleGoalSelect}
+          onSelectStrictness={handleStrictnessSelect}
         />
       )}
       
@@ -1462,162 +1469,7 @@ export default function GoalsScreen() {
         </SafeAreaView>
       </Modal>
       
-      {/* Preferences Strictness Modal */}
-      <Modal
-        visible={preferencesModalVisible}
-        transparent={false}
-        animationType="slide"
-        onRequestClose={() => setPreferencesModalVisible(false)}
-      >
-        <SafeAreaView style={styles.preferencesScreen}>
-          {/* Header */}
-          <View style={styles.preferencesScreenHeader}>
-            <TouchableOpacity 
-              onPress={() => setPreferencesModalVisible(false)}
-              style={styles.backButton}
-            >
-              <Text style={styles.backButtonText}>← Back</Text>
-            </TouchableOpacity>
-            <Text style={styles.preferencesScreenTitle}>Preference Strictness</Text>
-            <View style={styles.headerSpacer} />
-          </View>
-          
-          <ScrollView style={styles.preferencesScreenContent}>
-            <View style={styles.preferencesCard}>
-              <Text style={styles.preferencesTitle}>How Strict Should We Be?</Text>
-              <Text style={styles.preferencesSubtitle}>
-                Adjust how strictly we evaluate products based on your goals. This affects your personalized scores and recommendations.
-              </Text>
-              
-              {/* Health Focus Strictness */}
-              <View style={styles.strictnessSection}>
-                <Text style={styles.strictnessSectionTitle}>Health Focus</Text>
-                <Text style={styles.strictnessSectionSubtitle}>
-                  How strictly should we evaluate products based on your health goal: {getGoalLabel('healthGoal', profile.goals.healthGoal)}
-                </Text>
-                <View style={styles.strictnessOptions}>
-                  {['not-strict', 'neutral', 'very-strict'].map((level) => {
-                    const isSelected = profile.goals.healthStrictness === level;
-                    return (
-                      <TouchableOpacity
-                        key={level}
-                        style={[styles.strictnessOption, isSelected && styles.strictnessOptionSelected]}
-                        onPress={async () => {
-                          await updateGoals({ healthStrictness: level as any });
-                          if (Platform.OS !== 'web') {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }
-                        }}
-                      >
-                        <View style={[styles.strictnessOptionCircle, isSelected && styles.strictnessOptionCircleSelected]}>
-                          {isSelected && <View style={styles.strictnessOptionDot} />}
-                        </View>
-                        <View style={styles.strictnessOptionContent}>
-                          <Text style={[styles.strictnessOptionTitle, isSelected && styles.strictnessOptionTitleSelected]}>
-                            {level === 'not-strict' ? 'Relaxed' : level === 'neutral' ? 'Balanced' : 'Strict'}
-                          </Text>
-                          <Text style={[styles.strictnessOptionDescription, isSelected && styles.strictnessOptionDescriptionSelected]}>
-                            {level === 'not-strict' 
-                              ? 'More lenient scoring, occasional treats are okay'
-                              : level === 'neutral' 
-                              ? 'Balanced approach, moderate standards'
-                              : 'High standards, prioritize optimal health choices'
-                            }
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-              
-              {/* Diet Preference Strictness */}
-              <View style={styles.strictnessSection}>
-                <Text style={styles.strictnessSectionTitle}>Diet Preference</Text>
-                <Text style={styles.strictnessSectionSubtitle}>
-                  How strictly should we evaluate products based on your diet: {getGoalLabel('dietGoal', profile.goals.dietGoal)}
-                </Text>
-                <View style={styles.strictnessOptions}>
-                  {['not-strict', 'neutral', 'very-strict'].map((level) => {
-                    const isSelected = profile.goals.dietStrictness === level;
-                    return (
-                      <TouchableOpacity
-                        key={level}
-                        style={[styles.strictnessOption, isSelected && styles.strictnessOptionSelected]}
-                        onPress={async () => {
-                          await updateGoals({ dietStrictness: level as any });
-                          if (Platform.OS !== 'web') {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }
-                        }}
-                      >
-                        <View style={[styles.strictnessOptionCircle, isSelected && styles.strictnessOptionCircleSelected]}>
-                          {isSelected && <View style={styles.strictnessOptionDot} />}
-                        </View>
-                        <View style={styles.strictnessOptionContent}>
-                          <Text style={[styles.strictnessOptionTitle, isSelected && styles.strictnessOptionTitleSelected]}>
-                            {level === 'not-strict' ? 'Relaxed' : level === 'neutral' ? 'Balanced' : 'Strict'}
-                          </Text>
-                          <Text style={[styles.strictnessOptionDescription, isSelected && styles.strictnessOptionDescriptionSelected]}>
-                            {level === 'not-strict' 
-                              ? 'Flexible with diet preferences, some exceptions okay'
-                              : level === 'neutral' 
-                              ? 'Moderate adherence to diet preferences'
-                              : 'Strict adherence to diet preferences, no exceptions'
-                            }
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-              
-              {/* Life Goal Strictness */}
-              <View style={styles.strictnessSection}>
-                <Text style={styles.strictnessSectionTitle}>Life Goal</Text>
-                <Text style={styles.strictnessSectionSubtitle}>
-                  How strictly should we evaluate products based on your life goal: {getGoalLabel('lifeGoal', profile.goals.lifeGoal)}
-                </Text>
-                <View style={styles.strictnessOptions}>
-                  {['not-strict', 'neutral', 'very-strict'].map((level) => {
-                    const isSelected = profile.goals.lifeStrictness === level;
-                    return (
-                      <TouchableOpacity
-                        key={level}
-                        style={[styles.strictnessOption, isSelected && styles.strictnessOptionSelected]}
-                        onPress={async () => {
-                          await updateGoals({ lifeStrictness: level as any });
-                          if (Platform.OS !== 'web') {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }
-                        }}
-                      >
-                        <View style={[styles.strictnessOptionCircle, isSelected && styles.strictnessOptionCircleSelected]}>
-                          {isSelected && <View style={styles.strictnessOptionDot} />}
-                        </View>
-                        <View style={styles.strictnessOptionContent}>
-                          <Text style={[styles.strictnessOptionTitle, isSelected && styles.strictnessOptionTitleSelected]}>
-                            {level === 'not-strict' ? 'Relaxed' : level === 'neutral' ? 'Balanced' : 'Strict'}
-                          </Text>
-                          <Text style={[styles.strictnessOptionDescription, isSelected && styles.strictnessOptionDescriptionSelected]}>
-                            {level === 'not-strict' 
-                              ? 'Flexible approach to life goals, progress over perfection'
-                              : level === 'neutral' 
-                              ? 'Balanced approach to achieving life goals'
-                              : 'Focused approach, prioritize choices that align with life goals'
-                            }
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
+
     </SafeAreaView>
   );
 }

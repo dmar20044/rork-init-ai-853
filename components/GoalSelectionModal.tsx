@@ -26,7 +26,9 @@ interface GoalSelectionModalProps {
   onClose: () => void;
   goalType: GoalType;
   currentValue: string | null;
+  currentStrictness?: string | null;
   onSelect: (value: string) => void;
+  onSelectStrictness?: (value: string) => void;
 }
 
 const goalOptions: Record<GoalType, GoalOption[]> = {
@@ -83,15 +85,33 @@ const goalTitles: Record<GoalType, string> = {
   lifeStrictness: 'Life Strictness',
 };
 
+const strictnessOptions: GoalOption[] = [
+  { value: 'not-strict', label: 'Not Strict', description: 'Flexible approach - occasional exceptions are okay' },
+  { value: 'neutral', label: 'Neutral', description: 'Balanced approach - mostly consistent with some flexibility' },
+  { value: 'very-strict', label: 'Very Strict', description: 'Strict adherence - consistency is key' },
+];
+
+// Map goal types to their corresponding strictness types
+const goalToStrictnessMap: Record<string, GoalType | null> = {
+  healthGoal: 'healthStrictness',
+  dietGoal: 'dietStrictness',
+  lifeGoal: 'lifeStrictness',
+  bodyGoal: null, // Body goal doesn't have strictness
+};
+
 export default function GoalSelectionModal({
   visible,
   onClose,
   goalType,
   currentValue,
+  currentStrictness,
   onSelect,
+  onSelectStrictness,
 }: GoalSelectionModalProps) {
   const options = goalOptions[goalType] || [];
   const title = goalTitles[goalType] || 'Select Goal';
+  const strictnessType = goalToStrictnessMap[goalType];
+  const showStrictness = strictnessType && onSelectStrictness;
 
   const handleSelect = (value: string) => {
     if (Platform.OS !== 'web') {
@@ -99,6 +119,15 @@ export default function GoalSelectionModal({
     }
     onSelect(value);
     // Don't automatically close the modal - let user close it manually
+  };
+
+  const handleStrictnessSelect = (value: string) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    if (onSelectStrictness) {
+      onSelectStrictness(value);
+    }
   };
 
   return (
@@ -122,36 +151,80 @@ export default function GoalSelectionModal({
             Choose the option that best fits your current goals
           </Text>
 
-          {options.map((option) => {
-            const isSelected = currentValue === option.value;
-            
-            return (
-              <TouchableOpacity
-                key={option.value}
-                style={[styles.optionCard, isSelected && styles.selectedCard]}
-                onPress={() => handleSelect(option.value)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.optionContent}>
-                  <View style={styles.optionText}>
-                    <Text style={[styles.optionLabel, isSelected && styles.selectedLabel]}>
-                      {option.label}
-                    </Text>
-                    {option.description && (
-                      <Text style={[styles.optionDescription, isSelected && styles.selectedDescription]}>
-                        {option.description}
+          {/* Main Goal Selection */}
+          <View style={styles.section}>
+            {options.map((option) => {
+              const isSelected = currentValue === option.value;
+              
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[styles.optionCard, isSelected && styles.selectedCard]}
+                  onPress={() => handleSelect(option.value)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.optionContent}>
+                    <View style={styles.optionText}>
+                      <Text style={[styles.optionLabel, isSelected && styles.selectedLabel]}>
+                        {option.label}
                       </Text>
+                      {option.description && (
+                        <Text style={[styles.optionDescription, isSelected && styles.selectedDescription]}>
+                          {option.description}
+                        </Text>
+                      )}
+                    </View>
+                    {isSelected && (
+                      <View style={styles.checkIcon}>
+                        <Check size={20} color={Colors.white} />
+                      </View>
                     )}
                   </View>
-                  {isSelected && (
-                    <View style={styles.checkIcon}>
-                      <Check size={20} color={Colors.white} />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Strictness Selection */}
+          {showStrictness && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>How strict do you want to be?</Text>
+              <Text style={styles.sectionSubtitle}>
+                Choose how closely you want to follow this preference
+              </Text>
+              
+              {strictnessOptions.map((option) => {
+                const isSelected = currentStrictness === option.value;
+                
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    style={[styles.optionCard, styles.strictnessCard, isSelected && styles.selectedCard]}
+                    onPress={() => handleStrictnessSelect(option.value)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.optionContent}>
+                      <View style={styles.optionText}>
+                        <Text style={[styles.optionLabel, isSelected && styles.selectedLabel]}>
+                          {option.label}
+                        </Text>
+                        {option.description && (
+                          <Text style={[styles.optionDescription, isSelected && styles.selectedDescription]}>
+                            {option.description}
+                          </Text>
+                        )}
+                      </View>
+                      {isSelected && (
+                        <View style={styles.checkIcon}>
+                          <Check size={20} color={Colors.white} />
+                        </View>
+                      )}
                     </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
 
           <View style={styles.bottomSpacing} />
         </ScrollView>
@@ -256,5 +329,27 @@ const styles = StyleSheet.create({
   },
   bottomSpacing: {
     height: 40,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 20,
+  },
+  strictnessCard: {
+    backgroundColor: Colors.backgroundSecondary,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
   },
 });
