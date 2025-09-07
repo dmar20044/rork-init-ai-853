@@ -424,9 +424,6 @@ export default function GoalsScreen() {
             onPress={() => handleCardPress(0, 'bodyGoal')}
             activeOpacity={0.9}
           >
-            <View style={[styles.goalIcon, styles.bodyGoalIcon]}>
-              <Target size={24} color={'#4ECDC4'} />
-            </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Body Goal</Text>
               <Text style={styles.goalProgress}>{getGoalLabel('bodyGoal', profile.goals.bodyGoal)}</Text>
@@ -449,9 +446,6 @@ export default function GoalsScreen() {
             onPress={() => handleCardPress(1, 'healthGoal')}
             activeOpacity={0.9}
           >
-            <View style={[styles.goalIcon, styles.healthGoalIcon]}>
-              <Heart size={24} color={'#FF6B81'} />
-            </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Health Focus</Text>
               <Text style={styles.goalProgress}>{getGoalLabel('healthGoal', profile.goals.healthGoal)}</Text>
@@ -474,9 +468,6 @@ export default function GoalsScreen() {
             onPress={() => handleCardPress(2, 'dietGoal')}
             activeOpacity={0.9}
           >
-            <View style={[styles.goalIcon, styles.dietGoalIcon]}>
-              <Bell size={24} color={'#2E294E'} />
-            </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Diet Preference</Text>
               <Text style={styles.goalProgress}>{getGoalLabel('dietGoal', profile.goals.dietGoal)}</Text>
@@ -499,9 +490,6 @@ export default function GoalsScreen() {
             onPress={() => handleCardPress(3, 'lifeGoal')}
             activeOpacity={0.9}
           >
-            <View style={[styles.goalIcon, styles.lifeGoalIcon]}>
-              <Trophy size={24} color={'#4ECDC4'} />
-            </View>
             <View style={styles.goalContent}>
               <Text style={styles.goalTitle}>Life Goal</Text>
               <Text style={styles.goalProgress}>{getGoalLabel('lifeGoal', profile.goals.lifeGoal)}</Text>
@@ -529,9 +517,6 @@ export default function GoalsScreen() {
           }}
           activeOpacity={0.9}
         >
-          <View style={[styles.goalIcon, styles.allergensGoalIcon]}>
-            <AlertTriangle size={24} color={'#FF6B81'} />
-          </View>
           <View style={styles.goalContent}>
             <Text style={styles.goalTitle}>Allergens & Preferences</Text>
             <Text style={styles.goalProgress}>
@@ -742,9 +727,6 @@ export default function GoalsScreen() {
                   }}
                   activeOpacity={0.9}
                 >
-                  <View style={[styles.goalIcon, styles.bodyGoalIcon]}>
-                    <Target size={24} color={colors.primary} />
-                  </View>
                   <View style={styles.goalContent}>
                     <Text style={styles.goalTitle}>Body Goal</Text>
                     <Text style={styles.goalProgress}>{getGoalLabel('bodyGoal', profile.goals.bodyGoal)}</Text>
@@ -770,9 +752,6 @@ export default function GoalsScreen() {
                   }}
                   activeOpacity={0.9}
                 >
-                  <View style={[styles.goalIcon, styles.healthGoalIcon]}>
-                    <Heart size={24} color={colors.info} />
-                  </View>
                   <View style={styles.goalContent}>
                     <Text style={styles.goalTitle}>Health Focus</Text>
                     <Text style={styles.goalProgress}>{getGoalLabel('healthGoal', profile.goals.healthGoal)}</Text>
@@ -798,9 +777,6 @@ export default function GoalsScreen() {
                   }}
                   activeOpacity={0.9}
                 >
-                  <View style={[styles.goalIcon, styles.dietGoalIcon]}>
-                    <Bell size={24} color={colors.warning} />
-                  </View>
                   <View style={styles.goalContent}>
                     <Text style={styles.goalTitle}>Diet Preference</Text>
                     <Text style={styles.goalProgress}>{getGoalLabel('dietGoal', profile.goals.dietGoal)}</Text>
@@ -826,9 +802,6 @@ export default function GoalsScreen() {
                   }}
                   activeOpacity={0.9}
                 >
-                  <View style={[styles.goalIcon, styles.lifeGoalIcon]}>
-                    <Trophy size={24} color={colors.success} />
-                  </View>
                   <View style={styles.goalContent}>
                     <Text style={styles.goalTitle}>Life Goal</Text>
                     <Text style={styles.goalProgress}>{getGoalLabel('lifeGoal', profile.goals.lifeGoal)}</Text>
@@ -857,9 +830,6 @@ export default function GoalsScreen() {
                 }}
                 activeOpacity={0.9}
               >
-                <View style={[styles.goalIcon, styles.allergensGoalIcon]}>
-                  <AlertTriangle size={24} color={colors.error} />
-                </View>
                 <View style={styles.goalContent}>
                   <Text style={styles.goalTitle}>Allergens & Preferences</Text>
                   <Text style={styles.goalProgress}>
