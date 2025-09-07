@@ -97,6 +97,13 @@ const quizSteps: QuizStep[] = [
     ],
   },
   {
+    id: 'ingredient-confusion',
+    title: 'Did you know?',
+    subtitle: '83% of consumers are confused by food ingredients',
+    icon: <Sparkles size={48} color={Colors.primary} />,
+    type: 'ingredient-confusion',
+  },
+  {
     id: 'dietGoal',
     title: 'What\'s your diet preference?',
     subtitle: 'Choose your dietary approach',
@@ -130,14 +137,6 @@ const quizSteps: QuizStep[] = [
       { id: 'feel-better', label: 'Feel Better About My Body', description: 'Improve body confidence' },
       { id: 'clear-skin', label: 'Clear Up My Skin', description: 'Better skin through nutrition' },
     ],
-  },
-
-  {
-    id: 'ingredient-confusion',
-    title: 'Did you know?',
-    subtitle: '83% of consumers are confused by food ingredients',
-    icon: <Sparkles size={48} color={Colors.primary} />,
-    type: 'ingredient-confusion',
   },
 
   {
