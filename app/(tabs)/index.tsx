@@ -13,7 +13,7 @@ import {
   Animated,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
+import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon, X, Upload, Scan, ImageIcon as LibraryIcon, Zap, ZapOff, QrCode, CheckCircle, XCircle } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -27,7 +27,7 @@ import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
 
 export default function ScannerScreen() {
-  const [facing, setFacing] = useState<"back" | "front">("back");
+  const [facing, setFacing] = useState<CameraType>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
