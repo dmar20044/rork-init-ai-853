@@ -826,6 +826,7 @@ interface Profile {
   dietPreference: 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced';
   dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
+  lifeStrictness?: 'not-strict' | 'neutral' | 'very-strict';
 }
 
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
@@ -1066,11 +1067,12 @@ function deltaBody(product: Product, body: Profile['bodyGoal']) {
   return { d: Math.round(d), why };
 }
 
-function deltaLife(product: Product, life: Profile['lifeGoal']) {
+function deltaLife(product: Product, life: Profile['lifeGoal'], strictness: Profile['lifeStrictness'] = 'neutral') {
   const m = product.macros;
   const f = new Set(product.flags || []);
   let d = 0;
   const why: string[] = [];
+  const mult = strictness === 'very-strict' ? 1.4 : strictness === 'not-strict' ? 0.6 : 1.0;
   
   if (life === 'energy_mood') {
     d += clamp(m.protein_g / 20, 0, 1) * 6;
@@ -1143,7 +1145,13 @@ function deltaLife(product: Product, life: Profile['lifeGoal']) {
     if (m.protein_g >= 15) d += 4;
   }
   
-  return { d: Math.round(d), why };
+  if (strictness === 'very-strict') {
+    why.push('Strict setting amplifies your Life Goal impact');
+  } else if (strictness === 'not-strict') {
+    why.push('Not too strict setting softens your Life Goal impact');
+  }
+  
+  return { d: Math.round(d * mult), why };
 }
 
 // Convert UserGoals to Profile format
@@ -1186,7 +1194,8 @@ function convertUserGoalsToProfile(goals: UserGoals): Profile {
     healthStrictness: goals.healthStrictness ?? 'neutral',
     dietPreference: dietGoalMap[goals.dietGoal || ''] || 'balanced',
     dietStrictness: (goals as any).dietStrictness ?? 'neutral',
-    lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier'
+    lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier',
+    lifeStrictness: (goals as any).lifeStrictness ?? 'neutral',
   };
 }
 
@@ -1223,7 +1232,7 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
   const dietResult = fitsDiet(product, profile.dietPreference, profile.dietStrictness ?? 'neutral');
   const { d: df, why: wf, forceZero } = dietResult;
   const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
-  const { d: l, why: wl } = deltaLife(product, profile.lifeGoal);
+  const { d: l, why: wl } = deltaLife(product, profile.lifeGoal, profile.lifeStrictness ?? 'neutral');
 
   let score = product.baseScore + h + df + b + l;
   

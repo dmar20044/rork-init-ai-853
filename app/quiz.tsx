@@ -621,6 +621,7 @@ function QuizScreen() {
         lifeGoal: answers.lifeGoal as UserGoals['lifeGoal'],
         ...(answers.healthStrictness ? { healthStrictness: answers.healthStrictness as 'not-strict' | 'neutral' | 'very-strict' } : {}),
         ...(answers.dietStrictness ? { dietStrictness: answers.dietStrictness as 'not-strict' | 'neutral' | 'very-strict' } : {}),
+        ...(answers.lifeStrictness ? { lifeStrictness: answers.lifeStrictness as 'not-strict' | 'neutral' | 'very-strict' } : {}),
       };
       const result = await completeQuiz({
         name: '',

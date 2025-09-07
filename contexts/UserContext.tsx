@@ -13,6 +13,7 @@ export interface UserGoals {
   lifeGoal: 'eat-healthier' | 'boost-energy' | 'feel-better' | 'clear-skin' | null;
   healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
+  lifeStrictness?: 'not-strict' | 'neutral' | 'very-strict';
 }
 
 export interface UserProfile {
