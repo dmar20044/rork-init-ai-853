@@ -525,16 +525,15 @@ Be thorough and educational - this information helps me make informed food choic
       const messages = [
         {
           role: 'system' as const,
-          content: `You are a nutrition expert providing personalized food analysis. Write a concise 2-3 sentence explanation of why this product is or isn't a good choice for the user's specific goals. Be encouraging but honest. Focus on how it aligns or conflicts with their goals.`
+          content: `You are a Gen Z nutrition expert providing ultra-personalized food analysis. Write 1-2 short, punchy sentences (max 25 words total) explaining why this product fits or doesn't fit their vibe. Be direct, trendy, and use modern language. Focus on the main impact only.`
         },
         {
           role: 'user' as const,
           content: `Product: ${nutrition.name}
-Personalized Score: ${score}/100
-User Goals: ${goalsContext}
-Ingredients: ${nutrition.ingredients?.join(', ') || 'Not available'}
+Score: ${score}/100
+Goals: ${goalsContext}
 
-Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my goals.`
+Give me the tea - ${score >= 66 ? 'why this hits different for my goals' : 'why this ain\'t it for my goals'}. Keep it short and real.`
         }
       ];
 
@@ -1052,8 +1051,8 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                 onPress={toggleForYouSection}
                 activeOpacity={0.7}
               >
-                <Heart size={20} color={Colors.retroPink} />
-                <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>For You Analysis</Text>
+                <Sparkles size={20} color={Colors.retroPink} />
+                <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Your Vibe Check</Text>
                 {isForYouSectionExpanded ? (
                   <ChevronDown size={20} color={colors.textSecondary} style={styles.sectionChevron} />
                 ) : (
@@ -1085,8 +1084,16 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                     showsVerticalScrollIndicator={false}
                     nestedScrollEnabled={true}
                   >
-                    <View style={[styles.analysisTextContainer, { backgroundColor: colors.textSecondary + '03' }]}>
-                      <Text style={[styles.analysisText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
+                    <View style={styles.vibeCheckContainer}>
+                      <View style={[styles.vibeCheckCard, { backgroundColor: colors.surface }]}>
+                        <View style={styles.vibeCheckHeader}>
+                          <View style={[styles.vibeCheckIcon, { backgroundColor: Colors.retroPink + '15' }]}>
+                            <Sparkles size={16} color={Colors.retroPink} />
+                          </View>
+                          <Text style={[styles.vibeCheckTitle, { color: colors.textPrimary }]}>The Real Talk</Text>
+                        </View>
+                        <Text style={[styles.vibeCheckText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
+                      </View>
                     </View>
                   </ScrollView>
                 )}
@@ -1848,26 +1855,49 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   
-  analysisTextContainer: {
-    borderRadius: 12,
-    padding: 18,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.retroPink,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 1,
+  vibeCheckContainer: {
+    paddingHorizontal: 4,
   },
   
-  analysisText: {
+  vibeCheckCard: {
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: Colors.retroPink,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.retroPink + '20',
+  },
+  
+  vibeCheckHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 12,
+  },
+  
+  vibeCheckIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  vibeCheckTitle: {
     fontSize: 16,
-    lineHeight: 26,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  
+  vibeCheckText: {
+    fontSize: 18,
+    lineHeight: 28,
+    fontWeight: '500',
+    letterSpacing: 0.2,
     textAlign: 'left',
-    color: Colors.retroCharcoalBlack,
-    fontWeight: '400',
-    letterSpacing: 0.3,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
   },
   
   // Macro Breakdown Styles
