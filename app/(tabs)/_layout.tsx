@@ -1,13 +1,12 @@
 import { Tabs } from "expo-router";
-import { History, User, MessageCircle } from "lucide-react-native";
 import React, { memo, useCallback } from "react";
-import { Platform } from "react-native";
+import { Platform, View, TouchableOpacity, StyleSheet } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import Svg, { Path } from "react-native-svg";
 
 // Memoized icon components for better performance
-const CameraIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+const CameraIcon = memo(function CameraIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
   const retroRed = '#FF0040';
   const iconColor = focused ? retroRed : color;
   
@@ -38,7 +37,7 @@ const CameraIcon = memo(({ color, size, focused }: { color: string; size: number
   );
 });
 
-const ShoppingCartIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+const ShoppingCartIcon = memo(function ShoppingCartIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
   if (focused) {
     // Filled shopping cart icon when active
     return (
@@ -60,7 +59,7 @@ const ShoppingCartIcon = memo(({ color, size, focused }: { color: string; size: 
   );
 });
 
-const MessageCircleIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+const MessageCircleIcon = memo(function MessageCircleIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
   if (focused) {
     // Filled message icon when active
     return (
@@ -82,7 +81,7 @@ const MessageCircleIcon = memo(({ color, size, focused }: { color: string; size:
   );
 });
 
-const HistoryIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+const HistoryIcon = memo(function HistoryIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
   if (focused) {
     // Filled history icon when active
     return (
@@ -104,7 +103,7 @@ const HistoryIcon = memo(({ color, size, focused }: { color: string; size: numbe
   );
 });
 
-const ProfileIcon = memo(({ color, size, focused }: { color: string; size: number; focused?: boolean }) => {
+const ProfileIcon = memo(function ProfileIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
   if (focused) {
     // Filled profile icon when active
     return (
@@ -136,22 +135,93 @@ function TabLayout() {
     }
   }, []);
   
+  // Custom tab bar component with elevated scanner button
+  const CustomTabBar = useCallback(({ state, descriptors, navigation }: any) => {
+    return (
+      <View style={[styles.tabBarContainer, { backgroundColor: colors.surface, borderTopColor: colors.textTertiary + '30' }]}>
+        {state.routes.map((route: any, index: number) => {
+          const { options } = descriptors[route.key];
+          // const label = options.tabBarLabel !== undefined ? options.tabBarLabel : options.title !== undefined ? options.title : route.name;
+          const isFocused = state.index === index;
+          const isScanner = route.name === 'index'; // Scanner tab
+
+          const onPress = () => {
+            if (Platform.OS !== 'web') {
+              Haptics.selectionAsync();
+            }
+            
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
+          };
+
+          if (isScanner) {
+            // Elevated scanner button
+            return (
+              <View key={route.key} style={styles.scannerButtonContainer}>
+                <TouchableOpacity
+                  onPress={onPress}
+                  style={[
+                    styles.scannerButton,
+                    {
+                      backgroundColor: colors.primary,
+                      shadowColor: colors.primary,
+                    }
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <CameraIcon 
+                    color="white" 
+                    size={28} 
+                    focused={isFocused} 
+                  />
+                </TouchableOpacity>
+              </View>
+            );
+          }
+
+          // Regular tab buttons
+          return (
+            <TouchableOpacity
+              key={route.key}
+              onPress={onPress}
+              style={styles.regularTab}
+              activeOpacity={0.7}
+            >
+              <View style={styles.tabContent}>
+                {options.tabBarIcon && options.tabBarIcon({
+                  focused: isFocused,
+                  color: isFocused ? colors.primary : colors.textTertiary,
+                  size: 24,
+                })}
+                <View style={styles.labelContainer}>
+                  <View style={[
+                    styles.label,
+                    {
+                      color: isFocused ? colors.primary : colors.textTertiary,
+                    }
+                  ]}>
+                    {/* Label text would go here but we'll keep it minimal */}
+                  </View>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  }, [colors]);
+
   // Memoize screen options to prevent unnecessary re-renders
   const screenOptions = React.useMemo(() => ({
     tabBarActiveTintColor: colors.primary,
     tabBarInactiveTintColor: colors.textTertiary,
-    tabBarStyle: {
-      backgroundColor: colors.surface,
-      borderTopWidth: 1,
-      borderTopColor: colors.textTertiary + '30',
-      paddingBottom: Platform.OS === "ios" ? 0 : 8,
-      paddingTop: 8,
-      height: Platform.OS === "ios" ? 88 : 68,
-    },
-    tabBarLabelStyle: {
-      fontSize: 11,
-      fontWeight: "600" as const,
-    },
     headerShown: false,
     // Performance optimizations
     lazy: true, // Load tabs lazily
@@ -188,6 +258,7 @@ function TabLayout() {
   return (
     <Tabs 
       screenOptions={screenOptions}
+      tabBar={CustomTabBar}
       screenListeners={{
         tabPress: handleTabPress,
       }}
@@ -200,5 +271,56 @@ function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBarContainer: {
+    flexDirection: 'row',
+    height: Platform.OS === 'ios' ? 88 : 68,
+    borderTopWidth: 1,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 8,
+    paddingTop: 8,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  regularTab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  tabContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  labelContainer: {
+    marginTop: 4,
+    height: 12,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  scannerButtonContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 20,
+  },
+  scannerButton: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+});
 
 export default memo(TabLayout);
