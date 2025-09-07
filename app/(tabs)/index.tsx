@@ -27,7 +27,7 @@ import PremiumScanFeedback from "@/components/PremiumScanFeedback";
 import LoadingScreen from "@/components/LoadingScreen";
 
 export default function ScannerScreen() {
-  const [facing, setFacing] = useState<CameraType>("back");
+  const [facing, setFacing] = useState<"back" | "front">("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
