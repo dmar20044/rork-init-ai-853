@@ -984,18 +984,6 @@ function QuizScreen() {
             
             <Text style={styles.ingredientConfusionTitle}>{currentStepData.title}</Text>
             <Text style={styles.ingredientConfusionSubtitle}>{currentStepData.subtitle}</Text>
-            
-            <View style={styles.solutionCard}>
-              <View style={styles.solutionHeader}>
-                <View style={styles.solutionIcon}>
-                  <Sparkles size={24} color={Colors.primary} />
-                </View>
-                <Text style={styles.solutionTitle}>We&apos;re here to help!</Text>
-              </View>
-              <Text style={styles.solutionText}>
-                InIt AI breaks down complex ingredients into simple, personalized insights just for you.
-              </Text>
-            </View>
           </View>
         );
         
