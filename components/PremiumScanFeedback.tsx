@@ -89,6 +89,7 @@ export default function PremiumScanFeedback({
   const [isAnalyzingForYou, setIsAnalyzingForYou] = useState<boolean>(false);
   const [isForYouSectionExpanded, setIsForYouSectionExpanded] = useState<boolean>(false);
   const forYouSectionHeight = useRef(new Animated.Value(0)).current;
+  const [allergenWarnings, setAllergenWarnings] = useState<string[]>([]);
   
   const slideUpValue = useRef(new Animated.Value(screenHeight)).current;
   const cardScale = useRef(new Animated.Value(0.8)).current;
@@ -291,6 +292,60 @@ export default function PremiumScanFeedback({
     setIsAnalyzingIngredients(true);
     console.log('Analyzing ingredients:', ingredients);
     console.log('User goals:', profile.goals);
+    console.log('User dietary restrictions:', profile.dietaryRestrictions);
+    
+    // Check for allergen warnings first
+    const warnings: string[] = [];
+    if (profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0) {
+      profile.dietaryRestrictions.forEach(restriction => {
+        const restrictionLower = restriction.toLowerCase();
+        const hasRestriction = ingredients.some(ingredient => {
+          const ingredientLower = ingredient.toLowerCase();
+          
+          // Check for common allergen patterns
+          if (restrictionLower.includes('dairy') || restrictionLower.includes('milk')) {
+            return ingredientLower.includes('milk') || ingredientLower.includes('cheese') || 
+                   ingredientLower.includes('butter') || ingredientLower.includes('cream') ||
+                   ingredientLower.includes('whey') || ingredientLower.includes('casein') ||
+                   ingredientLower.includes('lactose') || ingredientLower.includes('yogurt');
+          }
+          if (restrictionLower.includes('gluten') || restrictionLower.includes('wheat')) {
+            return ingredientLower.includes('wheat') || ingredientLower.includes('barley') ||
+                   ingredientLower.includes('rye') || ingredientLower.includes('gluten') ||
+                   ingredientLower.includes('flour') || ingredientLower.includes('malt');
+          }
+          if (restrictionLower.includes('soy')) {
+            return ingredientLower.includes('soy') || ingredientLower.includes('soybean') ||
+                   ingredientLower.includes('lecithin') || ingredientLower.includes('tofu');
+          }
+          if (restrictionLower.includes('nut') || restrictionLower.includes('tree nut')) {
+            return ingredientLower.includes('almond') || ingredientLower.includes('walnut') ||
+                   ingredientLower.includes('cashew') || ingredientLower.includes('pecan') ||
+                   ingredientLower.includes('hazelnut') || ingredientLower.includes('pistachio');
+          }
+          if (restrictionLower.includes('peanut')) {
+            return ingredientLower.includes('peanut');
+          }
+          if (restrictionLower.includes('egg')) {
+            return ingredientLower.includes('egg') || ingredientLower.includes('albumin');
+          }
+          if (restrictionLower.includes('fish') || restrictionLower.includes('seafood')) {
+            return ingredientLower.includes('fish') || ingredientLower.includes('salmon') ||
+                   ingredientLower.includes('tuna') || ingredientLower.includes('anchovy') ||
+                   ingredientLower.includes('shrimp') || ingredientLower.includes('crab');
+          }
+          
+          // Generic check for exact matches
+          return ingredientLower.includes(restrictionLower) || restrictionLower.includes(ingredientLower);
+        });
+        
+        if (hasRestriction) {
+          warnings.push(`Contains ${restriction} - This product may not be suitable for your dietary restrictions`);
+        }
+      });
+    }
+    
+    setAllergenWarnings(warnings);
     
     try {
       // Build personalized context based on user goals
@@ -449,7 +504,7 @@ Be thorough and educational - this information helps me make informed food choic
     } finally {
       setIsAnalyzingIngredients(false);
     }
-  }, [profile.hasCompletedQuiz, profile.goals]);
+  }, [profile.hasCompletedQuiz, profile.goals, profile.dietaryRestrictions]);
 
   const generateForYouAnalysis = useCallback(async () => {
     if (!profile.hasCompletedQuiz || !profile.goals) return;
@@ -827,6 +882,20 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                     </View>
                   </View>
                   
+                  {/* Allergen/Dietary Restriction Warnings */}
+                  {allergenWarnings.length > 0 && (
+                    <View style={styles.warningContainer}>
+                      <View style={styles.warningHeader}>
+                        <AlertCircle size={16} color={Colors.warning} />
+                        <Text style={[styles.warningTitle, { color: Colors.warning }]}>Dietary Alert</Text>
+                      </View>
+                      {allergenWarnings.map((warning, index) => (
+                        <View key={index} style={[styles.warningItem, { backgroundColor: Colors.warning + '10', borderLeftColor: Colors.warning }]}>
+                          <Text style={[styles.warningText, { color: colors.textPrimary }]}>{warning}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
 
                 </View>
               )}
@@ -1871,6 +1940,42 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.primary,
     textAlign: 'center',
+    fontWeight: '500',
+  },
+  
+  // Warning styles for allergens/dietary restrictions
+  warningContainer: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: Colors.warning + '05',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: Colors.warning + '20',
+  },
+  
+  warningHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 8,
+  },
+  
+  warningTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.warning,
+  },
+  
+  warningItem: {
+    padding: 8,
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    marginBottom: 4,
+  },
+  
+  warningText: {
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: '500',
   },
 
