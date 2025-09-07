@@ -272,7 +272,7 @@ export default function HistoryScreen() {
         <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
           <View style={styles.emptyBasket}>
             <Image 
-              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/sgfostw7yg66k1o3ys4oe' }}
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
               style={styles.emptyImage}
               resizeMode="contain"
             />
