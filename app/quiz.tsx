@@ -620,6 +620,7 @@ function QuizScreen() {
         dietGoal: answers.dietGoal as UserGoals['dietGoal'],
         lifeGoal: answers.lifeGoal as UserGoals['lifeGoal'],
         ...(answers.healthStrictness ? { healthStrictness: answers.healthStrictness as 'not-strict' | 'neutral' | 'very-strict' } : {}),
+        ...(answers.dietStrictness ? { dietStrictness: answers.dietStrictness as 'not-strict' | 'neutral' | 'very-strict' } : {}),
       };
       const result = await completeQuiz({
         name: '',

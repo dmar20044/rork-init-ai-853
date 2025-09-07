@@ -12,6 +12,7 @@ export interface UserGoals {
   dietGoal: 'whole-foods' | 'vegan' | 'carnivore' | 'gluten-free' | 'vegetarian' | 'balanced' | null;
   lifeGoal: 'eat-healthier' | 'boost-energy' | 'feel-better' | 'clear-skin' | null;
   healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
+  dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
 }
 
 export interface UserProfile {

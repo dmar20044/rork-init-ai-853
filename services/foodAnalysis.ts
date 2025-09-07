@@ -824,6 +824,7 @@ interface Profile {
   healthFocus: 'low_sugar' | 'high_protein' | 'low_fat' | 'keto' | 'balanced';
   healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   dietPreference: 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced';
+  dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
 }
 
@@ -912,10 +913,15 @@ function deltaHealth(product: Product, focus: Profile['healthFocus'], strictness
   return { d: Math.round(d * mult), why };
 }
 
-function fitsDiet(product: Product, diet: Profile['dietPreference']): { d: number; why: string[]; forceZero?: boolean } {
+function fitsDiet(
+  product: Product,
+  diet: Profile['dietPreference'],
+  strictness: Profile['dietStrictness'] = 'neutral'
+): { d: number; why: string[]; forceZero?: boolean } {
   const ing = product.ingredientsRaw;
   const f = new Set(product.flags || []);
   const why: string[] = [];
+  const mult = strictness === 'very-strict' ? 1.4 : strictness === 'not-strict' ? 0.6 : 1.0;
   
   let violates = false;
   switch (diet) {
@@ -939,22 +945,38 @@ function fitsDiet(product: Product, diet: Profile['dietPreference']): { d: numbe
   }
 
   if (violates) {
-    // For strict dietary preferences (vegan, vegetarian, carnivore), force score to 0
+    // For strict dietary preferences (vegan, vegetarian, carnivore)
     if (diet === 'vegan' || diet === 'vegetarian' || diet === 'carnivore') {
+      if (strictness === 'not-strict') {
+        const d = Math.round(-60 * mult);
+        why.push('Not too strict setting softens your Diet Preference impact');
+        return { d, why };
+      }
       return { 
         d: -100, 
         why: [`This product violates your ${diet.replace('_', ' ')} dietary restriction`],
         forceZero: true
       };
     }
-    // For other preferences, apply harsh penalty
-    return { d: -40, why: [`Strongly conflicts with your ${diet.replace('_', ' ')} preference`] };
+    // For other preferences, apply scaled penalty
+    const d = Math.round(-40 * mult);
+    if (strictness === 'very-strict') {
+      why.push('Strict setting amplifies your Diet Preference impact');
+    } else if (strictness === 'not-strict') {
+      why.push('Not too strict setting softens your Diet Preference impact');
+    }
+    return { d, why: [...why, `Conflicts with your ${diet.replace('_', ' ')} preference`] };
   }
 
   let bonus = 0;
   if (diet === 'whole_foods' && !f.has('ultra_processed') && !f.has('high_risk_additives')) {
-    bonus += 10;
+    bonus += Math.round(10 * mult);
     why.push('Excellent whole-foods choice');
+  }
+  if (strictness === 'very-strict') {
+    why.push('Strict setting amplifies your Diet Preference impact');
+  } else if (strictness === 'not-strict') {
+    why.push('Not too strict setting softens your Diet Preference impact');
   }
   return { d: bonus, why };
 }
@@ -1163,6 +1185,7 @@ function convertUserGoalsToProfile(goals: UserGoals): Profile {
     healthFocus: healthGoalMap[goals.healthGoal || ''] || 'balanced',
     healthStrictness: goals.healthStrictness ?? 'neutral',
     dietPreference: dietGoalMap[goals.dietGoal || ''] || 'balanced',
+    dietStrictness: (goals as any).dietStrictness ?? 'neutral',
     lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier'
   };
 }
@@ -1197,7 +1220,7 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
   const reasons: string[] = [];
 
   const { d: h, why: wh } = deltaHealth(product, profile.healthFocus, profile.healthStrictness);
-  const dietResult = fitsDiet(product, profile.dietPreference);
+  const dietResult = fitsDiet(product, profile.dietPreference, profile.dietStrictness ?? 'neutral');
   const { d: df, why: wf, forceZero } = dietResult;
   const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
   const { d: l, why: wl } = deltaLife(product, profile.lifeGoal);
