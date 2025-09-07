@@ -474,7 +474,7 @@ export default function GoalsScreen() {
               <View style={styles.goalProgressBar}>
                 <View style={[styles.goalProgressFill, { 
                   width: profile.goals.dietGoal ? "100%" : "0%", 
-                  backgroundColor: '#2E294E' 
+                  backgroundColor: '#4ECDC4' 
                 }]} />
               </View>
             </View>
@@ -496,7 +496,7 @@ export default function GoalsScreen() {
               <View style={styles.goalProgressBar}>
                 <View style={[styles.goalProgressFill, { 
                   width: profile.goals.lifeGoal ? "100%" : "0%", 
-                  backgroundColor: '#4ECDC4' 
+                  backgroundColor: '#FF6B81' 
                 }]} />
               </View>
             </View>
@@ -528,7 +528,7 @@ export default function GoalsScreen() {
             <View style={styles.goalProgressBar}>
               <View style={[styles.goalProgressFill, { 
                 width: profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0 ? "100%" : "0%", 
-                backgroundColor: '#FF6B81' 
+                backgroundColor: '#4ECDC4' 
               }]} />
             </View>
           </View>
