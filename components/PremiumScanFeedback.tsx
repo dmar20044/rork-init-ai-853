@@ -340,6 +340,17 @@ const getLifeGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): str
   }
 };
 
+// Helper function to convert rating to numerical score for bar display
+const getGoalRatingScore = (rating: string): number => {
+  switch (rating) {
+    case 'Excellent': return 85;
+    case 'Good': return 70;
+    case 'Fair': return 50;
+    case 'Poor': return 25;
+    default: return 0;
+  }
+};
+
 export default function PremiumScanFeedback({
   nutrition,
   imageUri,
@@ -1273,123 +1284,118 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 </View>
               ) : (
                 <View style={styles.tabContent}>
-                  {/* Tab 2: Personalization Breakdown */}
+                  {/* Tab 2: Goal Rating Bars */}
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.cardHeader}>
                       <Target size={20} color={Colors.retroPink} />
-                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Personalization Breakdown</Text>
+                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Goal Ratings</Text>
                     </View>
                     
-                    <ScrollView style={styles.personalizationScrollView} showsVerticalScrollIndicator={false}>
-                      {/* Health Goal Rating */}
+                    <View style={styles.goalRatingsContainer}>
+                      {/* Health Goal Bar */}
                       {profile.goals.healthGoal && (
-                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
-                          <View style={styles.categoryHeader}>
-                            <View style={[styles.categoryIcon, { backgroundColor: Colors.retroNeonTurquoise + '15' }]}>
-                              <Heart size={16} color={Colors.retroNeonTurquoise} />
-                            </View>
-                            <View style={styles.categoryInfo}>
-                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Health Goal</Text>
-                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
-                                {profile.goals.healthGoal.replace('-', ' ').replace('_', ' ')}
-                                {profile.goals.healthStrictness && (
-                                  <Text style={{ fontStyle: 'italic' }}> • {profile.goals.healthStrictness.replace('-', ' ')}</Text>
-                                )}
-                              </Text>
-                            </View>
-                            <View style={styles.categoryRating}>
-                              <Text style={[styles.ratingText, { color: getHealthGoalRatingColor(nutrition, profile.goals) }]}>
-                                {getHealthGoalRating(nutrition, profile.goals)}
-                              </Text>
-                            </View>
+                        <View style={styles.goalRatingItem}>
+                          <View style={styles.goalRatingHeader}>
+                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Health Goal</Text>
+                            <Text style={[styles.goalRatingScore, { color: getHealthGoalRatingColor(nutrition, profile.goals) }]}>
+                              {getGoalRatingScore(getHealthGoalRating(nutrition, profile.goals))}
+                            </Text>
                           </View>
-                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-                            {getHealthGoalDescription(nutrition, profile.goals)}
+                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View 
+                              style={[
+                                styles.goalRatingBar,
+                                {
+                                  width: `${getGoalRatingScore(getHealthGoalRating(nutrition, profile.goals))}%`,
+                                  backgroundColor: getHealthGoalRatingColor(nutrition, profile.goals),
+                                }
+                              ]}
+                            />
+                          </View>
+                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
+                            {profile.goals.healthGoal.replace('-', ' ').replace('_', ' ')}
                           </Text>
                         </View>
                       )}
                       
-                      {/* Diet Goal Rating */}
+                      {/* Diet Goal Bar */}
                       {profile.goals.dietGoal && (
-                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
-                          <View style={styles.categoryHeader}>
-                            <View style={[styles.categoryIcon, { backgroundColor: Colors.retroDeepIndigo + '15' }]}>
-                              <Shield size={16} color={Colors.retroDeepIndigo} />
-                            </View>
-                            <View style={styles.categoryInfo}>
-                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Diet Preference</Text>
-                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
-                                {profile.goals.dietGoal.replace('-', ' ')}
-                                {profile.goals.dietStrictness && (
-                                  <Text style={{ fontStyle: 'italic' }}> • {profile.goals.dietStrictness.replace('-', ' ')}</Text>
-                                )}
-                              </Text>
-                            </View>
-                            <View style={styles.categoryRating}>
-                              <Text style={[styles.ratingText, { color: getDietGoalRatingColor(nutrition, profile.goals) }]}>
-                                {getDietGoalRating(nutrition, profile.goals)}
-                              </Text>
-                            </View>
+                        <View style={styles.goalRatingItem}>
+                          <View style={styles.goalRatingHeader}>
+                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Diet Goal</Text>
+                            <Text style={[styles.goalRatingScore, { color: getDietGoalRatingColor(nutrition, profile.goals) }]}>
+                              {getGoalRatingScore(getDietGoalRating(nutrition, profile.goals))}
+                            </Text>
                           </View>
-                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-                            {getDietGoalDescription(nutrition, profile.goals)}
+                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View 
+                              style={[
+                                styles.goalRatingBar,
+                                {
+                                  width: `${getGoalRatingScore(getDietGoalRating(nutrition, profile.goals))}%`,
+                                  backgroundColor: getDietGoalRatingColor(nutrition, profile.goals),
+                                }
+                              ]}
+                            />
+                          </View>
+                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
+                            {profile.goals.dietGoal.replace('-', ' ')}
                           </Text>
                         </View>
                       )}
                       
-                      {/* Body Goal Rating */}
+                      {/* Body Goal Bar */}
                       {profile.goals.bodyGoal && (
-                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
-                          <View style={styles.categoryHeader}>
-                            <View style={[styles.categoryIcon, { backgroundColor: Colors.retroPink + '15' }]}>
-                              <Award size={16} color={Colors.retroPink} />
-                            </View>
-                            <View style={styles.categoryInfo}>
-                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Body Goal</Text>
-                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
-                                {profile.goals.bodyGoal.replace('-', ' ')}
-                              </Text>
-                            </View>
-                            <View style={styles.categoryRating}>
-                              <Text style={[styles.ratingText, { color: getBodyGoalRatingColor(nutrition, profile.goals) }]}>
-                                {getBodyGoalRating(nutrition, profile.goals)}
-                              </Text>
-                            </View>
+                        <View style={styles.goalRatingItem}>
+                          <View style={styles.goalRatingHeader}>
+                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Body Goal</Text>
+                            <Text style={[styles.goalRatingScore, { color: getBodyGoalRatingColor(nutrition, profile.goals) }]}>
+                              {getGoalRatingScore(getBodyGoalRating(nutrition, profile.goals))}
+                            </Text>
                           </View>
-                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-                            {getBodyGoalDescription(nutrition, profile.goals)}
+                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View 
+                              style={[
+                                styles.goalRatingBar,
+                                {
+                                  width: `${getGoalRatingScore(getBodyGoalRating(nutrition, profile.goals))}%`,
+                                  backgroundColor: getBodyGoalRatingColor(nutrition, profile.goals),
+                                }
+                              ]}
+                            />
+                          </View>
+                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
+                            {profile.goals.bodyGoal.replace('-', ' ')}
                           </Text>
                         </View>
                       )}
                       
-                      {/* Life Goal Rating */}
+                      {/* Life Goal Bar */}
                       {profile.goals.lifeGoal && (
-                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
-                          <View style={styles.categoryHeader}>
-                            <View style={[styles.categoryIcon, { backgroundColor: Colors.success + '15' }]}>
-                              <Star size={16} color={Colors.success} />
-                            </View>
-                            <View style={styles.categoryInfo}>
-                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Life Goal</Text>
-                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
-                                {profile.goals.lifeGoal.replace('-', ' ')}
-                                {profile.goals.lifeStrictness && (
-                                  <Text style={{ fontStyle: 'italic' }}> • {profile.goals.lifeStrictness.replace('-', ' ')}</Text>
-                                )}
-                              </Text>
-                            </View>
-                            <View style={styles.categoryRating}>
-                              <Text style={[styles.ratingText, { color: getLifeGoalRatingColor(nutrition, profile.goals) }]}>
-                                {getLifeGoalRating(nutrition, profile.goals)}
-                              </Text>
-                            </View>
+                        <View style={styles.goalRatingItem}>
+                          <View style={styles.goalRatingHeader}>
+                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Life Goal</Text>
+                            <Text style={[styles.goalRatingScore, { color: getLifeGoalRatingColor(nutrition, profile.goals) }]}>
+                              {getGoalRatingScore(getLifeGoalRating(nutrition, profile.goals))}
+                            </Text>
                           </View>
-                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-                            {getLifeGoalDescription(nutrition, profile.goals)}
+                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View 
+                              style={[
+                                styles.goalRatingBar,
+                                {
+                                  width: `${getGoalRatingScore(getLifeGoalRating(nutrition, profile.goals))}%`,
+                                  backgroundColor: getLifeGoalRatingColor(nutrition, profile.goals),
+                                }
+                              ]}
+                            />
+                          </View>
+                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
+                            {profile.goals.lifeGoal.replace('-', ' ')}
                           </Text>
                         </View>
                       )}
-                    </ScrollView>
+                    </View>
                   </View>
                 </View>
               )}
@@ -2642,7 +2648,54 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   
-  // Personalization Breakdown Styles
+  // Goal Rating Bars Styles
+  goalRatingsContainer: {
+    paddingVertical: 8,
+    gap: 24,
+  },
+  
+  goalRatingItem: {
+    paddingHorizontal: 4,
+  },
+  
+  goalRatingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  
+  goalRatingTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: Colors.retroCharcoalBlack,
+  },
+  
+  goalRatingScore: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  
+  goalRatingBarContainer: {
+    height: 12,
+    borderRadius: 6,
+    overflow: 'hidden',
+    marginBottom: 6,
+  },
+  
+  goalRatingBar: {
+    height: '100%',
+    borderRadius: 6,
+    minWidth: 2,
+  },
+  
+  goalRatingSubtitle: {
+    fontSize: 14,
+    textTransform: 'capitalize',
+    color: Colors.retroSlateGray,
+  },
+  
+  // Legacy Personalization Breakdown Styles (kept for compatibility)
   personalizationScrollView: {
     maxHeight: 400,
   },
