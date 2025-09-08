@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   Platform,
+  PanResponder,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import {
@@ -90,12 +91,42 @@ export default function PremiumScanFeedback({
   const [isForYouSectionExpanded, setIsForYouSectionExpanded] = useState<boolean>(false);
   const forYouSectionHeight = useRef(new Animated.Value(0)).current;
   const [allergenWarnings, setAllergenWarnings] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState<number>(0);
+  const tabTranslateX = useRef(new Animated.Value(0)).current;
   
   const slideUpValue = useRef(new Animated.Value(screenHeight)).current;
   const cardScale = useRef(new Animated.Value(0.8)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
   
   const loadingMessages = getLoadingMessages();
+  
+  // Pan responder for swipe gestures
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        tabTranslateX.setValue(gestureState.dx);
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        const threshold = 50;
+        if (gestureState.dx > threshold && activeTab > 0) {
+          // Swipe right - go to previous tab
+          setActiveTab(activeTab - 1);
+        } else if (gestureState.dx < -threshold && activeTab < 1) {
+          // Swipe left - go to next tab
+          setActiveTab(activeTab + 1);
+        }
+        
+        // Reset position
+        Animated.spring(tabTranslateX, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      },
+    })
+  ).current;
   
   useEffect(() => {
     if (isLoading) {
@@ -812,6 +843,35 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
         ]}
       >
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          {/* Swipeable Tab Content */}
+          {showPersonalized && nutrition.personalScore !== undefined && (
+            <Animated.View
+              style={[
+                styles.tabContentContainer,
+                {
+                  transform: [{ translateX: tabTranslateX }],
+                },
+              ]}
+              {...panResponder.panHandlers}
+            >
+              {activeTab === 0 ? (
+                <View style={styles.tabContent}>
+                  {/* Tab 1 Content - Empty for now */}
+                  <View style={[styles.tabPlaceholder, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.tabPlaceholderText, { color: colors.textSecondary }]}>Tab 1 Content</Text>
+                  </View>
+                </View>
+              ) : (
+                <View style={styles.tabContent}>
+                  {/* Tab 2 Content - Empty for now */}
+                  <View style={[styles.tabPlaceholder, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.tabPlaceholderText, { color: colors.textSecondary }]}>Tab 2 Content</Text>
+                  </View>
+                </View>
+              )}
+            </Animated.View>
+          )}
+          
           {/* Hero Score Section */}
           <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
             {/* Always show product header for consistency */}
@@ -900,6 +960,34 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     </View>
                   )}
 
+                </View>
+              )}
+              
+              {/* Tab Indicators */}
+              {showPersonalized && nutrition.personalScore !== undefined && (
+                <View style={styles.tabIndicatorContainer}>
+                  <View style={styles.tabIndicators}>
+                    <TouchableOpacity
+                      style={[
+                        styles.tabIndicator,
+                        {
+                          backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                        },
+                      ]}
+                      onPress={() => setActiveTab(0)}
+                      activeOpacity={0.7}
+                    />
+                    <TouchableOpacity
+                      style={[
+                        styles.tabIndicator,
+                        {
+                          backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                        },
+                      ]}
+                      onPress={() => setActiveTab(1)}
+                      activeOpacity={0.7}
+                    />
+                  </View>
                 </View>
               )}
             </View>
@@ -2011,6 +2099,52 @@ const styles = StyleSheet.create({
   warningText: {
     fontSize: 13,
     lineHeight: 18,
+    fontWeight: '500',
+  },
+  
+  // Tab Indicator Styles
+  tabIndicatorContainer: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  
+  tabIndicators: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  
+  tabIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  
+  // Tab Content Styles
+  tabContentContainer: {
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  
+  tabContent: {
+    width: '100%',
+  },
+  
+  tabPlaceholder: {
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: Colors.retroSoftGray,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: Colors.retroDeepIndigo + '15',
+  },
+  
+  tabPlaceholderText: {
+    fontSize: 16,
     fontWeight: '500',
   },
 
