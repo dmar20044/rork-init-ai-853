@@ -383,24 +383,70 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 15;
+      },
+      onPanResponderGrant: () => {
+        // Stop any ongoing animations when user starts panning
+        tabTranslateX.stopAnimation();
       },
       onPanResponderMove: (evt, gestureState) => {
-        tabTranslateX.setValue(gestureState.dx);
+        // Limit the pan distance to prevent over-scrolling
+        const maxPan = 100;
+        const limitedDx = Math.max(-maxPan, Math.min(maxPan, gestureState.dx));
+        tabTranslateX.setValue(limitedDx);
       },
       onPanResponderRelease: (evt, gestureState) => {
-        const threshold = 50;
-        if (gestureState.dx > threshold && activeTab > 0) {
-          // Swipe right - go to previous tab
-          setActiveTab(activeTab - 1);
-        } else if (gestureState.dx < -threshold && activeTab < 1) {
-          // Swipe left - go to next tab
-          setActiveTab(activeTab + 1);
-        }
+        const threshold = 60;
+        const velocity = gestureState.vx;
+        const distance = gestureState.dx;
         
-        // Reset position
+        // Determine if we should switch tabs based on distance and velocity
+        const shouldSwitchTab = Math.abs(distance) > threshold || Math.abs(velocity) > 0.5;
+        
+        if (shouldSwitchTab) {
+          if (distance > 0 && activeTab > 0) {
+            // Swipe right - go to previous tab
+            setActiveTab(0);
+            Animated.spring(tabTranslateX, {
+              toValue: 0,
+              tension: 100,
+              friction: 8,
+              useNativeDriver: true,
+            }).start();
+          } else if (distance < 0 && activeTab < 1) {
+            // Swipe left - go to next tab
+            setActiveTab(1);
+            Animated.spring(tabTranslateX, {
+              toValue: 0,
+              tension: 100,
+              friction: 8,
+              useNativeDriver: true,
+            }).start();
+          } else {
+            // Snap back to current position
+            Animated.spring(tabTranslateX, {
+              toValue: 0,
+              tension: 100,
+              friction: 8,
+              useNativeDriver: true,
+            }).start();
+          }
+        } else {
+          // Snap back to current position
+          Animated.spring(tabTranslateX, {
+            toValue: 0,
+            tension: 100,
+            friction: 8,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+      onPanResponderTerminate: () => {
+        // Handle termination (e.g., when another gesture takes over)
         Animated.spring(tabTranslateX, {
           toValue: 0,
+          tension: 100,
+          friction: 8,
           useNativeDriver: true,
         }).start();
       },
@@ -1361,7 +1407,17 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
                     },
                   ]}
-                  onPress={() => setActiveTab(0)}
+                  onPress={() => {
+                    if (activeTab !== 0) {
+                      setActiveTab(0);
+                      Animated.spring(tabTranslateX, {
+                        toValue: 0,
+                        tension: 100,
+                        friction: 8,
+                        useNativeDriver: true,
+                      }).start();
+                    }
+                  }}
                   activeOpacity={0.7}
                 />
                 <TouchableOpacity
@@ -1371,7 +1427,17 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
                     },
                   ]}
-                  onPress={() => setActiveTab(1)}
+                  onPress={() => {
+                    if (activeTab !== 1) {
+                      setActiveTab(1);
+                      Animated.spring(tabTranslateX, {
+                        toValue: 0,
+                        tension: 100,
+                        friction: 8,
+                        useNativeDriver: true,
+                      }).start();
+                    }
+                  }}
                   activeOpacity={0.7}
                 />
               </View>
