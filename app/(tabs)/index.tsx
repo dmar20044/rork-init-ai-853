@@ -685,29 +685,31 @@ export default function ScannerScreen() {
                 <View style={[styles.scanCorner, styles.scanCornerBL]} />
                 <View style={[styles.scanCorner, styles.scanCornerBR]} />
                 
-                {/* Animated Scan Beam */}
-                <Animated.View
-                  style={[
-                    styles.scanBeam,
-                    {
-                      transform: [
-                        {
-                          translateY: scanBeamAnimation.current.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [-10, 270],
-                          }),
-                        },
-                      ],
-                    },
-                  ]}
-                >
-                  <LinearGradient
-                    colors={['#00FFFF', '#FF1493']} // neon turquoise to retro pink
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.scanBeamGradient}
-                  />
-                </Animated.View>
+                {/* Animated Scan Beam - Only show in barcode mode */}
+                {isBarcodeMode && (
+                  <Animated.View
+                    style={[
+                      styles.scanBeam,
+                      {
+                        transform: [
+                          {
+                            translateY: scanBeamAnimation.current.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [-10, 270],
+                            }),
+                          },
+                        ],
+                      },
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={['#00FFFF', '#FF1493']} // neon turquoise to retro pink
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.scanBeamGradient}
+                    />
+                  </Animated.View>
+                )}
               </View>
               
               <Text style={styles.scanHint}>
