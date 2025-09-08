@@ -13,7 +13,7 @@ import {
   Animated,
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
-import { CameraView, CameraType, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
+import { CameraView, useCameraPermissions, BarcodeScanningResult } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { Camera, Image as ImageIcon, X, Upload, Scan, ImageIcon as LibraryIcon, Zap, ZapOff, QrCode, CheckCircle, XCircle } from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -35,7 +35,7 @@ export default function ScannerScreen() {
   const [showCamera, setShowCamera] = useState(true);
   const [nutritionData, setNutritionData] = useState<NutritionInfo | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [flashMode, setFlashMode] = useState<'off' | 'on' | 'auto'>('off');
+  const [flashMode, setFlashMode] = useState<'off' | 'on'>('off');
   const shutterFill = useRef<Animated.Value>(new Animated.Value(0));
   const [isBarcodeMode, setIsBarcodeMode] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -632,17 +632,17 @@ export default function ScannerScreen() {
   // Always show camera as the main interface
   return (
     <View style={styles.cameraContainer}>
-      <CameraView 
-        ref={cameraRef}
-        style={styles.camera} 
-        facing={facing}
-        flash={flashMode}
-        enableTorch={flashMode === 'on'}
-        barcodeScannerSettings={isBarcodeMode ? {
-          barcodeTypes: ['qr', 'pdf417', 'aztec', 'ean13', 'ean8', 'upc_e', 'datamatrix', 'code128', 'code39', 'code93', 'codabar', 'itf14', 'upc_a'],
-        } : undefined}
-        onBarcodeScanned={isBarcodeMode ? handleBarcodeScanned : undefined}
-      >
+      {permission.granted && (
+        <CameraView 
+          ref={cameraRef}
+          style={styles.camera} 
+          facing={facing}
+          flash={flashMode}
+          barcodeScannerSettings={isBarcodeMode ? {
+            barcodeTypes: ['qr', 'pdf417', 'aztec', 'ean13', 'ean8', 'upc_e', 'datamatrix', 'code128', 'code39', 'code93', 'codabar', 'itf14', 'upc_a'],
+          } : undefined}
+          onBarcodeScanned={isBarcodeMode ? handleBarcodeScanned : undefined}
+        >
           <View style={styles.cameraOverlay}>
             
             <View style={styles.scannerContent}>
@@ -788,8 +788,9 @@ export default function ScannerScreen() {
             </View>
           </View>
         </CameraView>
+      )}
         
-        {capturedImage && (
+      {capturedImage && (
           <SafeAreaView style={styles.resultOverlay}>
             <View style={styles.container}>
             {isProcessing ? (
