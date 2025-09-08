@@ -394,70 +394,103 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 15;
+        // More sensitive horizontal detection, less sensitive to vertical movement
+        const { dx, dy } = gestureState;
+        return Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5;
       },
       onPanResponderGrant: () => {
         // Stop any ongoing animations when user starts panning
         tabTranslateX.stopAnimation();
+        // Add haptic feedback on start
+        if (Platform.OS !== 'web') {
+          Haptics.selectionAsync();
+        }
       },
       onPanResponderMove: (evt, gestureState) => {
-        // Limit the pan distance to prevent over-scrolling
-        const maxPan = 100;
-        const limitedDx = Math.max(-maxPan, Math.min(maxPan, gestureState.dx));
-        tabTranslateX.setValue(limitedDx);
+        const { dx } = gestureState;
+        const screenWidth = Dimensions.get('window').width;
+        
+        // Calculate resistance for over-scroll effect
+        let translationX = dx;
+        
+        // Add resistance when trying to swipe beyond available tabs
+        if (activeTab === 0 && dx > 0) {
+          // Resistance when swiping right on first tab
+          translationX = dx * 0.3;
+        } else if (activeTab === 1 && dx < 0) {
+          // Resistance when swiping left on last tab
+          translationX = dx * 0.3;
+        }
+        
+        // Limit maximum translation to screen width for smooth experience
+        const maxTranslation = screenWidth * 0.8;
+        translationX = Math.max(-maxTranslation, Math.min(maxTranslation, translationX));
+        
+        tabTranslateX.setValue(translationX);
       },
       onPanResponderRelease: (evt, gestureState) => {
-        const threshold = 60;
-        const velocity = gestureState.vx;
-        const distance = gestureState.dx;
+        const { dx, vx } = gestureState;
+        const screenWidth = Dimensions.get('window').width;
         
-        // Determine if we should switch tabs based on distance and velocity
-        const shouldSwitchTab = Math.abs(distance) > threshold || Math.abs(velocity) > 0.5;
+        // Dynamic threshold based on screen width and velocity
+        const distanceThreshold = screenWidth * 0.25; // 25% of screen width
+        const velocityThreshold = 0.8;
         
-        if (shouldSwitchTab) {
-          if (distance > 0 && activeTab > 0) {
-            // Swipe right - go to previous tab
+        // Determine if we should switch tabs
+        const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
+        const shouldSwitchByVelocity = Math.abs(vx) > velocityThreshold;
+        const shouldSwitch = shouldSwitchByDistance || shouldSwitchByVelocity;
+        
+        if (shouldSwitch) {
+          if (dx > 0 && activeTab === 1) {
+            // Swipe right - go to tab 0
             setActiveTab(0);
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
             Animated.spring(tabTranslateX, {
               toValue: 0,
-              tension: 100,
-              friction: 8,
+              tension: 120,
+              friction: 9,
               useNativeDriver: true,
             }).start();
-          } else if (distance < 0 && activeTab < 1) {
-            // Swipe left - go to next tab
+          } else if (dx < 0 && activeTab === 0) {
+            // Swipe left - go to tab 1
             setActiveTab(1);
+            if (Platform.OS !== 'web') {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            }
             Animated.spring(tabTranslateX, {
               toValue: 0,
-              tension: 100,
-              friction: 8,
+              tension: 120,
+              friction: 9,
               useNativeDriver: true,
             }).start();
           } else {
-            // Snap back to current position
+            // Snap back to current position with bounce
             Animated.spring(tabTranslateX, {
               toValue: 0,
-              tension: 100,
-              friction: 8,
+              tension: 150,
+              friction: 10,
               useNativeDriver: true,
             }).start();
           }
         } else {
-          // Snap back to current position
+          // Snap back to current position with smooth animation
           Animated.spring(tabTranslateX, {
             toValue: 0,
-            tension: 100,
-            friction: 8,
+            tension: 150,
+            friction: 10,
             useNativeDriver: true,
           }).start();
         }
       },
       onPanResponderTerminate: () => {
-        // Handle termination (e.g., when another gesture takes over)
+        // Handle termination with smooth snap back
         Animated.spring(tabTranslateX, {
           toValue: 0,
-          tension: 100,
-          friction: 8,
+          tension: 120,
+          friction: 9,
           useNativeDriver: true,
         }).start();
       },
@@ -1181,15 +1214,16 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Swipeable Tab Content */}
           {showPersonalized && nutrition.personalScore !== undefined && (
-            <Animated.View
-              style={[
-                styles.tabContentContainer,
-                {
-                  transform: [{ translateX: tabTranslateX }],
-                },
-              ]}
-              {...panResponder.panHandlers}
-            >
+            <View style={styles.swipeableContainer}>
+              <Animated.View
+                style={[
+                  styles.tabContentContainer,
+                  {
+                    transform: [{ translateX: tabTranslateX }],
+                  },
+                ]}
+                {...panResponder.panHandlers}
+              >
               {activeTab === 0 ? (
                 <View style={styles.tabContent}>
                   {/* Tab 1: Product and Score Comparison */}
@@ -1399,7 +1433,15 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                   </View>
                 </View>
               )}
-            </Animated.View>
+              </Animated.View>
+              
+              {/* Visual swipe indicator */}
+              <View style={styles.swipeIndicator}>
+                <View style={[styles.swipeHint, { opacity: 0.3 }]}>
+                  <Text style={[styles.swipeHintText, { color: colors.textSecondary }]}>← Swipe →</Text>
+                </View>
+              </View>
+            </View>
           )}
           
           {/* Tab Indicators - Show above swipeable content */}
@@ -2753,6 +2795,31 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontStyle: 'italic',
+  },
+  
+  // Swipe Container Styles
+  swipeableContainer: {
+    position: 'relative',
+  },
+  
+  swipeIndicator: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  
+  swipeHint: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: Colors.retroSoftGray + '20',
+  },
+  
+  swipeHintText: {
+    fontSize: 12,
+    fontWeight: '500',
+    letterSpacing: 0.5,
+    color: Colors.retroSlateGray,
   },
 
 });
