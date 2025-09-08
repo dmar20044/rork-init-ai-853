@@ -22,6 +22,8 @@ import {
   X,
   Clock,
   Sparkles,
+  TrendingUp,
+  Award,
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useGroceryList, GroceryItem } from '@/contexts/GroceryListContext';
@@ -92,6 +94,120 @@ const formatDate = (date: Date): string => {
     });
   }
 };
+
+interface ListSummaryProps {
+  groceryItems: GroceryItem[];
+}
+
+function ListSummary({ groceryItems }: ListSummaryProps) {
+  const { isDarkMode } = useTheme();
+  const retroColors = getRetroColors(isDarkMode);
+  
+  // Calculate summary statistics
+  const itemsWithScores = groceryItems.filter(item => {
+    const score = item.personalScore ?? item.healthScore;
+    return score !== undefined;
+  });
+  
+  if (itemsWithScores.length === 0) {
+    return null; // Don't show summary if no items have scores
+  }
+  
+  const totalScore = itemsWithScores.reduce((sum, item) => {
+    const score = item.personalScore ?? item.healthScore;
+    return sum + (score || 0);
+  }, 0);
+  
+  const averageScore = totalScore / itemsWithScores.length;
+  const { grade, color, label } = getHealthGrade(averageScore);
+  
+  // Count items by grade category
+  const gradeDistribution = itemsWithScores.reduce((acc, item) => {
+    const score = item.personalScore ?? item.healthScore;
+    if (score === undefined) return acc;
+    
+    const itemGrade = getHealthGrade(score);
+    if (itemGrade.grade.startsWith('A')) acc.excellent++;
+    else if (itemGrade.grade.startsWith('B')) acc.good++;
+    else if (itemGrade.grade.startsWith('C')) acc.mediocre++;
+    else acc.poor++;
+    
+    return acc;
+  }, { excellent: 0, good: 0, mediocre: 0, poor: 0 });
+  
+  return (
+    <View style={[styles.summaryContainer, { backgroundColor: retroColors.surface }]}>
+      <View style={styles.summaryHeader}>
+        <View style={styles.summaryIconContainer}>
+          <Award size={24} color={retroColors.neonTurquoise} />
+        </View>
+        <View style={styles.summaryContent}>
+          <Text style={[styles.summaryTitle, { color: retroColors.textPrimary }]}>List Health Score</Text>
+          <Text style={[styles.summarySubtitle, { color: retroColors.textSecondary }]}>
+            {itemsWithScores.length} of {groceryItems.length} items analyzed
+          </Text>
+        </View>
+        <View style={styles.summaryScoreContainer}>
+          <View style={[styles.summaryScoreRing, { borderColor: color, backgroundColor: retroColors.surface }]}>
+            <Text style={[styles.summaryGradeText, { color }]}>{grade}</Text>
+          </View>
+          <Text style={[styles.summaryScoreLabel, { color }]}>{label}</Text>
+        </View>
+      </View>
+      
+      {/* Score breakdown */}
+      <View style={styles.summaryBreakdown}>
+        <View style={styles.breakdownRow}>
+          {gradeDistribution.excellent > 0 && (
+            <View style={styles.breakdownItem}>
+              <View style={[styles.breakdownDot, { backgroundColor: '#00FF00' }]} />
+              <Text style={[styles.breakdownText, { color: retroColors.textSecondary }]}>
+                {gradeDistribution.excellent} Excellent
+              </Text>
+            </View>
+          )}
+          {gradeDistribution.good > 0 && (
+            <View style={styles.breakdownItem}>
+              <View style={[styles.breakdownDot, { backgroundColor: '#34C759' }]} />
+              <Text style={[styles.breakdownText, { color: retroColors.textSecondary }]}>
+                {gradeDistribution.good} Good
+              </Text>
+            </View>
+          )}
+          {gradeDistribution.mediocre > 0 && (
+            <View style={styles.breakdownItem}>
+              <View style={[styles.breakdownDot, { backgroundColor: '#FFD60A' }]} />
+              <Text style={[styles.breakdownText, { color: retroColors.textSecondary }]}>
+                {gradeDistribution.mediocre} Mediocre
+              </Text>
+            </View>
+          )}
+          {gradeDistribution.poor > 0 && (
+            <View style={styles.breakdownItem}>
+              <View style={[styles.breakdownDot, { backgroundColor: '#FF9500' }]} />
+              <Text style={[styles.breakdownText, { color: retroColors.textSecondary }]}>
+                {gradeDistribution.poor} Poor
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
+      
+      {/* Progress bar */}
+      <View style={[styles.summaryProgressBar, { backgroundColor: retroColors.softGray + '30' }]}>
+        <View 
+          style={[
+            styles.summaryProgressFill, 
+            { 
+              backgroundColor: color,
+              width: `${Math.min(averageScore, 100)}%`
+            }
+          ]} 
+        />
+      </View>
+    </View>
+  );
+}
 
 interface GroceryCardProps {
   item: GroceryItem;
@@ -389,6 +505,11 @@ export default function GroceryListScreen() {
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* List Summary */}
+        {groceryItems.length > 0 && (
+          <ListSummary groceryItems={groceryItems} />
+        )}
+        
         {groceryItems.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Image 
@@ -744,6 +865,88 @@ const styles = StyleSheet.create({
     height: 3,
     borderRadius: 1.5,
     marginTop: 8,
+  },
+  
+  // Summary styles
+  summaryContainer: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  summaryIconContainer: {
+    marginRight: 12,
+  },
+  summaryContent: {
+    flex: 1,
+  },
+  summaryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  summarySubtitle: {
+    fontSize: 13,
+  },
+  summaryScoreContainer: {
+    alignItems: 'center',
+  },
+  summaryScoreRing: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  summaryGradeText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  summaryScoreLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  summaryBreakdown: {
+    marginBottom: 16,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  breakdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  breakdownDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  breakdownText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  summaryProgressBar: {
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  summaryProgressFill: {
+    height: '100%',
+    borderRadius: 3,
   },
 });
 
