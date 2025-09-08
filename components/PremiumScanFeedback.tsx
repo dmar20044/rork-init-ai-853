@@ -394,9 +394,9 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // More sensitive horizontal detection for both directions
+        // Very sensitive horizontal detection for both directions
         const { dx, dy } = gestureState;
-        return Math.abs(dx) > 3 && Math.abs(dx) > Math.abs(dy) * 0.6;
+        return Math.abs(dx) > 2 && Math.abs(dx) > Math.abs(dy) * 0.5;
       },
       onPanResponderGrant: () => {
         // Stop any ongoing animations when user starts panning
@@ -417,10 +417,10 @@ export default function PremiumScanFeedback({
         // Add resistance when trying to swipe beyond available tabs
         if (translationX > 0) {
           // Resistance when swiping right beyond first tab
-          translationX = dx * 0.2;
+          translationX = dx * 0.3;
         } else if (translationX < -screenWidth) {
           // Resistance when swiping left beyond last tab
-          translationX = -screenWidth + (dx + screenWidth) * 0.2;
+          translationX = -screenWidth + (dx + screenWidth) * 0.3;
         }
         
         tabTranslateX.setValue(translationX);
@@ -429,9 +429,9 @@ export default function PremiumScanFeedback({
         const { dx, vx } = gestureState;
         const screenWidth = Dimensions.get('window').width;
         
-        // More sensitive thresholds for easier swiping
-        const distanceThreshold = screenWidth * 0.15; // 15% of screen width
-        const velocityThreshold = 0.2;
+        // Much more sensitive thresholds for easier swiping
+        const distanceThreshold = screenWidth * 0.1; // 10% of screen width
+        const velocityThreshold = 0.15;
         
         // Determine if we should switch tabs based on distance OR velocity
         const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
@@ -464,8 +464,8 @@ export default function PremiumScanFeedback({
         // Animate to target position with smoother spring
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 100,
-          friction: 8,
+          tension: 120,
+          friction: 7,
           useNativeDriver: true,
         }).start();
       },
@@ -475,8 +475,8 @@ export default function PremiumScanFeedback({
         const targetTranslation = activeTab === 0 ? 0 : -screenWidth;
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 100,
-          friction: 8,
+          tension: 120,
+          friction: 7,
           useNativeDriver: true,
         }).start();
       },
