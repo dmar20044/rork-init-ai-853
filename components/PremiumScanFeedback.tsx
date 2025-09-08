@@ -410,21 +410,18 @@ export default function PremiumScanFeedback({
         const { dx } = gestureState;
         const screenWidth = Dimensions.get('window').width;
         
-        // Calculate resistance for over-scroll effect
-        let translationX = dx;
+        // Calculate the base translation based on current active tab
+        const baseTranslation = activeTab === 0 ? 0 : -screenWidth;
+        let translationX = baseTranslation + dx;
         
         // Add resistance when trying to swipe beyond available tabs
-        if (activeTab === 0 && dx > 0) {
-          // Resistance when swiping right on first tab
+        if (translationX > 0) {
+          // Resistance when swiping right beyond first tab
           translationX = dx * 0.3;
-        } else if (activeTab === 1 && dx < 0) {
-          // Resistance when swiping left on last tab
-          translationX = dx * 0.3;
+        } else if (translationX < -screenWidth) {
+          // Resistance when swiping left beyond last tab
+          translationX = -screenWidth + (dx + screenWidth) * 0.3;
         }
-        
-        // Limit maximum translation to screen width for smooth experience
-        const maxTranslation = screenWidth * 0.8;
-        translationX = Math.max(-maxTranslation, Math.min(maxTranslation, translationX));
         
         tabTranslateX.setValue(translationX);
       },
@@ -441,54 +438,41 @@ export default function PremiumScanFeedback({
         const shouldSwitchByVelocity = Math.abs(vx) > velocityThreshold;
         const shouldSwitch = shouldSwitchByDistance || shouldSwitchByVelocity;
         
+        let targetTab = activeTab;
+        let targetTranslation = activeTab === 0 ? 0 : -screenWidth;
+        
         if (shouldSwitch) {
           if (dx > 0 && activeTab === 1) {
             // Swipe right - go to tab 0
-            setActiveTab(0);
-            if (Platform.OS !== 'web') {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-            Animated.spring(tabTranslateX, {
-              toValue: 0,
-              tension: 120,
-              friction: 9,
-              useNativeDriver: true,
-            }).start();
+            targetTab = 0;
+            targetTranslation = 0;
           } else if (dx < 0 && activeTab === 0) {
             // Swipe left - go to tab 1
-            setActiveTab(1);
-            if (Platform.OS !== 'web') {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            }
-            Animated.spring(tabTranslateX, {
-              toValue: 0,
-              tension: 120,
-              friction: 9,
-              useNativeDriver: true,
-            }).start();
-          } else {
-            // Snap back to current position with bounce
-            Animated.spring(tabTranslateX, {
-              toValue: 0,
-              tension: 150,
-              friction: 10,
-              useNativeDriver: true,
-            }).start();
+            targetTab = 1;
+            targetTranslation = -screenWidth;
           }
-        } else {
-          // Snap back to current position with smooth animation
-          Animated.spring(tabTranslateX, {
-            toValue: 0,
-            tension: 150,
-            friction: 10,
-            useNativeDriver: true,
-          }).start();
         }
+        
+        if (targetTab !== activeTab) {
+          setActiveTab(targetTab);
+          if (Platform.OS !== 'web') {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }
+        }
+        
+        Animated.spring(tabTranslateX, {
+          toValue: targetTranslation,
+          tension: 120,
+          friction: 9,
+          useNativeDriver: true,
+        }).start();
       },
       onPanResponderTerminate: () => {
         // Handle termination with smooth snap back
+        const screenWidth = Dimensions.get('window').width;
+        const targetTranslation = activeTab === 0 ? 0 : -screenWidth;
         Animated.spring(tabTranslateX, {
-          toValue: 0,
+          toValue: targetTranslation,
           tension: 120,
           friction: 9,
           useNativeDriver: true,
@@ -1224,9 +1208,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 ]}
                 {...panResponder.panHandlers}
               >
-              {activeTab === 0 ? (
-                <View style={styles.tabContent}>
-                  {/* Tab 1: Product and Score Comparison */}
+                {/* Tab 1: Product and Score Comparison */}
+                <View style={[styles.tabContent, { width: Dimensions.get('window').width - 32 }]}>
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     {/* Product Header */}
                     <View style={styles.productHeader}>
@@ -1316,9 +1299,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     </View>
                   </View>
                 </View>
-              ) : (
-                <View style={styles.tabContent}>
-                  {/* Tab 2: Goal Rating Bars */}
+                
+                {/* Tab 2: Goal Rating Bars */}
+                <View style={[styles.tabContent, { width: Dimensions.get('window').width - 32 }]}>
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.cardHeader}>
                       <Target size={20} color={Colors.retroPink} />
@@ -1432,7 +1415,6 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     </View>
                   </View>
                 </View>
-              )}
               </Animated.View>
               
               {/* Visual swipe indicator */}
@@ -1478,8 +1460,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                   onPress={() => {
                     if (activeTab !== 1) {
                       setActiveTab(1);
+                      const screenWidth = Dimensions.get('window').width;
                       Animated.spring(tabTranslateX, {
-                        toValue: 0,
+                        toValue: -screenWidth,
                         tension: 100,
                         friction: 8,
                         useNativeDriver: true,
@@ -2663,12 +2646,13 @@ const styles = StyleSheet.create({
   
   // Tab Content Styles
   tabContentContainer: {
+    flexDirection: 'row',
     marginHorizontal: 16,
     marginBottom: 16,
   },
   
   tabContent: {
-    width: '100%',
+    marginRight: 16,
   },
   
   tabPlaceholder: {
