@@ -61,45 +61,22 @@ interface PremiumScanFeedbackProps {
 
 const { height: screenHeight } = Dimensions.get('window');
 
-// Helper functions for personalization breakdown
+// Helper functions for personalization breakdown using actual personalized scoring
 const getHealthGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.healthGoal) return 'N/A';
+  if (!goals.healthGoal || !nutrition.personalScore) return 'N/A';
   
-  const sugar = nutrition.sugar;
-  const protein = nutrition.protein;
-  const fat = nutrition.fat;
-  const carbs = nutrition.carbs;
+  // Use the actual personalized score which already factors in health goals
+  const personalScore = nutrition.personalScore;
+  const baseScore = nutrition.healthScore;
   
-  switch (goals.healthGoal) {
-    case 'low-sugar':
-      if (sugar <= 3) return 'Excellent';
-      if (sugar <= 6) return 'Good';
-      if (sugar <= 10.5) return 'Fair';
-      return 'Poor';
-    case 'high-protein':
-      if (protein >= 20) return 'Excellent';
-      if (protein >= 15) return 'Good';
-      if (protein >= 8) return 'Fair';
-      return 'Poor';
-    case 'low-fat':
-      if (fat <= 3) return 'Excellent';
-      if (fat <= 8) return 'Good';
-      if (fat <= 15) return 'Fair';
-      return 'Poor';
-    case 'keto':
-      if (carbs <= 5) return 'Excellent';
-      if (carbs <= 10) return 'Good';
-      if (carbs <= 20) return 'Fair';
-      return 'Poor';
-    case 'balanced':
-      const score = nutrition.personalScore || nutrition.healthScore;
-      if (score >= 75) return 'Excellent';
-      if (score >= 60) return 'Good';
-      if (score >= 45) return 'Fair';
-      return 'Poor';
-    default:
-      return 'N/A';
-  }
+  // Calculate the health goal impact by comparing personal vs base score
+  const healthImpact = personalScore - baseScore;
+  
+  // If the personal score is significantly higher due to health goals, it's excellent
+  if (healthImpact >= 15 || personalScore >= 85) return 'Excellent';
+  if (healthImpact >= 5 || personalScore >= 70) return 'Good';
+  if (healthImpact >= -5 || personalScore >= 50) return 'Fair';
+  return 'Poor';
 };
 
 const getHealthGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
@@ -114,59 +91,46 @@ const getHealthGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): s
 };
 
 const getHealthGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.healthGoal) return 'No health goal set';
+  if (!goals.healthGoal || !nutrition.personalReasons) return 'No health goal analysis available';
   
-  const sugar = nutrition.sugar;
-  const protein = nutrition.protein;
-  const fat = nutrition.fat;
-  const carbs = nutrition.carbs;
+  // Use the actual personalized reasons from the scoring system
+  const healthReasons = nutrition.personalReasons.filter(reason => 
+    reason.toLowerCase().includes('sugar') ||
+    reason.toLowerCase().includes('protein') ||
+    reason.toLowerCase().includes('fat') ||
+    reason.toLowerCase().includes('carb') ||
+    reason.toLowerCase().includes('keto') ||
+    reason.toLowerCase().includes('balanced')
+  );
   
-  switch (goals.healthGoal) {
-    case 'low-sugar':
-      return `Contains ${sugar}g sugar per serving. ${sugar <= 6 ? 'Aligns well with your low-sugar goal.' : 'May conflict with your low-sugar goal.'}`;
-    case 'high-protein':
-      return `Provides ${protein}g protein per serving. ${protein >= 15 ? 'Great protein source for your goals.' : 'Could use more protein for your goals.'}`;
-    case 'low-fat':
-      return `Contains ${fat}g fat per serving. ${fat <= 8 ? 'Fits your low-fat preference.' : 'Higher fat content than ideal for your goals.'}`;
-    case 'keto':
-      return `Has ${carbs}g carbs per serving. ${carbs <= 10 ? 'Keto-friendly carb level.' : 'Too many carbs for strict keto.'}`;
-    case 'balanced':
-      return 'Evaluated for overall nutritional balance and quality.';
-    default:
-      return 'Health goal evaluation not available.';
+  if (healthReasons.length > 0) {
+    return healthReasons[0]; // Return the most relevant health-related reason
   }
+  
+  // Fallback to basic description
+  const goalName = goals.healthGoal.replace('-', ' ').replace('_', ' ');
+  return `Analyzed for ${goalName} compatibility based on your personal nutrition goals.`;
 };
 
 const getDietGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.dietGoal) return 'N/A';
+  if (!goals.dietGoal || !nutrition.personalScore) return 'N/A';
   
-  const ingredients = (nutrition.ingredients || []).join(' ').toLowerCase();
-  const additives = nutrition.additives || [];
-  
-  switch (goals.dietGoal) {
-    case 'whole-foods':
-      if (additives.length === 0 && !ingredients.includes('artificial')) return 'Excellent';
-      if (additives.length <= 2) return 'Good';
-      if (additives.length <= 5) return 'Fair';
-      return 'Poor';
-    case 'vegan':
-      const hasAnimal = /milk|whey|casein|egg|honey|gelatin|fish|chicken|beef|pork|dairy|butter|cheese|yogurt|cream|lactose/.test(ingredients);
-      return hasAnimal ? 'Poor' : 'Excellent';
-    case 'vegetarian':
-      const hasMeat = /gelatin|fish|chicken|beef|pork|meat|poultry|seafood|anchovy/.test(ingredients);
-      return hasMeat ? 'Poor' : 'Excellent';
-    case 'gluten-free':
-      const hasGluten = /wheat|barley|rye|malt|spelt|farro|semolina|triticale|gluten/.test(ingredients);
-      return hasGluten ? 'Poor' : 'Excellent';
-    case 'balanced':
-      const score = nutrition.personalScore || nutrition.healthScore;
-      if (score >= 75) return 'Excellent';
-      if (score >= 60) return 'Good';
-      if (score >= 45) return 'Fair';
-      return 'Poor';
-    default:
-      return 'N/A';
+  // For strict dietary restrictions (vegan, vegetarian, gluten-free), check if score was forced to 0
+  if (['vegan', 'vegetarian', 'gluten-free'].includes(goals.dietGoal)) {
+    if (nutrition.personalScore === 0) return 'Poor'; // Dietary restriction violated
+    return 'Excellent'; // Dietary restriction satisfied
   }
+  
+  // For other diet goals, use the personalized score impact
+  const personalScore = nutrition.personalScore;
+  const baseScore = nutrition.healthScore;
+  const dietImpact = personalScore - baseScore;
+  
+  // Check if diet preferences positively or negatively impacted the score
+  if (dietImpact >= 10 || personalScore >= 85) return 'Excellent';
+  if (dietImpact >= 0 || personalScore >= 70) return 'Good';
+  if (dietImpact >= -10 || personalScore >= 50) return 'Fair';
+  return 'Poor';
 };
 
 const getDietGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
@@ -181,66 +145,44 @@ const getDietGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): str
 };
 
 const getDietGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.dietGoal) return 'No diet preference set';
+  if (!goals.dietGoal || !nutrition.personalReasons) return 'No diet preference analysis available';
   
-  const ingredients = (nutrition.ingredients || []).join(' ').toLowerCase();
-  const additives = nutrition.additives || [];
+  // Use the actual personalized reasons from the scoring system
+  const dietReasons = nutrition.personalReasons.filter(reason => 
+    reason.toLowerCase().includes('vegan') ||
+    reason.toLowerCase().includes('vegetarian') ||
+    reason.toLowerCase().includes('gluten') ||
+    reason.toLowerCase().includes('whole') ||
+    reason.toLowerCase().includes('processed') ||
+    reason.toLowerCase().includes('additive') ||
+    reason.toLowerCase().includes('animal') ||
+    reason.toLowerCase().includes('plant')
+  );
   
-  switch (goals.dietGoal) {
-    case 'whole-foods':
-      return `Contains ${additives.length} additives. ${additives.length <= 2 ? 'Minimal processing aligns with whole foods.' : 'More processed than ideal for whole foods.'}`;
-    case 'vegan':
-      const hasAnimal = /milk|whey|casein|egg|honey|gelatin|fish|chicken|beef|pork|dairy|butter|cheese|yogurt|cream|lactose/.test(ingredients);
-      return hasAnimal ? 'Contains animal-derived ingredients.' : 'Plant-based and vegan-friendly.';
-    case 'vegetarian':
-      const hasMeat = /gelatin|fish|chicken|beef|pork|meat|poultry|seafood|anchovy/.test(ingredients);
-      return hasMeat ? 'Contains meat or fish ingredients.' : 'Vegetarian-friendly ingredients.';
-    case 'gluten-free':
-      const hasGluten = /wheat|barley|rye|malt|spelt|farro|semolina|triticale|gluten/.test(ingredients);
-      return hasGluten ? 'Contains gluten-containing ingredients.' : 'Gluten-free ingredients.';
-    case 'balanced':
-      return 'Evaluated for overall dietary balance and variety.';
-    default:
-      return 'Diet preference evaluation not available.';
+  if (dietReasons.length > 0) {
+    return dietReasons[0]; // Return the most relevant diet-related reason
   }
+  
+  // Fallback to basic description
+  const goalName = goals.dietGoal.replace('-', ' ');
+  return `Analyzed for ${goalName} compatibility based on your dietary preferences.`;
 };
 
 const getBodyGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.bodyGoal) return 'N/A';
+  if (!goals.bodyGoal || !nutrition.personalScore) return 'N/A';
   
-  const calories = nutrition.calories;
-  const protein = nutrition.protein;
-  const sugar = nutrition.sugar;
+  // Use the actual personalized score which already factors in body goals
+  const personalScore = nutrition.personalScore;
+  const baseScore = nutrition.healthScore;
   
-  switch (goals.bodyGoal) {
-    case 'lose-weight':
-      if (calories <= 150 && sugar <= 5) return 'Excellent';
-      if (calories <= 250 && sugar <= 8) return 'Good';
-      if (calories <= 350) return 'Fair';
-      return 'Poor';
-    case 'slightly-lose-weight':
-      if (calories <= 200 && sugar <= 8) return 'Excellent';
-      if (calories <= 300 && sugar <= 10) return 'Good';
-      if (calories <= 400) return 'Fair';
-      return 'Poor';
-    case 'maintain-weight':
-      if (calories <= 300 && protein >= 8) return 'Excellent';
-      if (calories <= 400) return 'Good';
-      if (calories <= 500) return 'Fair';
-      return 'Poor';
-    case 'slightly-gain-weight':
-      if (protein >= 15 && calories >= 200) return 'Excellent';
-      if (protein >= 10 && calories >= 150) return 'Good';
-      if (calories >= 100) return 'Fair';
-      return 'Poor';
-    case 'gain-weight':
-      if (protein >= 20 && calories >= 300) return 'Excellent';
-      if (protein >= 15 && calories >= 200) return 'Good';
-      if (calories >= 150) return 'Fair';
-      return 'Poor';
-    default:
-      return 'N/A';
-  }
+  // Calculate the body goal impact by comparing personal vs base score
+  const bodyImpact = personalScore - baseScore;
+  
+  // If the personal score is significantly affected by body goals
+  if (bodyImpact >= 12 || personalScore >= 85) return 'Excellent';
+  if (bodyImpact >= 3 || personalScore >= 70) return 'Good';
+  if (bodyImpact >= -8 || personalScore >= 50) return 'Fair';
+  return 'Poor';
 };
 
 const getBodyGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
@@ -255,58 +197,42 @@ const getBodyGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): str
 };
 
 const getBodyGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.bodyGoal) return 'No body goal set';
+  if (!goals.bodyGoal || !nutrition.personalReasons) return 'No body goal analysis available';
   
-  const calories = nutrition.calories;
-  const protein = nutrition.protein;
+  // Use the actual personalized reasons from the scoring system
+  const bodyReasons = nutrition.personalReasons.filter(reason => 
+    reason.toLowerCase().includes('weight') ||
+    reason.toLowerCase().includes('calorie') ||
+    reason.toLowerCase().includes('protein') ||
+    reason.toLowerCase().includes('gain') ||
+    reason.toLowerCase().includes('loss') ||
+    reason.toLowerCase().includes('maintain')
+  );
   
-  switch (goals.bodyGoal) {
-    case 'lose-weight':
-      return `${calories} calories per serving. ${calories <= 250 ? 'Good for weight loss.' : 'Higher calories may slow weight loss.'}`;
-    case 'slightly-lose-weight':
-      return `${calories} calories per serving. ${calories <= 300 ? 'Suitable for gradual weight loss.' : 'Moderate calories for slow weight loss.'}`;
-    case 'maintain-weight':
-      return `${calories} calories with ${protein}g protein. ${protein >= 8 ? 'Good balance for maintenance.' : 'Could use more protein for maintenance.'}`;
-    case 'slightly-gain-weight':
-      return `${calories} calories with ${protein}g protein. ${protein >= 10 ? 'Good for gradual weight gain.' : 'More protein would help weight gain goals.'}`;
-    case 'gain-weight':
-      return `${calories} calories with ${protein}g protein. ${protein >= 15 ? 'Excellent for weight gain.' : 'Higher protein would better support weight gain.'}`;
-    default:
-      return 'Body goal evaluation not available.';
+  if (bodyReasons.length > 0) {
+    return bodyReasons[0]; // Return the most relevant body-related reason
   }
+  
+  // Fallback to basic description
+  const goalName = goals.bodyGoal.replace('-', ' ');
+  return `Analyzed for ${goalName} compatibility based on your body composition goals.`;
 };
 
 const getLifeGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.lifeGoal) return 'N/A';
+  if (!goals.lifeGoal || !nutrition.personalScore) return 'N/A';
   
-  const sugar = nutrition.sugar;
-  const additives = nutrition.additives || [];
-  const protein = nutrition.protein;
+  // Use the actual personalized score which already factors in life goals
+  const personalScore = nutrition.personalScore;
+  const baseScore = nutrition.healthScore;
   
-  switch (goals.lifeGoal) {
-    case 'eat-healthier':
-      if (additives.length <= 2 && sugar <= 6) return 'Excellent';
-      if (additives.length <= 5 && sugar <= 10) return 'Good';
-      if (additives.length <= 8) return 'Fair';
-      return 'Poor';
-    case 'boost-energy':
-      if (protein >= 10 && sugar <= 8 && additives.length <= 3) return 'Excellent';
-      if (protein >= 5 && sugar <= 12) return 'Good';
-      if (sugar <= 15) return 'Fair';
-      return 'Poor';
-    case 'feel-better':
-      if (protein >= 8 && sugar <= 10) return 'Excellent';
-      if (protein >= 5 && sugar <= 15) return 'Good';
-      if (sugar <= 20) return 'Fair';
-      return 'Poor';
-    case 'clear-skin':
-      if (additives.length <= 1 && sugar <= 5) return 'Excellent';
-      if (additives.length <= 3 && sugar <= 8) return 'Good';
-      if (sugar <= 12) return 'Fair';
-      return 'Poor';
-    default:
-      return 'N/A';
-  }
+  // Calculate the life goal impact by comparing personal vs base score
+  const lifeImpact = personalScore - baseScore;
+  
+  // If the personal score is significantly affected by life goals
+  if (lifeImpact >= 10 || personalScore >= 85) return 'Excellent';
+  if (lifeImpact >= 2 || personalScore >= 70) return 'Good';
+  if (lifeImpact >= -6 || personalScore >= 50) return 'Fair';
+  return 'Poor';
 };
 
 const getLifeGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
@@ -321,32 +247,35 @@ const getLifeGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): str
 };
 
 const getLifeGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.lifeGoal) return 'No life goal set';
+  if (!goals.lifeGoal || !nutrition.personalReasons) return 'No life goal analysis available';
   
-  const sugar = nutrition.sugar;
-  const additives = nutrition.additives || [];
+  // Use the actual personalized reasons from the scoring system
+  const lifeReasons = nutrition.personalReasons.filter(reason => 
+    reason.toLowerCase().includes('energy') ||
+    reason.toLowerCase().includes('health') ||
+    reason.toLowerCase().includes('skin') ||
+    reason.toLowerCase().includes('feel') ||
+    reason.toLowerCase().includes('mood') ||
+    reason.toLowerCase().includes('crash') ||
+    reason.toLowerCase().includes('additive')
+  );
   
-  switch (goals.lifeGoal) {
-    case 'eat-healthier':
-      return `${additives.length} additives, ${sugar}g sugar. ${additives.length <= 5 && sugar <= 10 ? 'Supports healthier eating.' : 'More processed than ideal for health goals.'}`;
-    case 'boost-energy':
-      return `${sugar}g sugar per serving. ${sugar <= 8 ? 'Won\'t cause energy crashes.' : 'High sugar may lead to energy crashes.'}`;
-    case 'feel-better':
-      return `Balanced nutrition profile. ${sugar <= 10 ? 'Should support feeling better.' : 'High sugar may affect how you feel.'}`;
-    case 'clear-skin':
-      return `${additives.length} additives, ${sugar}g sugar. ${additives.length <= 3 && sugar <= 8 ? 'Skin-friendly ingredients.' : 'May not be ideal for clear skin goals.'}`;
-    default:
-      return 'Life goal evaluation not available.';
+  if (lifeReasons.length > 0) {
+    return lifeReasons[0]; // Return the most relevant life-related reason
   }
+  
+  // Fallback to basic description
+  const goalName = goals.lifeGoal.replace('-', ' ');
+  return `Analyzed for ${goalName} compatibility based on your lifestyle goals.`;
 };
 
 // Helper function to convert rating to numerical score for bar display
 const getGoalRatingScore = (rating: string): number => {
   switch (rating) {
-    case 'Excellent': return 85;
-    case 'Good': return 70;
-    case 'Fair': return 50;
-    case 'Poor': return 25;
+    case 'Excellent': return 90;
+    case 'Good': return 75;
+    case 'Fair': return 55;
+    case 'Poor': return 30;
     default: return 0;
   }
 };
