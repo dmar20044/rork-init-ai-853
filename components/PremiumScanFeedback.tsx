@@ -61,21 +61,62 @@ interface PremiumScanFeedbackProps {
 
 const { height: screenHeight } = Dimensions.get('window');
 
-// Helper functions for personalization breakdown using actual personalized scoring
+// Helper functions for personalization breakdown using actual nutritional data
 const getHealthGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.healthGoal || !nutrition.personalScore) return 'N/A';
+  if (!goals.healthGoal) return 'N/A';
   
-  // Use the actual personalized score which already factors in health goals
-  const personalScore = nutrition.personalScore;
-  const baseScore = nutrition.healthScore;
+  const { healthGoal } = goals;
+  let score = 0;
   
-  // Calculate the health goal impact by comparing personal vs base score
-  const healthImpact = personalScore - baseScore;
+  switch (healthGoal) {
+    case 'low-sugar':
+      // Score based on sugar content (lower is better)
+      if (nutrition.sugar <= 2) score = 95;
+      else if (nutrition.sugar <= 5) score = 85;
+      else if (nutrition.sugar <= 10) score = 70;
+      else if (nutrition.sugar <= 15) score = 55;
+      else if (nutrition.sugar <= 25) score = 40;
+      else score = 25;
+      break;
+      
+    case 'high-protein':
+      // Score based on protein content (higher is better)
+      if (nutrition.protein >= 20) score = 95;
+      else if (nutrition.protein >= 15) score = 85;
+      else if (nutrition.protein >= 10) score = 70;
+      else if (nutrition.protein >= 5) score = 55;
+      else if (nutrition.protein >= 2) score = 40;
+      else score = 25;
+      break;
+      
+    case 'low-fat':
+      // Score based on total fat content (lower is better)
+      if (nutrition.fat <= 1) score = 95;
+      else if (nutrition.fat <= 3) score = 85;
+      else if (nutrition.fat <= 6) score = 70;
+      else if (nutrition.fat <= 10) score = 55;
+      else if (nutrition.fat <= 15) score = 40;
+      else score = 25;
+      break;
+      
+    case 'keto':
+      // Score based on carb content (lower is better) and fat content (higher is better)
+      const carbScore = nutrition.carbs <= 2 ? 50 : nutrition.carbs <= 5 ? 40 : nutrition.carbs <= 10 ? 25 : 10;
+      const fatScore = nutrition.fat >= 15 ? 45 : nutrition.fat >= 10 ? 35 : nutrition.fat >= 5 ? 25 : 10;
+      score = carbScore + fatScore;
+      break;
+      
+    case 'balanced':
+    default:
+      // Use the base health score for balanced approach
+      score = nutrition.healthScore;
+      break;
+  }
   
-  // If the personal score is significantly higher due to health goals, it's excellent
-  if (healthImpact >= 15 || personalScore >= 85) return 'Excellent';
-  if (healthImpact >= 5 || personalScore >= 70) return 'Good';
-  if (healthImpact >= -5 || personalScore >= 50) return 'Fair';
+  // Convert score to rating
+  if (score >= 85) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
   return 'Poor';
 };
 
@@ -113,23 +154,86 @@ const getHealthGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): s
 };
 
 const getDietGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.dietGoal || !nutrition.personalScore) return 'N/A';
+  if (!goals.dietGoal) return 'N/A';
   
-  // For strict dietary restrictions (vegan, vegetarian, gluten-free), check if score was forced to 0
-  if (['vegan', 'vegetarian', 'gluten-free'].includes(goals.dietGoal)) {
-    if (nutrition.personalScore === 0) return 'Poor'; // Dietary restriction violated
-    return 'Excellent'; // Dietary restriction satisfied
+  const { dietGoal } = goals;
+  let score = 0;
+  
+  switch (dietGoal) {
+    case 'whole-foods':
+      // Score based on processing level (fewer additives = better)
+      const additiveCount = nutrition.additives?.length || 0;
+      const hasArtificialIngredients = nutrition.ingredients?.some(ing => 
+        ing.toLowerCase().includes('artificial') || 
+        ing.toLowerCase().includes('preservative') ||
+        ing.toLowerCase().includes('color') ||
+        ing.toLowerCase().includes('flavor')
+      ) || false;
+      
+      if (additiveCount === 0 && !hasArtificialIngredients) score = 95;
+      else if (additiveCount <= 2 && !hasArtificialIngredients) score = 80;
+      else if (additiveCount <= 5) score = 65;
+      else if (additiveCount <= 8) score = 45;
+      else score = 25;
+      break;
+      
+    case 'vegan':
+      // Check for animal-derived ingredients
+      const veganUnfriendly = nutrition.ingredients?.some(ing => {
+        const ingredient = ing.toLowerCase();
+        return ingredient.includes('milk') || ingredient.includes('egg') || 
+               ingredient.includes('meat') || ingredient.includes('fish') ||
+               ingredient.includes('dairy') || ingredient.includes('whey') ||
+               ingredient.includes('casein') || ingredient.includes('gelatin') ||
+               ingredient.includes('honey') || ingredient.includes('butter');
+      }) || false;
+      
+      score = veganUnfriendly ? 15 : 90;
+      break;
+      
+    case 'vegetarian':
+      // Check for meat and fish ingredients
+      const vegetarianUnfriendly = nutrition.ingredients?.some(ing => {
+        const ingredient = ing.toLowerCase();
+        return ingredient.includes('meat') || ingredient.includes('fish') ||
+               ingredient.includes('chicken') || ingredient.includes('beef') ||
+               ingredient.includes('pork') || ingredient.includes('gelatin');
+      }) || false;
+      
+      score = vegetarianUnfriendly ? 15 : 85;
+      break;
+      
+    case 'gluten-free':
+      // Check for gluten-containing ingredients
+      const glutenIngredients = nutrition.ingredients?.some(ing => {
+        const ingredient = ing.toLowerCase();
+        return ingredient.includes('wheat') || ingredient.includes('barley') ||
+               ingredient.includes('rye') || ingredient.includes('gluten') ||
+               ingredient.includes('flour') || ingredient.includes('malt');
+      }) || false;
+      
+      score = glutenIngredients ? 10 : 90;
+      break;
+      
+    case 'carnivore':
+      // Score based on animal protein content
+      if (nutrition.protein >= 15) score = 90;
+      else if (nutrition.protein >= 10) score = 75;
+      else if (nutrition.protein >= 5) score = 50;
+      else score = 20;
+      break;
+      
+    case 'balanced':
+    default:
+      // Use base health score for balanced approach
+      score = nutrition.healthScore;
+      break;
   }
   
-  // For other diet goals, use the personalized score impact
-  const personalScore = nutrition.personalScore;
-  const baseScore = nutrition.healthScore;
-  const dietImpact = personalScore - baseScore;
-  
-  // Check if diet preferences positively or negatively impacted the score
-  if (dietImpact >= 10 || personalScore >= 85) return 'Excellent';
-  if (dietImpact >= 0 || personalScore >= 70) return 'Good';
-  if (dietImpact >= -10 || personalScore >= 50) return 'Fair';
+  // Convert score to rating
+  if (score >= 85) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
   return 'Poor';
 };
 
@@ -169,19 +273,56 @@ const getDietGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): str
 };
 
 const getBodyGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.bodyGoal || !nutrition.personalScore) return 'N/A';
+  if (!goals.bodyGoal) return 'N/A';
   
-  // Use the actual personalized score which already factors in body goals
-  const personalScore = nutrition.personalScore;
-  const baseScore = nutrition.healthScore;
+  const { bodyGoal } = goals;
+  let score = 0;
   
-  // Calculate the body goal impact by comparing personal vs base score
-  const bodyImpact = personalScore - baseScore;
+  switch (bodyGoal) {
+    case 'lose-weight':
+    case 'slightly-lose-weight':
+      // Score based on calorie density and satiety factors
+      const caloriesPerGram = nutrition.calories / 100; // Assuming per 100g serving
+      const fiberScore = nutrition.fiber >= 5 ? 25 : nutrition.fiber >= 3 ? 20 : nutrition.fiber >= 1 ? 15 : 5;
+      const proteinScore = nutrition.protein >= 10 ? 25 : nutrition.protein >= 5 ? 20 : nutrition.protein >= 2 ? 15 : 5;
+      const sugarPenalty = nutrition.sugar > 15 ? -20 : nutrition.sugar > 10 ? -10 : nutrition.sugar > 5 ? -5 : 0;
+      
+      if (caloriesPerGram <= 1.5) score = 50 + fiberScore + proteinScore + sugarPenalty;
+      else if (caloriesPerGram <= 2.5) score = 40 + fiberScore + proteinScore + sugarPenalty;
+      else if (caloriesPerGram <= 3.5) score = 30 + fiberScore + proteinScore + sugarPenalty;
+      else score = 20 + fiberScore + proteinScore + sugarPenalty;
+      break;
+      
+    case 'gain-weight':
+    case 'slightly-gain-weight':
+      // Score based on calorie density and healthy fats/proteins
+      const caloriesPerGramGain = nutrition.calories / 100;
+      const healthyFatScore = nutrition.fat >= 10 ? 30 : nutrition.fat >= 5 ? 20 : 10;
+      const proteinScoreGain = nutrition.protein >= 8 ? 30 : nutrition.protein >= 4 ? 20 : 10;
+      
+      if (caloriesPerGramGain >= 4) score = 40 + healthyFatScore + proteinScoreGain;
+      else if (caloriesPerGramGain >= 3) score = 35 + healthyFatScore + proteinScoreGain;
+      else if (caloriesPerGramGain >= 2) score = 25 + healthyFatScore + proteinScoreGain;
+      else score = 15 + healthyFatScore + proteinScoreGain;
+      break;
+      
+    case 'maintain-weight':
+    default:
+      // Balanced approach focusing on overall nutrition quality
+      const balancedScore = nutrition.healthScore;
+      const proteinBonus = nutrition.protein >= 8 ? 10 : nutrition.protein >= 4 ? 5 : 0;
+      const fiberBonus = nutrition.fiber >= 3 ? 10 : nutrition.fiber >= 1 ? 5 : 0;
+      score = Math.min(95, balancedScore + proteinBonus + fiberBonus);
+      break;
+  }
   
-  // If the personal score is significantly affected by body goals
-  if (bodyImpact >= 12 || personalScore >= 85) return 'Excellent';
-  if (bodyImpact >= 3 || personalScore >= 70) return 'Good';
-  if (bodyImpact >= -8 || personalScore >= 50) return 'Fair';
+  // Ensure score is within bounds
+  score = Math.max(10, Math.min(95, score));
+  
+  // Convert score to rating
+  if (score >= 85) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
   return 'Poor';
 };
 
@@ -219,19 +360,61 @@ const getBodyGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): str
 };
 
 const getLifeGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
-  if (!goals.lifeGoal || !nutrition.personalScore) return 'N/A';
+  if (!goals.lifeGoal) return 'N/A';
   
-  // Use the actual personalized score which already factors in life goals
-  const personalScore = nutrition.personalScore;
-  const baseScore = nutrition.healthScore;
+  const { lifeGoal } = goals;
+  let score = 0;
   
-  // Calculate the life goal impact by comparing personal vs base score
-  const lifeImpact = personalScore - baseScore;
+  switch (lifeGoal) {
+    case 'boost-energy':
+      // Score based on factors that affect energy levels
+      const complexCarbScore = nutrition.fiber >= 3 ? 25 : nutrition.fiber >= 1 ? 15 : 5;
+      const proteinEnergyScore = nutrition.protein >= 8 ? 25 : nutrition.protein >= 4 ? 15 : 5;
+      const sugarCrashPenalty = nutrition.sugar > 20 ? -25 : nutrition.sugar > 10 ? -15 : nutrition.sugar > 5 ? -5 : 10;
+      const sodiumPenalty = nutrition.sodium > 800 ? -10 : nutrition.sodium > 400 ? -5 : 0;
+      
+      score = 50 + complexCarbScore + proteinEnergyScore + sugarCrashPenalty + sodiumPenalty;
+      break;
+      
+    case 'clear-skin':
+      // Score based on factors that affect skin health
+      const antiInflammatoryScore = nutrition.fiber >= 4 ? 20 : nutrition.fiber >= 2 ? 10 : 0;
+      const sugarSkinPenalty = nutrition.sugar > 15 ? -30 : nutrition.sugar > 8 ? -20 : nutrition.sugar > 4 ? -10 : 15;
+      const processedPenalty = (nutrition.additives?.length || 0) > 5 ? -15 : (nutrition.additives?.length || 0) > 2 ? -10 : 5;
+      const saturatedFatPenalty = nutrition.saturatedFat > 8 ? -15 : nutrition.saturatedFat > 4 ? -10 : 0;
+      
+      score = 60 + antiInflammatoryScore + sugarSkinPenalty + processedPenalty + saturatedFatPenalty;
+      break;
+      
+    case 'feel-better':
+      // Score based on overall wellness factors
+      const wholeFoodScore = (nutrition.additives?.length || 0) <= 2 ? 25 : (nutrition.additives?.length || 0) <= 5 ? 15 : 5;
+      const balancedNutritionScore = (nutrition.protein >= 5 && nutrition.fiber >= 2) ? 20 : 10;
+      const lowSugarBonus = nutrition.sugar <= 8 ? 15 : nutrition.sugar <= 15 ? 5 : -10;
+      const lowSodiumBonus = nutrition.sodium <= 300 ? 15 : nutrition.sodium <= 600 ? 5 : -5;
+      
+      score = 25 + wholeFoodScore + balancedNutritionScore + lowSugarBonus + lowSodiumBonus;
+      break;
+      
+    case 'eat-healthier':
+    default:
+      // Use base health score with bonuses for particularly healthy attributes
+      const baseHealthScore = nutrition.healthScore;
+      const fiberBonus = nutrition.fiber >= 5 ? 15 : nutrition.fiber >= 3 ? 10 : nutrition.fiber >= 1 ? 5 : 0;
+      const proteinBonus = nutrition.protein >= 10 ? 10 : nutrition.protein >= 5 ? 5 : 0;
+      const lowProcessingBonus = (nutrition.additives?.length || 0) <= 1 ? 10 : 0;
+      
+      score = Math.min(95, baseHealthScore + fiberBonus + proteinBonus + lowProcessingBonus);
+      break;
+  }
   
-  // If the personal score is significantly affected by life goals
-  if (lifeImpact >= 10 || personalScore >= 85) return 'Excellent';
-  if (lifeImpact >= 2 || personalScore >= 70) return 'Good';
-  if (lifeImpact >= -6 || personalScore >= 50) return 'Fair';
+  // Ensure score is within bounds
+  score = Math.max(15, Math.min(95, score));
+  
+  // Convert score to rating
+  if (score >= 85) return 'Excellent';
+  if (score >= 70) return 'Good';
+  if (score >= 50) return 'Fair';
   return 'Poor';
 };
 
@@ -269,15 +452,61 @@ const getLifeGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): str
   return `Analyzed for ${goalName} compatibility based on your lifestyle goals.`;
 };
 
-// Helper function to convert rating to numerical score for bar display
-const getGoalRatingScore = (rating: string): number => {
-  switch (rating) {
-    case 'Excellent': return 90;
-    case 'Good': return 75;
-    case 'Fair': return 55;
-    case 'Poor': return 30;
-    default: return 0;
+// Helper function to get the actual numerical score for each goal
+const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType: 'health' | 'diet' | 'body' | 'life'): number => {
+  let score = 0;
+  
+  switch (goalType) {
+    case 'health':
+      if (!goals.healthGoal) return 0;
+      const healthRating = getHealthGoalRating(nutrition, goals);
+      switch (healthRating) {
+        case 'Excellent': score = 90; break;
+        case 'Good': score = 75; break;
+        case 'Fair': score = 55; break;
+        case 'Poor': score = 30; break;
+        default: score = 0;
+      }
+      break;
+      
+    case 'diet':
+      if (!goals.dietGoal) return 0;
+      const dietRating = getDietGoalRating(nutrition, goals);
+      switch (dietRating) {
+        case 'Excellent': score = 90; break;
+        case 'Good': score = 75; break;
+        case 'Fair': score = 55; break;
+        case 'Poor': score = 30; break;
+        default: score = 0;
+      }
+      break;
+      
+    case 'body':
+      if (!goals.bodyGoal) return 0;
+      const bodyRating = getBodyGoalRating(nutrition, goals);
+      switch (bodyRating) {
+        case 'Excellent': score = 90; break;
+        case 'Good': score = 75; break;
+        case 'Fair': score = 55; break;
+        case 'Poor': score = 30; break;
+        default: score = 0;
+      }
+      break;
+      
+    case 'life':
+      if (!goals.lifeGoal) return 0;
+      const lifeRating = getLifeGoalRating(nutrition, goals);
+      switch (lifeRating) {
+        case 'Excellent': score = 90; break;
+        case 'Good': score = 75; break;
+        case 'Fair': score = 55; break;
+        case 'Poor': score = 30; break;
+        default: score = 0;
+      }
+      break;
   }
+  
+  return score;
 };
 
 export default function PremiumScanFeedback({
@@ -1246,7 +1475,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Health Goal</Text>
                             <Text style={[styles.goalRatingScore, { color: getHealthGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(getHealthGoalRating(nutrition, profile.goals))}
+                              {getGoalRatingScore(nutrition, profile.goals, 'health')}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1254,7 +1483,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(getHealthGoalRating(nutrition, profile.goals))}%`,
+                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'health')}%`,
                                   backgroundColor: getHealthGoalRatingColor(nutrition, profile.goals),
                                 }
                               ]}
@@ -1272,7 +1501,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Diet Goal</Text>
                             <Text style={[styles.goalRatingScore, { color: getDietGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(getDietGoalRating(nutrition, profile.goals))}
+                              {getGoalRatingScore(nutrition, profile.goals, 'diet')}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1280,7 +1509,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(getDietGoalRating(nutrition, profile.goals))}%`,
+                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'diet')}%`,
                                   backgroundColor: getDietGoalRatingColor(nutrition, profile.goals),
                                 }
                               ]}
@@ -1298,7 +1527,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Body Goal</Text>
                             <Text style={[styles.goalRatingScore, { color: getBodyGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(getBodyGoalRating(nutrition, profile.goals))}
+                              {getGoalRatingScore(nutrition, profile.goals, 'body')}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1306,7 +1535,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(getBodyGoalRating(nutrition, profile.goals))}%`,
+                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'body')}%`,
                                   backgroundColor: getBodyGoalRatingColor(nutrition, profile.goals),
                                 }
                               ]}
@@ -1324,7 +1553,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Life Goal</Text>
                             <Text style={[styles.goalRatingScore, { color: getLifeGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(getLifeGoalRating(nutrition, profile.goals))}
+                              {getGoalRatingScore(nutrition, profile.goals, 'life')}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1332,7 +1561,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(getLifeGoalRating(nutrition, profile.goals))}%`,
+                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'life')}%`,
                                   backgroundColor: getLifeGoalRatingColor(nutrition, profile.goals),
                                 }
                               ]}
