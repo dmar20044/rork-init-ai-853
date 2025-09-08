@@ -849,10 +849,12 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 <View style={[styles.scoreRingProgress, { borderColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} />
               </View>
               
-              <Text style={[styles.personalScoreSubtitle, { color: colors.textSecondary }]}>Personal Score</Text>
+              <Text style={[styles.personalScoreSubtitle, { color: colors.textSecondary }]}>
+                {showPersonalized && nutrition.personalScore !== undefined ? 'Personal Score' : 'Health Score'}
+              </Text>
               
-              {/* Score Comparison Row */}
-              {showPersonalized && nutrition.personalScore !== undefined && nutrition.personalScore !== nutrition.healthScore && (
+              {/* Score Comparison Row - Always show when personalized score exists */}
+              {showPersonalized && nutrition.personalScore !== undefined && (
                 <View style={styles.comparisonContainer}>
                   <View style={styles.comparisonRow}>
                     <View style={[styles.baseScoreChip, { backgroundColor: colors.textSecondary + '10' }]}>
@@ -860,20 +862,22 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       <Text style={[styles.baseScoreValue, { color: colors.textPrimary }]}>{nutrition.healthScore}</Text>
                     </View>
                     
-                    <View style={styles.deltaContainer}>
-                      <View style={styles.deltaIconContainer}>
-                        {nutrition.personalScore > nutrition.healthScore ? (
-                          <TrendingUp size={16} color={Colors.success} />
-                        ) : (
-                          <TrendingDown size={16} color={Colors.error} />
-                        )}
-                        <Text style={[styles.deltaValue, {
-                          color: nutrition.personalScore > nutrition.healthScore ? Colors.success : Colors.error
-                        }]}>
-                          {nutrition.personalScore > nutrition.healthScore ? '+' : ''}{nutrition.personalScore - nutrition.healthScore}
-                        </Text>
+                    {nutrition.personalScore !== nutrition.healthScore && (
+                      <View style={styles.deltaContainer}>
+                        <View style={styles.deltaIconContainer}>
+                          {nutrition.personalScore > nutrition.healthScore ? (
+                            <TrendingUp size={16} color={Colors.success} />
+                          ) : (
+                            <TrendingDown size={16} color={Colors.error} />
+                          )}
+                          <Text style={[styles.deltaValue, {
+                            color: nutrition.personalScore > nutrition.healthScore ? Colors.success : Colors.error
+                          }]}>
+                            {nutrition.personalScore > nutrition.healthScore ? '+' : ''}{nutrition.personalScore - nutrition.healthScore}
+                          </Text>
+                        </View>
                       </View>
-                    </View>
+                    )}
                     
                     <View style={[styles.personalScoreChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
                       <Text style={[styles.personalScoreLabel, { color: colors.primary }]}>Your Score</Text>
