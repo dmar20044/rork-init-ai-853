@@ -430,7 +430,7 @@ export default function PremiumScanFeedback({
         const screenWidth = Dimensions.get('window').width;
         
         // Dynamic threshold based on screen width and velocity
-        const distanceThreshold = screenWidth * 0.25; // 25% of screen width
+        const distanceThreshold = screenWidth * 0.5; // 50% of screen width
         const velocityThreshold = 0.8;
         
         // Determine if we should switch tabs
