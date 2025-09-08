@@ -2678,10 +2678,15 @@ const styles = StyleSheet.create({
   goalRatingsContainer: {
     paddingVertical: 8,
     gap: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   
   goalRatingItem: {
     paddingHorizontal: 4,
+    width: '100%',
+    maxWidth: 300,
   },
   
   goalRatingHeader: {
