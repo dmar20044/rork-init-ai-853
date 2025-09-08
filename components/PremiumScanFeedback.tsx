@@ -26,7 +26,7 @@ import {
   ArrowLeft,
   TrendingDown,
   TrendingUp,
-  Info,
+
   Award,
   Shield,
   Target,
@@ -40,7 +40,7 @@ import ParticleEffects from './ParticleEffects';
 import BetterSwapsModal from './BetterSwapsModal';
 
 import { getParticleEffect, getLoadingMessages } from '@/utils/toneOfVoice';
-import { useUser } from '@/contexts/UserContext';
+import { useUser, UserGoals } from '@/contexts/UserContext';
 import { useGroceryList } from '@/contexts/GroceryListContext';
 
 interface IngredientAnalysis {
@@ -60,6 +60,285 @@ interface PremiumScanFeedbackProps {
 }
 
 const { height: screenHeight } = Dimensions.get('window');
+
+// Helper functions for personalization breakdown
+const getHealthGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.healthGoal) return 'N/A';
+  
+  const sugar = nutrition.sugar;
+  const protein = nutrition.protein;
+  const fat = nutrition.fat;
+  const carbs = nutrition.carbs;
+  
+  switch (goals.healthGoal) {
+    case 'low-sugar':
+      if (sugar <= 3) return 'Excellent';
+      if (sugar <= 6) return 'Good';
+      if (sugar <= 10.5) return 'Fair';
+      return 'Poor';
+    case 'high-protein':
+      if (protein >= 20) return 'Excellent';
+      if (protein >= 15) return 'Good';
+      if (protein >= 8) return 'Fair';
+      return 'Poor';
+    case 'low-fat':
+      if (fat <= 3) return 'Excellent';
+      if (fat <= 8) return 'Good';
+      if (fat <= 15) return 'Fair';
+      return 'Poor';
+    case 'keto':
+      if (carbs <= 5) return 'Excellent';
+      if (carbs <= 10) return 'Good';
+      if (carbs <= 20) return 'Fair';
+      return 'Poor';
+    case 'balanced':
+      const score = nutrition.personalScore || nutrition.healthScore;
+      if (score >= 75) return 'Excellent';
+      if (score >= 60) return 'Good';
+      if (score >= 45) return 'Fair';
+      return 'Poor';
+    default:
+      return 'N/A';
+  }
+};
+
+const getHealthGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  const rating = getHealthGoalRating(nutrition, goals);
+  switch (rating) {
+    case 'Excellent': return Colors.scoreExcellent;
+    case 'Good': return Colors.scoreGood;
+    case 'Fair': return Colors.scoreMediocre;
+    case 'Poor': return Colors.error;
+    default: return Colors.retroSlateGray;
+  }
+};
+
+const getHealthGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.healthGoal) return 'No health goal set';
+  
+  const sugar = nutrition.sugar;
+  const protein = nutrition.protein;
+  const fat = nutrition.fat;
+  const carbs = nutrition.carbs;
+  
+  switch (goals.healthGoal) {
+    case 'low-sugar':
+      return `Contains ${sugar}g sugar per serving. ${sugar <= 6 ? 'Aligns well with your low-sugar goal.' : 'May conflict with your low-sugar goal.'}`;
+    case 'high-protein':
+      return `Provides ${protein}g protein per serving. ${protein >= 15 ? 'Great protein source for your goals.' : 'Could use more protein for your goals.'}`;
+    case 'low-fat':
+      return `Contains ${fat}g fat per serving. ${fat <= 8 ? 'Fits your low-fat preference.' : 'Higher fat content than ideal for your goals.'}`;
+    case 'keto':
+      return `Has ${carbs}g carbs per serving. ${carbs <= 10 ? 'Keto-friendly carb level.' : 'Too many carbs for strict keto.'}`;
+    case 'balanced':
+      return 'Evaluated for overall nutritional balance and quality.';
+    default:
+      return 'Health goal evaluation not available.';
+  }
+};
+
+const getDietGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.dietGoal) return 'N/A';
+  
+  const ingredients = (nutrition.ingredients || []).join(' ').toLowerCase();
+  const additives = nutrition.additives || [];
+  
+  switch (goals.dietGoal) {
+    case 'whole-foods':
+      if (additives.length === 0 && !ingredients.includes('artificial')) return 'Excellent';
+      if (additives.length <= 2) return 'Good';
+      if (additives.length <= 5) return 'Fair';
+      return 'Poor';
+    case 'vegan':
+      const hasAnimal = /milk|whey|casein|egg|honey|gelatin|fish|chicken|beef|pork|dairy|butter|cheese|yogurt|cream|lactose/.test(ingredients);
+      return hasAnimal ? 'Poor' : 'Excellent';
+    case 'vegetarian':
+      const hasMeat = /gelatin|fish|chicken|beef|pork|meat|poultry|seafood|anchovy/.test(ingredients);
+      return hasMeat ? 'Poor' : 'Excellent';
+    case 'gluten-free':
+      const hasGluten = /wheat|barley|rye|malt|spelt|farro|semolina|triticale|gluten/.test(ingredients);
+      return hasGluten ? 'Poor' : 'Excellent';
+    case 'balanced':
+      const score = nutrition.personalScore || nutrition.healthScore;
+      if (score >= 75) return 'Excellent';
+      if (score >= 60) return 'Good';
+      if (score >= 45) return 'Fair';
+      return 'Poor';
+    default:
+      return 'N/A';
+  }
+};
+
+const getDietGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  const rating = getDietGoalRating(nutrition, goals);
+  switch (rating) {
+    case 'Excellent': return Colors.scoreExcellent;
+    case 'Good': return Colors.scoreGood;
+    case 'Fair': return Colors.scoreMediocre;
+    case 'Poor': return Colors.error;
+    default: return Colors.retroSlateGray;
+  }
+};
+
+const getDietGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.dietGoal) return 'No diet preference set';
+  
+  const ingredients = (nutrition.ingredients || []).join(' ').toLowerCase();
+  const additives = nutrition.additives || [];
+  
+  switch (goals.dietGoal) {
+    case 'whole-foods':
+      return `Contains ${additives.length} additives. ${additives.length <= 2 ? 'Minimal processing aligns with whole foods.' : 'More processed than ideal for whole foods.'}`;
+    case 'vegan':
+      const hasAnimal = /milk|whey|casein|egg|honey|gelatin|fish|chicken|beef|pork|dairy|butter|cheese|yogurt|cream|lactose/.test(ingredients);
+      return hasAnimal ? 'Contains animal-derived ingredients.' : 'Plant-based and vegan-friendly.';
+    case 'vegetarian':
+      const hasMeat = /gelatin|fish|chicken|beef|pork|meat|poultry|seafood|anchovy/.test(ingredients);
+      return hasMeat ? 'Contains meat or fish ingredients.' : 'Vegetarian-friendly ingredients.';
+    case 'gluten-free':
+      const hasGluten = /wheat|barley|rye|malt|spelt|farro|semolina|triticale|gluten/.test(ingredients);
+      return hasGluten ? 'Contains gluten-containing ingredients.' : 'Gluten-free ingredients.';
+    case 'balanced':
+      return 'Evaluated for overall dietary balance and variety.';
+    default:
+      return 'Diet preference evaluation not available.';
+  }
+};
+
+const getBodyGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.bodyGoal) return 'N/A';
+  
+  const calories = nutrition.calories;
+  const protein = nutrition.protein;
+  const sugar = nutrition.sugar;
+  
+  switch (goals.bodyGoal) {
+    case 'lose-weight':
+      if (calories <= 150 && sugar <= 5) return 'Excellent';
+      if (calories <= 250 && sugar <= 8) return 'Good';
+      if (calories <= 350) return 'Fair';
+      return 'Poor';
+    case 'slightly-lose-weight':
+      if (calories <= 200 && sugar <= 8) return 'Excellent';
+      if (calories <= 300 && sugar <= 10) return 'Good';
+      if (calories <= 400) return 'Fair';
+      return 'Poor';
+    case 'maintain-weight':
+      if (calories <= 300 && protein >= 8) return 'Excellent';
+      if (calories <= 400) return 'Good';
+      if (calories <= 500) return 'Fair';
+      return 'Poor';
+    case 'slightly-gain-weight':
+      if (protein >= 15 && calories >= 200) return 'Excellent';
+      if (protein >= 10 && calories >= 150) return 'Good';
+      if (calories >= 100) return 'Fair';
+      return 'Poor';
+    case 'gain-weight':
+      if (protein >= 20 && calories >= 300) return 'Excellent';
+      if (protein >= 15 && calories >= 200) return 'Good';
+      if (calories >= 150) return 'Fair';
+      return 'Poor';
+    default:
+      return 'N/A';
+  }
+};
+
+const getBodyGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  const rating = getBodyGoalRating(nutrition, goals);
+  switch (rating) {
+    case 'Excellent': return Colors.scoreExcellent;
+    case 'Good': return Colors.scoreGood;
+    case 'Fair': return Colors.scoreMediocre;
+    case 'Poor': return Colors.error;
+    default: return Colors.retroSlateGray;
+  }
+};
+
+const getBodyGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.bodyGoal) return 'No body goal set';
+  
+  const calories = nutrition.calories;
+  const protein = nutrition.protein;
+  
+  switch (goals.bodyGoal) {
+    case 'lose-weight':
+      return `${calories} calories per serving. ${calories <= 250 ? 'Good for weight loss.' : 'Higher calories may slow weight loss.'}`;
+    case 'slightly-lose-weight':
+      return `${calories} calories per serving. ${calories <= 300 ? 'Suitable for gradual weight loss.' : 'Moderate calories for slow weight loss.'}`;
+    case 'maintain-weight':
+      return `${calories} calories with ${protein}g protein. ${protein >= 8 ? 'Good balance for maintenance.' : 'Could use more protein for maintenance.'}`;
+    case 'slightly-gain-weight':
+      return `${calories} calories with ${protein}g protein. ${protein >= 10 ? 'Good for gradual weight gain.' : 'More protein would help weight gain goals.'}`;
+    case 'gain-weight':
+      return `${calories} calories with ${protein}g protein. ${protein >= 15 ? 'Excellent for weight gain.' : 'Higher protein would better support weight gain.'}`;
+    default:
+      return 'Body goal evaluation not available.';
+  }
+};
+
+const getLifeGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.lifeGoal) return 'N/A';
+  
+  const sugar = nutrition.sugar;
+  const additives = nutrition.additives || [];
+  const protein = nutrition.protein;
+  
+  switch (goals.lifeGoal) {
+    case 'eat-healthier':
+      if (additives.length <= 2 && sugar <= 6) return 'Excellent';
+      if (additives.length <= 5 && sugar <= 10) return 'Good';
+      if (additives.length <= 8) return 'Fair';
+      return 'Poor';
+    case 'boost-energy':
+      if (protein >= 10 && sugar <= 8 && additives.length <= 3) return 'Excellent';
+      if (protein >= 5 && sugar <= 12) return 'Good';
+      if (sugar <= 15) return 'Fair';
+      return 'Poor';
+    case 'feel-better':
+      if (protein >= 8 && sugar <= 10) return 'Excellent';
+      if (protein >= 5 && sugar <= 15) return 'Good';
+      if (sugar <= 20) return 'Fair';
+      return 'Poor';
+    case 'clear-skin':
+      if (additives.length <= 1 && sugar <= 5) return 'Excellent';
+      if (additives.length <= 3 && sugar <= 8) return 'Good';
+      if (sugar <= 12) return 'Fair';
+      return 'Poor';
+    default:
+      return 'N/A';
+  }
+};
+
+const getLifeGoalRatingColor = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  const rating = getLifeGoalRating(nutrition, goals);
+  switch (rating) {
+    case 'Excellent': return Colors.scoreExcellent;
+    case 'Good': return Colors.scoreGood;
+    case 'Fair': return Colors.scoreMediocre;
+    case 'Poor': return Colors.error;
+    default: return Colors.retroSlateGray;
+  }
+};
+
+const getLifeGoalDescription = (nutrition: NutritionInfo, goals: UserGoals): string => {
+  if (!goals.lifeGoal) return 'No life goal set';
+  
+  const sugar = nutrition.sugar;
+  const additives = nutrition.additives || [];
+  
+  switch (goals.lifeGoal) {
+    case 'eat-healthier':
+      return `${additives.length} additives, ${sugar}g sugar. ${additives.length <= 5 && sugar <= 10 ? 'Supports healthier eating.' : 'More processed than ideal for health goals.'}`;
+    case 'boost-energy':
+      return `${sugar}g sugar per serving. ${sugar <= 8 ? 'Won\'t cause energy crashes.' : 'High sugar may lead to energy crashes.'}`;
+    case 'feel-better':
+      return `Balanced nutrition profile. ${sugar <= 10 ? 'Should support feeling better.' : 'High sugar may affect how you feel.'}`;
+    case 'clear-skin':
+      return `${additives.length} additives, ${sugar}g sugar. ${additives.length <= 3 && sugar <= 8 ? 'Skin-friendly ingredients.' : 'May not be ideal for clear skin goals.'}`;
+    default:
+      return 'Life goal evaluation not available.';
+  }
+};
 
 export default function PremiumScanFeedback({
   nutrition,
@@ -856,144 +1135,293 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
             >
               {activeTab === 0 ? (
                 <View style={styles.tabContent}>
-                  {/* Tab 1 Content - Empty for now */}
-                  <View style={[styles.tabPlaceholder, { backgroundColor: colors.surface }]}>
-                    <Text style={[styles.tabPlaceholderText, { color: colors.textSecondary }]}>Tab 1 Content</Text>
+                  {/* Tab 1: Product and Score Comparison */}
+                  <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
+                    {/* Product Header */}
+                    <View style={styles.productHeader}>
+                      <View style={styles.productImageContainer}>
+                        {(nutrition.imageUrl || imageUri) ? (
+                          <Image source={{ uri: nutrition.imageUrl || imageUri }} style={styles.productImage} />
+                        ) : (
+                          <View style={[styles.productImagePlaceholder, { backgroundColor: colors.textSecondary + '10' }]}>
+                            <Sparkles size={32} color={colors.textSecondary} />
+                          </View>
+                        )}
+                      </View>
+                      <View style={styles.productInfo}>
+                        <Text style={[styles.productName, { color: colors.textPrimary }]}>
+                          {nutrition.name || 'Food Item'}
+                        </Text>
+                        <Text style={[styles.servingSize, { color: colors.textSecondary }]}>
+                          Serving: {nutrition.servingSize || '1 portion'}
+                        </Text>
+                      </View>
+                    </View>
+                    
+                    {/* Main Score Ring */}
+                    <View style={styles.scoreSection}>
+                      <View style={styles.scoreRingContainer}>
+                        <View style={[styles.scoreRing, { backgroundColor: colors.surface, shadowColor: getScoreColor(nutrition.personalScore) }]}>
+                          <View style={styles.scoreRingInner}>
+                            <Text style={[styles.scoreNumber, { color: getScoreColor(nutrition.personalScore) }]}>
+                              {nutrition.personalScore}
+                            </Text>
+                            <Text style={[styles.scoreOutOf, { color: colors.textSecondary }]}>/100</Text>
+                          </View>
+                        </View>
+                        <View style={[styles.scoreRingProgress, { borderColor: getScoreColor(nutrition.personalScore) }]} />
+                      </View>
+                      
+                      <Text style={[styles.personalScoreSubtitle, { color: colors.textSecondary }]}>
+                        Personal Score
+                      </Text>
+                      
+                      {/* Score Comparison Row */}
+                      <View style={styles.comparisonContainer}>
+                        <View style={styles.comparisonRow}>
+                          <View style={[styles.baseScoreChip, { backgroundColor: colors.textSecondary + '10' }]}>
+                            <Text style={[styles.baseScoreLabel, { color: colors.textSecondary }]}>Base Score</Text>
+                            <Text style={[styles.baseScoreValue, { color: colors.textPrimary }]}>{nutrition.healthScore}</Text>
+                          </View>
+                          
+                          {nutrition.personalScore !== nutrition.healthScore && (
+                            <View style={styles.deltaContainer}>
+                              <View style={styles.deltaIconContainer}>
+                                {nutrition.personalScore > nutrition.healthScore ? (
+                                  <TrendingUp size={16} color={Colors.success} />
+                                ) : (
+                                  <TrendingDown size={16} color={Colors.error} />
+                                )}
+                                <Text style={[styles.deltaValue, {
+                                  color: nutrition.personalScore > nutrition.healthScore ? Colors.success : Colors.error
+                                }]}>
+                                  {nutrition.personalScore > nutrition.healthScore ? '+' : ''}{nutrition.personalScore - nutrition.healthScore}
+                                </Text>
+                              </View>
+                            </View>
+                          )}
+                          
+                          <View style={[styles.personalScoreChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+                            <Text style={[styles.personalScoreLabel, { color: colors.primary }]}>Your Score</Text>
+                            <Text style={[styles.personalScoreValue, { color: colors.primary }]}>{nutrition.personalScore}</Text>
+                          </View>
+                        </View>
+                        
+                        {/* Allergen/Dietary Restriction Warnings */}
+                        {allergenWarnings.length > 0 && (
+                          <View style={styles.warningContainer}>
+                            <View style={styles.warningHeader}>
+                              <AlertCircle size={16} color={Colors.warning} />
+                              <Text style={[styles.warningTitle, { color: Colors.warning }]}>Dietary Alert</Text>
+                            </View>
+                            {allergenWarnings.map((warning, index) => (
+                              <View key={index} style={[styles.warningItem, { backgroundColor: Colors.warning + '10', borderLeftColor: Colors.warning }]}>
+                                <Text style={[styles.warningText, { color: colors.textPrimary }]}>{warning}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        )}
+                      </View>
+                    </View>
                   </View>
                 </View>
               ) : (
                 <View style={styles.tabContent}>
-                  {/* Tab 2 Content - Empty for now */}
-                  <View style={[styles.tabPlaceholder, { backgroundColor: colors.surface }]}>
-                    <Text style={[styles.tabPlaceholderText, { color: colors.textSecondary }]}>Tab 2 Content</Text>
+                  {/* Tab 2: Personalization Breakdown */}
+                  <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
+                    <View style={styles.cardHeader}>
+                      <Target size={20} color={Colors.retroPink} />
+                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Personalization Breakdown</Text>
+                    </View>
+                    
+                    <ScrollView style={styles.personalizationScrollView} showsVerticalScrollIndicator={false}>
+                      {/* Health Goal Rating */}
+                      {profile.goals.healthGoal && (
+                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
+                          <View style={styles.categoryHeader}>
+                            <View style={[styles.categoryIcon, { backgroundColor: Colors.retroNeonTurquoise + '15' }]}>
+                              <Heart size={16} color={Colors.retroNeonTurquoise} />
+                            </View>
+                            <View style={styles.categoryInfo}>
+                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Health Goal</Text>
+                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
+                                {profile.goals.healthGoal.replace('-', ' ').replace('_', ' ')}
+                                {profile.goals.healthStrictness && (
+                                  <Text style={{ fontStyle: 'italic' }}> • {profile.goals.healthStrictness.replace('-', ' ')}</Text>
+                                )}
+                              </Text>
+                            </View>
+                            <View style={styles.categoryRating}>
+                              <Text style={[styles.ratingText, { color: getHealthGoalRatingColor(nutrition, profile.goals) }]}>
+                                {getHealthGoalRating(nutrition, profile.goals)}
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
+                            {getHealthGoalDescription(nutrition, profile.goals)}
+                          </Text>
+                        </View>
+                      )}
+                      
+                      {/* Diet Goal Rating */}
+                      {profile.goals.dietGoal && (
+                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
+                          <View style={styles.categoryHeader}>
+                            <View style={[styles.categoryIcon, { backgroundColor: Colors.retroDeepIndigo + '15' }]}>
+                              <Shield size={16} color={Colors.retroDeepIndigo} />
+                            </View>
+                            <View style={styles.categoryInfo}>
+                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Diet Preference</Text>
+                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
+                                {profile.goals.dietGoal.replace('-', ' ')}
+                                {profile.goals.dietStrictness && (
+                                  <Text style={{ fontStyle: 'italic' }}> • {profile.goals.dietStrictness.replace('-', ' ')}</Text>
+                                )}
+                              </Text>
+                            </View>
+                            <View style={styles.categoryRating}>
+                              <Text style={[styles.ratingText, { color: getDietGoalRatingColor(nutrition, profile.goals) }]}>
+                                {getDietGoalRating(nutrition, profile.goals)}
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
+                            {getDietGoalDescription(nutrition, profile.goals)}
+                          </Text>
+                        </View>
+                      )}
+                      
+                      {/* Body Goal Rating */}
+                      {profile.goals.bodyGoal && (
+                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
+                          <View style={styles.categoryHeader}>
+                            <View style={[styles.categoryIcon, { backgroundColor: Colors.retroPink + '15' }]}>
+                              <Award size={16} color={Colors.retroPink} />
+                            </View>
+                            <View style={styles.categoryInfo}>
+                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Body Goal</Text>
+                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
+                                {profile.goals.bodyGoal.replace('-', ' ')}
+                              </Text>
+                            </View>
+                            <View style={styles.categoryRating}>
+                              <Text style={[styles.ratingText, { color: getBodyGoalRatingColor(nutrition, profile.goals) }]}>
+                                {getBodyGoalRating(nutrition, profile.goals)}
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
+                            {getBodyGoalDescription(nutrition, profile.goals)}
+                          </Text>
+                        </View>
+                      )}
+                      
+                      {/* Life Goal Rating */}
+                      {profile.goals.lifeGoal && (
+                        <View style={[styles.personalizationCategory, { backgroundColor: colors.textSecondary + '05' }]}>
+                          <View style={styles.categoryHeader}>
+                            <View style={[styles.categoryIcon, { backgroundColor: Colors.success + '15' }]}>
+                              <Star size={16} color={Colors.success} />
+                            </View>
+                            <View style={styles.categoryInfo}>
+                              <Text style={[styles.categoryTitle, { color: colors.textPrimary }]}>Life Goal</Text>
+                              <Text style={[styles.categorySubtitle, { color: colors.textSecondary }]}>
+                                {profile.goals.lifeGoal.replace('-', ' ')}
+                                {profile.goals.lifeStrictness && (
+                                  <Text style={{ fontStyle: 'italic' }}> • {profile.goals.lifeStrictness.replace('-', ' ')}</Text>
+                                )}
+                              </Text>
+                            </View>
+                            <View style={styles.categoryRating}>
+                              <Text style={[styles.ratingText, { color: getLifeGoalRatingColor(nutrition, profile.goals) }]}>
+                                {getLifeGoalRating(nutrition, profile.goals)}
+                              </Text>
+                            </View>
+                          </View>
+                          <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
+                            {getLifeGoalDescription(nutrition, profile.goals)}
+                          </Text>
+                        </View>
+                      )}
+                    </ScrollView>
                   </View>
                 </View>
               )}
             </Animated.View>
           )}
           
-          {/* Hero Score Section */}
-          <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
-            {/* Always show product header for consistency */}
-            <View style={styles.productHeader}>
-              <View style={styles.productImageContainer}>
-                {(nutrition.imageUrl || imageUri) ? (
-                  <Image source={{ uri: nutrition.imageUrl || imageUri }} style={styles.productImage} />
-                ) : (
-                  <View style={[styles.productImagePlaceholder, { backgroundColor: colors.textSecondary + '10' }]}>
-                    <Sparkles size={32} color={colors.textSecondary} />
-                  </View>
-                )}
-              </View>
-              <View style={styles.productInfo}>
-                <Text style={[styles.productName, { color: colors.textPrimary }]}>
-                  {nutrition.name || 'Food Item'}
-                </Text>
-                <Text style={[styles.servingSize, { color: colors.textSecondary }]}>
-                  Serving: {nutrition.servingSize || '1 portion'}
-                </Text>
+          {/* Tab Indicators - Show above swipeable content */}
+          {showPersonalized && nutrition.personalScore !== undefined && (
+            <View style={styles.tabIndicatorContainer}>
+              <View style={styles.tabIndicators}>
+                <TouchableOpacity
+                  style={[
+                    styles.tabIndicator,
+                    {
+                      backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                    },
+                  ]}
+                  onPress={() => setActiveTab(0)}
+                  activeOpacity={0.7}
+                />
+                <TouchableOpacity
+                  style={[
+                    styles.tabIndicator,
+                    {
+                      backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                    },
+                  ]}
+                  onPress={() => setActiveTab(1)}
+                  activeOpacity={0.7}
+                />
               </View>
             </View>
-            
-            {/* Main Score Ring */}
-            <View style={styles.scoreSection}>
-              <View style={styles.scoreRingContainer}>
-                <View style={[styles.scoreRing, { backgroundColor: colors.surface, shadowColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]}>
-                  <View style={styles.scoreRingInner}>
-                    <Text style={[styles.scoreNumber, { color: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]}>
-                      {showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore}
-                    </Text>
-                    <Text style={[styles.scoreOutOf, { color: colors.textSecondary }]}>/100</Text>
-                  </View>
-                </View>
-                <View style={[styles.scoreRingProgress, { borderColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} />
-              </View>
-              
-              <Text style={[styles.personalScoreSubtitle, { color: colors.textSecondary }]}>
-                {showPersonalized && nutrition.personalScore !== undefined ? 'Personal Score' : 'Health Score'}
-              </Text>
-              
-              {/* Score Comparison Row - Always show when personalized score exists */}
-              {showPersonalized && nutrition.personalScore !== undefined && (
-                <View style={styles.comparisonContainer}>
-                  <View style={styles.comparisonRow}>
-                    <View style={[styles.baseScoreChip, { backgroundColor: colors.textSecondary + '10' }]}>
-                      <Text style={[styles.baseScoreLabel, { color: colors.textSecondary }]}>Base Score</Text>
-                      <Text style={[styles.baseScoreValue, { color: colors.textPrimary }]}>{nutrition.healthScore}</Text>
-                    </View>
-                    
-                    {nutrition.personalScore !== nutrition.healthScore && (
-                      <View style={styles.deltaContainer}>
-                        <View style={styles.deltaIconContainer}>
-                          {nutrition.personalScore > nutrition.healthScore ? (
-                            <TrendingUp size={16} color={Colors.success} />
-                          ) : (
-                            <TrendingDown size={16} color={Colors.error} />
-                          )}
-                          <Text style={[styles.deltaValue, {
-                            color: nutrition.personalScore > nutrition.healthScore ? Colors.success : Colors.error
-                          }]}>
-                            {nutrition.personalScore > nutrition.healthScore ? '+' : ''}{nutrition.personalScore - nutrition.healthScore}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                    
-                    <View style={[styles.personalScoreChip, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
-                      <Text style={[styles.personalScoreLabel, { color: colors.primary }]}>Your Score</Text>
-                      <Text style={[styles.personalScoreValue, { color: colors.primary }]}>{nutrition.personalScore}</Text>
-                    </View>
-                  </View>
-                  
-                  {/* Allergen/Dietary Restriction Warnings */}
-                  {allergenWarnings.length > 0 && (
-                    <View style={styles.warningContainer}>
-                      <View style={styles.warningHeader}>
-                        <AlertCircle size={16} color={Colors.warning} />
-                        <Text style={[styles.warningTitle, { color: Colors.warning }]}>Dietary Alert</Text>
-                      </View>
-                      {allergenWarnings.map((warning, index) => (
-                        <View key={index} style={[styles.warningItem, { backgroundColor: Colors.warning + '10', borderLeftColor: Colors.warning }]}>
-                          <Text style={[styles.warningText, { color: colors.textPrimary }]}>{warning}</Text>
-                        </View>
-                      ))}
+          )}
+          
+          {/* Non-personalized Hero Score Section - Only show when no personalization */}
+          {!showPersonalized && (
+            <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
+              {/* Always show product header for consistency */}
+              <View style={styles.productHeader}>
+                <View style={styles.productImageContainer}>
+                  {(nutrition.imageUrl || imageUri) ? (
+                    <Image source={{ uri: nutrition.imageUrl || imageUri }} style={styles.productImage} />
+                  ) : (
+                    <View style={[styles.productImagePlaceholder, { backgroundColor: colors.textSecondary + '10' }]}>
+                      <Sparkles size={32} color={colors.textSecondary} />
                     </View>
                   )}
-
                 </View>
-              )}
+                <View style={styles.productInfo}>
+                  <Text style={[styles.productName, { color: colors.textPrimary }]}>
+                    {nutrition.name || 'Food Item'}
+                  </Text>
+                  <Text style={[styles.servingSize, { color: colors.textSecondary }]}>
+                    Serving: {nutrition.servingSize || '1 portion'}
+                  </Text>
+                </View>
+              </View>
               
-              {/* Tab Indicators */}
-              {showPersonalized && nutrition.personalScore !== undefined && (
-                <View style={styles.tabIndicatorContainer}>
-                  <View style={styles.tabIndicators}>
-                    <TouchableOpacity
-                      style={[
-                        styles.tabIndicator,
-                        {
-                          backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
-                        },
-                      ]}
-                      onPress={() => setActiveTab(0)}
-                      activeOpacity={0.7}
-                    />
-                    <TouchableOpacity
-                      style={[
-                        styles.tabIndicator,
-                        {
-                          backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
-                        },
-                      ]}
-                      onPress={() => setActiveTab(1)}
-                      activeOpacity={0.7}
-                    />
+              {/* Main Score Ring */}
+              <View style={styles.scoreSection}>
+                <View style={styles.scoreRingContainer}>
+                  <View style={[styles.scoreRing, { backgroundColor: colors.surface, shadowColor: getScoreColor(nutrition.healthScore) }]}>
+                    <View style={styles.scoreRingInner}>
+                      <Text style={[styles.scoreNumber, { color: getScoreColor(nutrition.healthScore) }]}>
+                        {nutrition.healthScore}
+                      </Text>
+                      <Text style={[styles.scoreOutOf, { color: colors.textSecondary }]}>/100</Text>
+                    </View>
                   </View>
+                  <View style={[styles.scoreRingProgress, { borderColor: getScoreColor(nutrition.healthScore) }]} />
                 </View>
-              )}
+                
+                <Text style={[styles.personalScoreSubtitle, { color: colors.textSecondary }]}>
+                  Health Score
+                </Text>
+              </View>
             </View>
-            
-
-          </View>
+          )}
 
 
 
@@ -2146,6 +2574,66 @@ const styles = StyleSheet.create({
   tabPlaceholderText: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  
+  // Personalization Breakdown Styles
+  personalizationScrollView: {
+    maxHeight: 400,
+  },
+  
+  personalizationCategory: {
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: Colors.retroNeonTurquoise,
+  },
+  
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  
+  categoryIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  
+  categoryInfo: {
+    flex: 1,
+  },
+  
+  categoryTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 2,
+  },
+  
+  categorySubtitle: {
+    fontSize: 12,
+    textTransform: 'capitalize',
+  },
+  
+  categoryRating: {
+    alignItems: 'center',
+  },
+  
+  ratingText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  
+  categoryDescription: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontStyle: 'italic',
   },
 
 });
