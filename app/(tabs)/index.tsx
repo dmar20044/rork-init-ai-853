@@ -685,30 +685,9 @@ export default function ScannerScreen() {
                 <View style={[styles.scanCorner, styles.scanCornerBL]} />
                 <View style={[styles.scanCorner, styles.scanCornerBR]} />
                 
-                {/* Animated Scan Beam - Only show in barcode mode */}
+                {/* Glowing Red Line - Only show in barcode mode */}
                 {isBarcodeMode && (
-                  <Animated.View
-                    style={[
-                      styles.scanBeam,
-                      {
-                        transform: [
-                          {
-                            translateY: scanBeamAnimation.current.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [-10, 270],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
-                  >
-                    <LinearGradient
-                      colors={['#00FFFF', '#FF1493']} // neon turquoise to retro pink
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.scanBeamGradient}
-                    />
-                  </Animated.View>
+                  <View style={styles.redScanLine} />
                 )}
               </View>
               
@@ -1441,20 +1420,18 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundSecondary,
     zIndex: 1000,
   },
-  scanBeam: {
+  redScanLine: {
     position: 'absolute',
     left: 0,
     right: 0,
-    height: 4,
-    zIndex: 1,
-  },
-  scanBeamGradient: {
-    flex: 1,
-    height: 4,
-    shadowColor: '#00FFFF',
+    top: '50%',
+    height: 3,
+    backgroundColor: '#FF0000',
+    shadowColor: '#FF0000',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
+    shadowOpacity: 1,
+    shadowRadius: 10,
     elevation: 5,
+    zIndex: 1,
   },
 });
