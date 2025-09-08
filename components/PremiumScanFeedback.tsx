@@ -394,9 +394,9 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Much more sensitive horizontal detection
+        // More sensitive horizontal detection for both directions
         const { dx, dy } = gestureState;
-        return Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(dy) * 0.8;
+        return Math.abs(dx) > 3 && Math.abs(dx) > Math.abs(dy) * 0.6;
       },
       onPanResponderGrant: () => {
         // Stop any ongoing animations when user starts panning
@@ -417,10 +417,10 @@ export default function PremiumScanFeedback({
         // Add resistance when trying to swipe beyond available tabs
         if (translationX > 0) {
           // Resistance when swiping right beyond first tab
-          translationX = dx * 0.3;
+          translationX = dx * 0.2;
         } else if (translationX < -screenWidth) {
           // Resistance when swiping left beyond last tab
-          translationX = -screenWidth + (dx + screenWidth) * 0.3;
+          translationX = -screenWidth + (dx + screenWidth) * 0.2;
         }
         
         tabTranslateX.setValue(translationX);
@@ -429,11 +429,11 @@ export default function PremiumScanFeedback({
         const { dx, vx } = gestureState;
         const screenWidth = Dimensions.get('window').width;
         
-        // Much more sensitive thresholds
-        const distanceThreshold = screenWidth * 0.25; // 25% of screen width
-        const velocityThreshold = 0.3;
+        // More sensitive thresholds for easier swiping
+        const distanceThreshold = screenWidth * 0.15; // 15% of screen width
+        const velocityThreshold = 0.2;
         
-        // Determine if we should switch tabs
+        // Determine if we should switch tabs based on distance OR velocity
         const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
         const shouldSwitchByVelocity = Math.abs(vx) > velocityThreshold;
         const shouldSwitch = shouldSwitchByDistance || shouldSwitchByVelocity;
@@ -443,16 +443,17 @@ export default function PremiumScanFeedback({
         
         if (shouldSwitch) {
           if (dx > 0 && activeTab === 1) {
-            // Swipe right - go to tab 0
+            // Swipe right - go to tab 0 (from goal ratings back to score)
             targetTab = 0;
             targetTranslation = 0;
           } else if (dx < 0 && activeTab === 0) {
-            // Swipe left - go to tab 1
+            // Swipe left - go to tab 1 (from score to goal ratings)
             targetTab = 1;
             targetTranslation = -screenWidth;
           }
         }
         
+        // Update active tab if it changed
         if (targetTab !== activeTab) {
           setActiveTab(targetTab);
           if (Platform.OS !== 'web') {
@@ -460,10 +461,11 @@ export default function PremiumScanFeedback({
           }
         }
         
+        // Animate to target position with smoother spring
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 120,
-          friction: 9,
+          tension: 100,
+          friction: 8,
           useNativeDriver: true,
         }).start();
       },
@@ -473,8 +475,8 @@ export default function PremiumScanFeedback({
         const targetTranslation = activeTab === 0 ? 0 : -screenWidth;
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 120,
-          friction: 9,
+          tension: 100,
+          friction: 8,
           useNativeDriver: true,
         }).start();
       },
