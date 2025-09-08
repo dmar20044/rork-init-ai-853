@@ -394,9 +394,9 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // More sensitive horizontal detection, less sensitive to vertical movement
+        // Much more sensitive horizontal detection
         const { dx, dy } = gestureState;
-        return Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.5;
+        return Math.abs(dx) > 5 && Math.abs(dx) > Math.abs(dy) * 0.8;
       },
       onPanResponderGrant: () => {
         // Stop any ongoing animations when user starts panning
@@ -429,9 +429,9 @@ export default function PremiumScanFeedback({
         const { dx, vx } = gestureState;
         const screenWidth = Dimensions.get('window').width;
         
-        // Dynamic threshold based on screen width and velocity
-        const distanceThreshold = screenWidth * 0.5; // 50% of screen width
-        const velocityThreshold = 0.8;
+        // Much more sensitive thresholds
+        const distanceThreshold = screenWidth * 0.25; // 25% of screen width
+        const velocityThreshold = 0.3;
         
         // Determine if we should switch tabs
         const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
