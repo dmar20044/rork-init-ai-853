@@ -9,6 +9,9 @@ const FoodAnalysisInput = z.object({
     dietGoal: z.string().optional(),
     lifeGoal: z.string().optional(),
     motivation: z.string().optional(),
+    healthStrictness: z.enum(['not-strict', 'neutral', 'very-strict']).optional(),
+    dietStrictness: z.enum(['not-strict', 'neutral', 'very-strict']).optional(),
+    lifeStrictness: z.enum(['not-strict', 'neutral', 'very-strict']).optional(),
   }).optional(),
 });
 
@@ -432,6 +435,9 @@ interface UserGoals {
   dietGoal?: string;
   lifeGoal?: string;
   motivation?: string;
+  healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
+  dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
+  lifeStrictness?: 'not-strict' | 'neutral' | 'very-strict';
 }
 
 // High-risk additives that significantly impact health score
@@ -670,118 +676,458 @@ function calculateFoodScore(input: FoodScoringInput): ScoringResult {
   };
 }
 
-// Comprehensive personalization function (matches barcode scanner logic)
+// Comprehensive personalization function (matches frontend logic exactly)
 function personalScore(nutritionInfo: any, userGoals: UserGoals) {
-  let personalScore = nutritionInfo.healthScore;
+  const product = {
+    name: nutritionInfo.name,
+    brand: undefined,
+    category: 'food',
+    macros: {
+      energyKcal: nutritionInfo.calories,
+      protein_g: nutritionInfo.protein,
+      carbs_g: nutritionInfo.carbs,
+      sugar_g: nutritionInfo.sugar,
+      fat_g: nutritionInfo.fat,
+      satFat_g: nutritionInfo.saturatedFat,
+      fiber_g: nutritionInfo.fiber,
+      sodium_mg: nutritionInfo.sodium
+    },
+    ingredientsRaw: (nutritionInfo.ingredients || []).join(', ').toLowerCase(),
+    additives: nutritionInfo.additives || [],
+    flags: nutritionInfo.flags || [],
+    baseScore: nutritionInfo.healthScore
+  };
+  
+  const profile = {
+    bodyGoal: mapBodyGoal(userGoals.bodyGoal),
+    healthFocus: mapHealthGoal(userGoals.healthGoal),
+    healthStrictness: userGoals.healthStrictness || 'neutral',
+    dietPreference: mapDietGoal(userGoals.dietGoal),
+    dietStrictness: userGoals.dietStrictness || 'neutral',
+    lifeGoal: mapLifeGoal(userGoals.lifeGoal),
+    lifeStrictness: userGoals.lifeStrictness || 'neutral'
+  };
+  
   const reasons: string[] = [];
+
+  const { d: h, why: wh } = deltaHealth(product, profile.healthFocus, profile.healthStrictness);
+  const dietResult = fitsDiet(product, profile.dietPreference, profile.dietStrictness);
+  const { d: df, why: wf, forceZero } = dietResult;
+  const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
+  const { d: l, why: wl } = deltaLife(product, profile.lifeGoal, profile.lifeStrictness);
+
+  let score = product.baseScore + h + df + b + l;
   
-  // Diet-based adjustments
-  if (userGoals.dietGoal === 'whole-foods') {
-    // Penalize processed foods more heavily
-    if (nutritionInfo.ingredients && nutritionInfo.ingredients.length > 8) {
-      personalScore -= 20;
-      reasons.push('Many ingredients conflict with whole foods diet');
-    }
-    if (nutritionInfo.additives && nutritionInfo.additives.length > 0) {
-      personalScore -= 15;
-      reasons.push('Additives conflict with whole foods diet');
-    }
+  // If dietary restriction is violated, force score to 0
+  if (forceZero) {
+    score = 0;
+  } else {
+    // Round to nearest 0.5 interval
+    score = Math.max(0, Math.min(100, Math.round(score * 2) / 2));
   }
+
+  reasons.push(...wh, ...wf, ...wb, ...wl);
   
-  if (userGoals.dietGoal === 'vegan') {
-    // Check for animal products in ingredients
-    const animalIngredients = ['milk', 'egg', 'meat', 'chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'cheese', 'butter', 'yogurt', 'whey', 'casein', 'gelatin', 'honey'];
-    const hasAnimalProducts = nutritionInfo.ingredients?.some((ingredient: string) => 
-      animalIngredients.some(animal => ingredient.toLowerCase().includes(animal))
-    );
-    if (hasAnimalProducts) {
-      personalScore -= 40;
-      reasons.push('Contains animal products - conflicts with vegan diet');
-    }
+  // Always include a couple of numeric context bullets
+  const m = product.macros;
+  if (profile.healthFocus === 'high_protein') reasons.unshift(`Protein ${m.protein_g}g/serving`);
+  if (profile.healthFocus === 'low_sugar' || profile.lifeGoal === 'clear_skin') {
+    reasons.unshift(`Sugar ${m.sugar_g}g/serving`);
   }
-  
-  if (userGoals.dietGoal === 'vegetarian') {
-    // Check for meat products
-    const meatIngredients = ['meat', 'chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'turkey', 'lamb'];
-    const hasMeat = nutritionInfo.ingredients?.some((ingredient: string) => 
-      meatIngredients.some(meat => ingredient.toLowerCase().includes(meat))
-    );
-    if (hasMeat) {
-      personalScore -= 35;
-      reasons.push('Contains meat - conflicts with vegetarian diet');
-    }
-  }
-  
-  if (userGoals.dietGoal === 'gluten-free') {
-    // Check for gluten-containing ingredients
-    const glutenIngredients = ['wheat', 'barley', 'rye', 'flour', 'gluten'];
-    const hasGluten = nutritionInfo.ingredients?.some((ingredient: string) => 
-      glutenIngredients.some(gluten => ingredient.toLowerCase().includes(gluten))
-    );
-    if (hasGluten) {
-      personalScore -= 30;
-      reasons.push('Contains gluten - conflicts with gluten-free diet');
-    }
-  }
-  
-  // Health goal adjustments
-  if (userGoals.healthGoal === 'keto') {
-    if (nutritionInfo.carbs > 5) personalScore -= 25;
-    if (nutritionInfo.fat > 10) personalScore += 15;
-    reasons.push('Adjusted for keto diet goals');
-  }
-  
-  if (userGoals.healthGoal === 'low-sugar') {
-    if (nutritionInfo.sugar > 5) personalScore -= 20;
-    if (nutritionInfo.sugar > 15) personalScore -= 30;
-    reasons.push('Adjusted for low-sugar goal');
-  }
-  
-  if (userGoals.healthGoal === 'low-fat') {
-    if (nutritionInfo.fat > 5) personalScore -= 15;
-    if (nutritionInfo.fat > 10) personalScore -= 25;
-    reasons.push('Adjusted for low-fat goal');
-  }
-  
-  if (userGoals.healthGoal === 'high-protein') {
-    if (nutritionInfo.protein > 15) personalScore += 20;
-    if (nutritionInfo.protein < 5) personalScore -= 15;
-    reasons.push('Adjusted for high-protein goal');
-  }
-  
-  // Body goal adjustments
-  if (userGoals.bodyGoal === 'lose-weight') {
-    if (nutritionInfo.calories > 150) personalScore -= 15;
-    if (nutritionInfo.calories > 250) personalScore -= 25;
-    reasons.push('Adjusted for weight loss goal');
-  }
-  
-  if (userGoals.bodyGoal === 'gain-muscle') {
-    if (nutritionInfo.protein > 10) personalScore += 15;
-    if (nutritionInfo.protein < 5) personalScore -= 20;
-    reasons.push('Adjusted for muscle gain goal');
-  }
-  
-  const finalScore = Math.max(0, Math.min(100, personalScore));
-  const personalAdjustment = finalScore - nutritionInfo.healthScore;
-  
+
+  // Determine personal grade based on final score
   let personalGrade: 'poor' | 'mediocre' | 'good' | 'excellent';
-  if (finalScore >= 75) {
+  if (score >= 86) {
     personalGrade = 'excellent';
-  } else if (finalScore >= 50) {
+  } else if (score >= 66) {
     personalGrade = 'good';
-  } else if (finalScore >= 25) {
+  } else if (score >= 41) {
     personalGrade = 'mediocre';
   } else {
     personalGrade = 'poor';
   }
-  
-  return {
-    score: finalScore,
-    reasons,
+
+  return { 
+    score, 
+    reasons: reasons.filter(r => r.length > 0), 
     personalGrade,
-    personalAdjustment
+    personalAdjustment: forceZero ? -product.baseScore : score - product.baseScore
   };
+}
+
+// Helper functions for mapping goals
+function mapBodyGoal(bodyGoal?: string): 'lose' | 'slightly-lose' | 'maintain' | 'slightly-gain' | 'gain' {
+  const bodyGoalMap: Record<string, 'lose' | 'slightly-lose' | 'maintain' | 'slightly-gain' | 'gain'> = {
+    'lose-weight': 'lose',
+    'slightly-lose-weight': 'slightly-lose',
+    'maintain-weight': 'maintain',
+    'slightly-gain-weight': 'slightly-gain',
+    'gain-weight': 'gain'
+  };
+  return bodyGoalMap[bodyGoal || ''] || 'maintain';
+}
+
+function mapHealthGoal(healthGoal?: string): 'low_sugar' | 'high_protein' | 'low_fat' | 'keto' | 'balanced' {
+  const healthGoalMap: Record<string, 'low_sugar' | 'high_protein' | 'low_fat' | 'keto' | 'balanced'> = {
+    'low-sugar': 'low_sugar',
+    'high-protein': 'high_protein',
+    'low-fat': 'low_fat',
+    'keto': 'keto',
+    'balanced': 'balanced'
+  };
+  return healthGoalMap[healthGoal || ''] || 'balanced';
+}
+
+function mapDietGoal(dietGoal?: string): 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced' {
+  const dietGoalMap: Record<string, 'whole_foods' | 'vegan' | 'carnivore' | 'gluten_free' | 'vegetarian' | 'balanced'> = {
+    'whole-foods': 'whole_foods',
+    'vegan': 'vegan',
+    'carnivore': 'carnivore',
+    'gluten-free': 'gluten_free',
+    'vegetarian': 'vegetarian',
+    'balanced': 'balanced'
+  };
+  return dietGoalMap[dietGoal || ''] || 'balanced';
+}
+
+function mapLifeGoal(lifeGoal?: string): 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin' {
+  const lifeGoalMap: Record<string, 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin'> = {
+    'eat-healthier': 'healthier',
+    'boost-energy': 'energy_mood',
+    'feel-better': 'body_confidence',
+    'clear-skin': 'clear_skin'
+  };
+  return lifeGoalMap[lifeGoal || ''] || 'healthier';
+}
+
+// Helper function for clamping values
+const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
+
+// Health focus delta function
+function deltaHealth(product: any, focus: string, strictness: string = 'neutral') {
+  const m = product.macros;
+  let d = 0;
+  const why: string[] = [];
+  const mult = strictness === 'very-strict' ? 1.4 : strictness === 'not-strict' ? 0.6 : 1.0;
+  
+  switch (focus) {
+    case 'low_sugar': {
+      // Much stricter sugar penalties based on new categorization
+      if (m.sugar_g > 10.5) {
+        // Bad - heavily penalized (up to -45 points)
+        const penalty = Math.min(45, (m.sugar_g - 10.5) * 4);
+        d -= penalty;
+        why.push(`High sugar (${m.sugar_g}g) severely hurts your Low Sugar focus`);
+      } else if (m.sugar_g > 6) {
+        // Mid - moderate penalty (up to -20 points)
+        const penalty = Math.min(20, (m.sugar_g - 6) * 4.4);
+        d -= penalty;
+        why.push(`Moderate sugar (${m.sugar_g}g) conflicts with your Low Sugar focus`);
+      } else if (m.sugar_g > 3) {
+        // Good - small bonus (+5 points)
+        d += 5;
+        why.push(`Good sugar level (${m.sugar_g}g) supports your Low Sugar focus`);
+      } else {
+        // Really good - larger bonus (+12 points)
+        d += 12;
+        why.push(`Excellent low sugar (${m.sugar_g}g) perfectly aligns with your Low Sugar focus`);
+      }
+      
+      // Fiber bonus for low sugar focus
+      const fiberBonus = clamp(m.fiber_g / 5, 0, 1) * 6;
+      d += fiberBonus;
+      if (fiberBonus > 3) why.push('High fiber helps with sugar management');
+      break;
+    }
+    case 'high_protein': {
+      const protBonus = clamp(m.protein_g / 25, 0, 1) * 25; // Increased bonus
+      // Stricter sugar penalty for high protein focus
+      const sugarPen = clamp((m.sugar_g - 8) / 12, 0, 1) * 15; // Increased penalty
+      d += protBonus - sugarPen;
+      if (protBonus > 5) why.push(`High protein (${m.protein_g}g) strongly supports your High Protein focus`);
+      if (sugarPen > 5) why.push(`Sugar (${m.sugar_g}g) conflicts with your High Protein focus`);
+      break;
+    }
+    case 'low_fat': {
+      const fatPen = clamp((m.fat_g - 3) / 12, 0, 1) * 20; // Stricter fat penalty
+      const satPen = clamp((m.satFat_g - 2) / 5, 0, 1) * 15; // Stricter sat fat penalty
+      const fiberB = clamp(m.fiber_g / 5, 0, 1) * 6;
+      const protB = clamp(m.protein_g / 20, 0, 1) * 6;
+      d += fiberB + protB - fatPen - satPen;
+      if (fatPen > 5 || satPen > 5) why.push(`High fat content conflicts with your Low Fat focus`);
+      if (fiberB > 3 || protB > 3) why.push('Good fiber and protein support your Low Fat focus');
+      break;
+    }
+    case 'keto': {
+      // Much stricter carb penalties for keto
+      const carbPen = clamp((m.carbs_g - 5) / 20, 0, 1) * 35; // Increased penalty
+      const sugarPen = clamp((m.sugar_g - 2) / 8, 0, 1) * 25; // Much stricter sugar penalty
+      const protB = clamp(m.protein_g / 20, 0, 1) * 8;
+      d += protB - carbPen - sugarPen;
+      if (carbPen > 10) why.push(`Carbs (${m.carbs_g}g) are too high for your Keto focus`);
+      if (sugarPen > 10) why.push(`Sugar (${m.sugar_g}g) is incompatible with your Keto focus`);
+      break;
+    }
+    case 'balanced': {
+      const fiberB = clamp(m.fiber_g / 6, 0, 1) * 8;
+      const protB = clamp(m.protein_g / 20, 0, 1) * 6;
+      // Stricter penalties for balanced approach
+      const sugarP = clamp((m.sugar_g - 10) / 15, 0, 1) * 12; // Increased penalty
+      const satP = clamp((m.satFat_g - 4) / 6, 0, 1) * 8; // Increased penalty
+      d += fiberB + protB - sugarP - satP;
+      if (sugarP > 5) why.push(`Sugar (${m.sugar_g}g) is high for balanced nutrition`);
+      break;
+    }
+  }
+  if (strictness === 'very-strict') {
+    why.push('Strict setting amplifies your Health Focus impact');
+  } else if (strictness === 'not-strict') {
+    why.push('Not too strict setting softens your Health Focus impact');
+  }
+  return { d: Math.round(d * mult), why };
+}
+
+// Diet preference function
+function fitsDiet(
+  product: any,
+  diet: string,
+  strictness: string = 'neutral'
+): { d: number; why: string[]; forceZero?: boolean } {
+  const ing = product.ingredientsRaw;
+  const f = new Set(product.flags || []);
+  const why: string[] = [];
+  const mult = strictness === 'very-strict' ? 1.4 : strictness === 'not-strict' ? 0.6 : 1.0;
+  
+  let violates = false;
+  switch (diet) {
+    case 'vegan':
+      violates = /milk|whey|casein|egg|honey|gelatin|fish|chicken|beef|pork|dairy|butter|cheese|yogurt|cream|lactose/i.test(ing);
+      break;
+    case 'vegetarian':
+      violates = /gelatin|fish|chicken|beef|pork|meat|poultry|seafood|anchovy/i.test(ing);
+      break;
+    case 'carnivore':
+      violates = /oat|wheat|rice|corn|soy|pea|bean|lentil|quinoa|potato|fruit|vegetable|grain|legume|nut|seed/i.test(ing);
+      break;
+    case 'gluten_free':
+      violates = /wheat|barley|rye|malt|spelt|farro|semolina|triticale|gluten/i.test(ing);
+      break;
+    case 'whole_foods':
+      violates = f.has('ultra_processed') || f.has('high_risk_additives') || f.has('moderate_risk_additives');
+      break;
+    default:
+      violates = false;
+  }
+
+  if (violates) {
+    // For strict dietary preferences (vegan, vegetarian, carnivore)
+    if (diet === 'vegan' || diet === 'vegetarian' || diet === 'carnivore') {
+      if (strictness === 'not-strict') {
+        const d = Math.round(-60 * mult);
+        why.push('Not too strict setting softens your Diet Preference impact');
+        return { d, why };
+      }
+      return { 
+        d: -100, 
+        why: [`This product violates your ${diet.replace('_', ' ')} dietary restriction`],
+        forceZero: true
+      };
+    }
+    // For other preferences, apply scaled penalty
+    const d = Math.round(-40 * mult);
+    if (strictness === 'very-strict') {
+      why.push('Strict setting amplifies your Diet Preference impact');
+    } else if (strictness === 'not-strict') {
+      why.push('Not too strict setting softens your Diet Preference impact');
+    }
+    return { d, why: [...why, `Conflicts with your ${diet.replace('_', ' ')} preference`] };
+  }
+
+  let bonus = 0;
+  if (diet === 'whole_foods' && !f.has('ultra_processed') && !f.has('high_risk_additives')) {
+    bonus += Math.round(10 * mult);
+    why.push('Excellent whole-foods choice');
+  }
+  if (strictness === 'very-strict') {
+    why.push('Strict setting amplifies your Diet Preference impact');
+  } else if (strictness === 'not-strict') {
+    why.push('Not too strict setting softens your Diet Preference impact');
+  }
+  return { d: bonus, why };
+}
+
+// Body goal function
+function deltaBody(product: any, body: string) {
+  const m = product.macros;
+  let d = 0;
+  const why: string[] = [];
+  
+  if (body === 'lose') {
+    // Stricter calorie penalties for weight loss
+    if (m.energyKcal > 400) {
+      d -= 20; // Much harsher penalty
+      why.push(`Very high calories (${m.energyKcal}) conflict with weight loss goal`);
+    } else if (m.energyKcal > 250) {
+      d -= 10;
+      why.push(`High calories (${m.energyKcal}) may hinder weight loss`);
+    } else {
+      d += 8; // Bonus for low calories
+      why.push('Good calorie level for weight loss');
+    }
+    
+    // Protein and fiber bonuses for satiety
+    d += clamp(m.protein_g / 20, 0, 1) * 8;
+    d += clamp(m.fiber_g / 6, 0, 1) * 8;
+    
+    // Sugar penalty for weight loss
+    if (m.sugar_g > 8) {
+      d -= clamp((m.sugar_g - 8) / 10, 0, 1) * 15;
+      why.push(`Sugar (${m.sugar_g}g) conflicts with weight loss`);
+    }
+  }
+  
+  if (body === 'slightly-lose') {
+    // Moderate calorie penalties for slight weight loss
+    if (m.energyKcal > 350) {
+      d -= 12; // Moderate penalty
+      why.push(`High calories (${m.energyKcal}) may slow gradual weight loss`);
+    } else if (m.energyKcal > 200) {
+      d -= 5;
+      why.push(`Moderate calories (${m.energyKcal}) for gradual weight loss`);
+    } else {
+      d += 5; // Smaller bonus than aggressive weight loss
+      why.push('Good calorie level for gradual weight loss');
+    }
+    
+    // Moderate protein and fiber bonuses
+    d += clamp(m.protein_g / 20, 0, 1) * 5;
+    d += clamp(m.fiber_g / 6, 0, 1) * 5;
+    
+    // Moderate sugar penalty
+    if (m.sugar_g > 10) {
+      d -= clamp((m.sugar_g - 10) / 12, 0, 1) * 10;
+      why.push(`Sugar (${m.sugar_g}g) may hinder gradual weight loss`);
+    }
+  }
+  
+  if (body === 'gain') {
+    d += clamp(m.protein_g / 25, 0, 1) * 10; // Increased protein bonus
+    d += clamp((m.energyKcal - 200) / 300, 0, 1) * 8;
+    if (m.protein_g >= 20) why.push('High protein supports weight gain goals');
+  }
+  
+  if (body === 'slightly-gain') {
+    // Moderate protein bonus for slight weight gain
+    d += clamp(m.protein_g / 25, 0, 1) * 6;
+    // Smaller calorie bonus than aggressive weight gain
+    d += clamp((m.energyKcal - 150) / 250, 0, 1) * 5;
+    if (m.protein_g >= 15) why.push('Good protein supports gradual weight gain goals');
+    
+    // Still want to avoid excessive calories
+    if (m.energyKcal > 450) {
+      d -= 5;
+      why.push('Very high calories may lead to excessive weight gain');
+    }
+  }
+  
+  if (body === 'maintain') {
+    d += clamp(m.fiber_g / 6, 0, 1) * 4;
+    // Penalty for very high calories even for maintenance
+    if (m.energyKcal > 500) {
+      d -= 8;
+      why.push('Very high calories even for maintenance');
+    }
+  }
+  
+  return { d: Math.round(d), why };
+}
+
+// Life goal function
+function deltaLife(product: any, life: string, strictness: string = 'neutral') {
+  const m = product.macros;
+  const f = new Set(product.flags || []);
+  let d = 0;
+  const why: string[] = [];
+  const mult = strictness === 'very-strict' ? 1.4 : strictness === 'not-strict' ? 0.6 : 1.0;
+  
+  if (life === 'energy_mood') {
+    d += clamp(m.protein_g / 20, 0, 1) * 6;
+    d += clamp(m.fiber_g / 6, 0, 1) * 6;
+    // Much stricter sugar penalty for energy/mood
+    if (m.sugar_g > 8) {
+      d -= clamp((m.sugar_g - 8) / 12, 0, 1) * 15;
+      why.push(`Sugar (${m.sugar_g}g) can cause energy crashes`);
+    }
+    // Penalty for high additives affecting mood
+    if (product.additives.length > 3) {
+      d -= 8;
+      why.push('Many additives may affect energy and mood');
+    }
+    // Additional energy-focused penalties
+    if (m.sugar_g > 10) {
+      d -= 12;
+      why.push('High sugar can cause energy crashes');
+    }
+  }
+  
+  if (life === 'clear_skin') {
+    if (f.has('ultra_processed')) {
+      d -= 12; // Increased penalty
+      why.push('Ultra-processed foods may worsen skin health');
+    }
+    if (f.has('high_risk_additives')) {
+      d -= 10;
+      why.push('High-risk additives may negatively impact skin');
+    }
+    // Stricter sugar penalty for clear skin
+    if (m.sugar_g > 6) {
+      d -= clamp((m.sugar_g - 6) / 10, 0, 1) * 12;
+      why.push(`Sugar (${m.sugar_g}g) may contribute to skin issues`);
+    }
+  }
+  
+  if (life === 'healthier') {
+    // General health penalties for processed foods
+    if (f.has('high_risk_additives')) {
+      d -= 15;
+      why.push('High-risk additives conflict with health goals');
+    }
+    if (product.additives.length > 5) {
+      d -= 8;
+      why.push('Many additives may impact overall health');
+    }
+    // Additional longevity-focused penalties (moved from motivation)
+    if (product.additives.length > 2) {
+      d -= product.additives.length * 2; // Escalating penalty
+      why.push('Additives may conflict with health goals');
+    }
+    if (f.has('ultra_processed')) {
+      d -= 8;
+      why.push('Ultra-processed foods may impact overall health');
+    }
+  }
+  
+  if (life === 'body_confidence') {
+    // Similar to weight loss goals
+    if (m.sugar_g > 10) {
+      d -= 10;
+      why.push('High sugar may impact body composition goals');
+    }
+    if (m.protein_g >= 15) {
+      d += 6;
+      why.push('Good protein supports body confidence goals');
+    }
+    // Additional body confidence bonuses
+    if (m.protein_g >= 15) d += 4;
+  }
+  
+  if (strictness === 'very-strict') {
+    why.push('Strict setting amplifies your Life Goal impact');
+  } else if (strictness === 'not-strict') {
+    why.push('Not too strict setting softens your Life Goal impact');
+  }
+  
+  return { d: Math.round(d * mult), why };
 }
 
 export default analyzeFoodProcedure;

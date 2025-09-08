@@ -1347,6 +1347,9 @@ export async function analyzeFoodImageWithPersonalization(
         healthGoal: userGoals.healthGoal || undefined,
         dietGoal: userGoals.dietGoal || undefined,
         lifeGoal: userGoals.lifeGoal || undefined,
+        healthStrictness: userGoals.healthStrictness || undefined,
+        dietStrictness: userGoals.dietStrictness || undefined,
+        lifeStrictness: userGoals.lifeStrictness || undefined,
       } : undefined,
     });
     
