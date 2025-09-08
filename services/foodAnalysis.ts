@@ -235,35 +235,39 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
         };
       }
       
-      // Check if it's a JSON parsing error
-      if (trpcError instanceof Error && trpcError.message.includes('JSON Parse error')) {
-        console.error('Backend returned non-JSON response, likely HTML error page');
-        
-        // Try to make a direct HTTP request to debug
-        try {
-          const debugResponse = await fetch(`${process.env.EXPO_PUBLIC_RORK_API_BASE_URL}/debug`);
-          const debugText = await debugResponse.text();
-          console.log('Debug endpoint response:', debugText);
-        } catch (debugError) {
-          console.error('Debug request also failed:', debugError);
-        }
-        
-        return {
-          success: false,
-          error: 'Backend is returning HTML instead of JSON. This usually means the API is not properly deployed or there\'s a server error. Please check the Vercel deployment.'
-        };
-      }
-      
-      // Handle network errors
-      if (trpcError instanceof Error && (trpcError.message.includes('Network request failed') || trpcError.message.includes('fetch'))) {
-        console.error('Network error:', trpcError.message);
+      // Handle connection errors
+      if (trpcError instanceof Error && (trpcError.message.includes('Network') || trpcError.message.includes('fetch') || trpcError.message.includes('connection'))) {
+        console.error('Network/connection error:', trpcError.message);
         return {
           success: false,
           error: 'Network connection failed. Please check your internet connection and try again.'
         };
       }
       
-      throw trpcError; // Re-throw if it's not a handled error type
+      // Check if it's a JSON parsing error
+      if (trpcError instanceof Error && trpcError.message.includes('JSON Parse error')) {
+        console.error('Backend returned non-JSON response, likely HTML error page');
+        return {
+          success: false,
+          error: 'Failed to process server response. Please try again.'
+        };
+      }
+      
+      // Handle tRPC-specific errors
+      if (trpcError instanceof Error && trpcError.message.includes('INTERNAL_SERVER_ERROR')) {
+        console.error('Internal server error:', trpcError.message);
+        return {
+          success: false,
+          error: 'Server error occurred during analysis. Please try again.'
+        };
+      }
+      
+      // For any other tRPC error, return a generic message
+      console.error('Unhandled tRPC error:', trpcError);
+      return {
+        success: false,
+        error: 'Analysis service is temporarily unavailable. Please try again.'
+      };
     }
     
   } catch (error) {
@@ -284,6 +288,15 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
       return {
         success: false,
         error: 'Analysis timed out. Please try again with a clearer image.'
+      };
+    }
+    
+    // Handle connection/network errors
+    if (error instanceof Error && (error.message.includes('Network') || error.message.includes('fetch') || error.message.includes('connection'))) {
+      console.error('Network/connection error:', error.message);
+      return {
+        success: false,
+        error: 'Network connection failed. Please check your internet connection and try again.'
       };
     }
     

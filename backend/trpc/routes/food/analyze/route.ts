@@ -208,12 +208,22 @@ If you cannot identify the food clearly, respond with:
         if (fetchError instanceof Error) {
           if (fetchError.name === 'AbortError') {
             console.error('Request was aborted (likely timeout)');
-            throw new Error('Analysis request timed out. Please try again.');
+            return {
+              success: false,
+              error: 'Analysis request timed out. Please try again with a clearer image.'
+            };
           }
           console.error('Fetch error:', fetchError.message);
-          throw new Error(`Network error: ${fetchError.message}`);
+          return {
+            success: false,
+            error: `Network connection failed: ${fetchError.message}`
+          };
         }
-        throw fetchError;
+        
+        return {
+          success: false,
+          error: 'An unexpected error occurred during the request'
+        };
       }
       
       if (!response.ok) {
@@ -365,10 +375,18 @@ If you cannot identify the food clearly, respond with:
           };
         }
         
-        if (error.message.includes('Network error') || error.message.includes('fetch')) {
+        if (error.message.includes('Network') || error.message.includes('fetch') || error.message.includes('connection')) {
           return {
             success: false,
             error: 'Network connection failed. Please check your internet connection and try again.'
+          };
+        }
+        
+        // Handle JSON parsing errors
+        if (error.message.includes('JSON') || error.message.includes('parse')) {
+          return {
+            success: false,
+            error: 'Failed to process AI response. Please try again.'
           };
         }
       }
