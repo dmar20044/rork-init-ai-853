@@ -708,9 +708,9 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Very sensitive horizontal detection for both directions
+        // Ultra-sensitive horizontal detection - start with minimal movement
         const { dx, dy } = gestureState;
-        return Math.abs(dx) > 2 && Math.abs(dx) > Math.abs(dy) * 0.5;
+        return Math.abs(dx) > 1 && Math.abs(dx) > Math.abs(dy) * 0.3;
       },
       onPanResponderGrant: () => {
         // Stop any ongoing animations when user starts panning
@@ -728,13 +728,13 @@ export default function PremiumScanFeedback({
         const baseTranslation = activeTab === 0 ? 0 : -screenWidth;
         let translationX = baseTranslation + dx;
         
-        // Add resistance when trying to swipe beyond available tabs
+        // Minimal resistance when trying to swipe beyond available tabs
         if (translationX > 0) {
-          // Resistance when swiping right beyond first tab
-          translationX = dx * 0.3;
+          // Light resistance when swiping right beyond first tab
+          translationX = dx * 0.6;
         } else if (translationX < -screenWidth) {
-          // Resistance when swiping left beyond last tab
-          translationX = -screenWidth + (dx + screenWidth) * 0.3;
+          // Light resistance when swiping left beyond last tab
+          translationX = -screenWidth + (dx + screenWidth) * 0.6;
         }
         
         tabTranslateX.setValue(translationX);
@@ -743,9 +743,9 @@ export default function PremiumScanFeedback({
         const { dx, vx } = gestureState;
         const screenWidth = Dimensions.get('window').width;
         
-        // Much more sensitive thresholds for easier swiping
-        const distanceThreshold = screenWidth * 0.1; // 10% of screen width
-        const velocityThreshold = 0.15;
+        // Ultra-sensitive thresholds for effortless swiping
+        const distanceThreshold = screenWidth * 0.05; // Just 5% of screen width
+        const velocityThreshold = 0.08; // Very low velocity threshold
         
         // Determine if we should switch tabs based on distance OR velocity
         const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
@@ -775,11 +775,11 @@ export default function PremiumScanFeedback({
           }
         }
         
-        // Animate to target position with smoother spring
+        // Animate to target position with ultra-smooth spring
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 120,
-          friction: 7,
+          tension: 150,
+          friction: 6,
           useNativeDriver: true,
         }).start();
       },
@@ -789,8 +789,8 @@ export default function PremiumScanFeedback({
         const targetTranslation = activeTab === 0 ? 0 : -screenWidth;
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 120,
-          friction: 7,
+          tension: 150,
+          friction: 6,
           useNativeDriver: true,
         }).start();
       },
@@ -1629,8 +1629,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               setActiveTab(0);
                               Animated.spring(tabTranslateX, {
                                 toValue: 0,
-                                tension: 100,
-                                friction: 8,
+                                tension: 150,
+                                friction: 6,
                                 useNativeDriver: true,
                               }).start();
                             }
@@ -1650,8 +1650,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               const screenWidth = Dimensions.get('window').width;
                               Animated.spring(tabTranslateX, {
                                 toValue: -screenWidth,
-                                tension: 100,
-                                friction: 8,
+                                tension: 150,
+                                friction: 6,
                                 useNativeDriver: true,
                               }).start();
                             }
