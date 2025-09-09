@@ -262,25 +262,25 @@ function QuizScreen() {
     sex: null,
     activityLevel: null,
   });
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [otpError, setOtpError] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [slideAnim] = useState(new Animated.Value(0));
+  const [email, setEmail] = useState<string>('');
+  const [otp, setOtp] = useState<string>('');
+  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
+  const [otpError, setOtpError] = useState<string>('');
+  const [isVerifying, setIsVerifying] = useState<boolean>(false);
+  const [slideAnim] = useState<Animated.Value>(new Animated.Value(0));
   const screenWidth = Dimensions.get('window').width;
-  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingProgress, setLoadingProgress] = useState<number>(0);
   
   // Sign-in modal state
-  const [showSignInModal, setShowSignInModal] = useState(false);
-  const [signInEmail, setSignInEmail] = useState('');
-  const [signInOtp, setSignInOtp] = useState('');
-  const [isSignInAuthenticating, setIsSignInAuthenticating] = useState(false);
-  const [signInOtpError, setSignInOtpError] = useState('');
-  const [isSignInVerifying, setIsSignInVerifying] = useState(false);
-  const [showSignInOtpInput, setShowSignInOtpInput] = useState(false);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [signInResendCooldown, setSignInResendCooldown] = useState(0);
+  const [showSignInModal, setShowSignInModal] = useState<boolean>(false);
+  const [signInEmail, setSignInEmail] = useState<string>('');
+  const [signInOtp, setSignInOtp] = useState<string>('');
+  const [isSignInAuthenticating, setIsSignInAuthenticating] = useState<boolean>(false);
+  const [signInOtpError, setSignInOtpError] = useState<string>('');
+  const [isSignInVerifying, setIsSignInVerifying] = useState<boolean>(false);
+  const [showSignInOtpInput, setShowSignInOtpInput] = useState<boolean>(false);
+  const [resendCooldown, setResendCooldown] = useState<number>(0);
+  const [signInResendCooldown, setSignInResendCooldown] = useState<number>(0);
 
   const currentStepData = quizSteps[currentStep];
   const progress = (currentStep + 1) / quizSteps.length;
@@ -1240,33 +1240,60 @@ function QuizScreen() {
             <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
             <View style={styles.biometricsRow}>
               <View style={styles.biometricsField}>
-                <Text style={styles.biometricsLabel}>Height (cm)</Text>
-                <TextInput
-                  style={styles.textInput}
-                  value={answers.heightCm?.toString() ?? ''}
-                  onChangeText={(t) => {
-                    const n = Number(t.replace(/[^0-9.]/g, ''));
-                    setAnswers((prev) => ({ ...prev, heightCm: isNaN(n) ? null : n }));
-                  }}
-                  keyboardType="numeric"
-                  placeholder="e.g., 175"
-                  placeholderTextColor={Colors.gray500}
-                  testID="biometrics-height"
-                />
+                <Text style={styles.biometricsLabel}>Height</Text>
+                <View style={styles.heightRow}>
+                  <TextInput
+                    style={[styles.textInput, styles.heightInput]}
+                    value={heightFeet?.toString() ?? ''}
+                    onChangeText={(t) => {
+                      const n = Number(t.replace(/[^0-9]/g, ''));
+                      const feet = isNaN(n) ? null : n;
+                      setHeightFeet(feet);
+                      const inchesTotal = (feet ?? 0) * 12 + (heightInches ?? 0);
+                      const cm = inchesTotal > 0 ? inchesTotal * 2.54 : NaN;
+                      setAnswers((prev) => ({ ...prev, heightCm: isNaN(cm) ? null : Math.round(cm * 10) / 10 }));
+                    }}
+                    keyboardType="number-pad"
+                    placeholder="6"
+                    placeholderTextColor={Colors.gray500}
+                    testID="biometrics-height-feet"
+                  />
+                  <Text style={styles.heightUnitLabel}>ft</Text>
+                  <TextInput
+                    style={[styles.textInput, styles.heightInput]}
+                    value={heightInches?.toString() ?? ''}
+                    onChangeText={(t) => {
+                      const n = Number(t.replace(/[^0-9]/g, ''));
+                      const inches = isNaN(n) ? null : Math.min(n, 11);
+                      setHeightInches(inches);
+                      const inchesTotal = (heightFeet ?? 0) * 12 + (inches ?? 0);
+                      const cm = inchesTotal > 0 ? inchesTotal * 2.54 : NaN;
+                      setAnswers((prev) => ({ ...prev, heightCm: isNaN(cm) ? null : Math.round(cm * 10) / 10 }));
+                    }}
+                    keyboardType="number-pad"
+                    placeholder="1"
+                    placeholderTextColor={Colors.gray500}
+                    testID="biometrics-height-inches"
+                  />
+                  <Text style={styles.heightUnitLabel}>in</Text>
+                </View>
               </View>
               <View style={styles.biometricsField}>
-                <Text style={styles.biometricsLabel}>Weight (kg)</Text>
+                <Text style={styles.biometricsLabel}>Weight (lb)</Text>
                 <TextInput
                   style={styles.textInput}
-                  value={answers.weightKg?.toString() ?? ''}
+                  value={weightLb?.toString() ?? ''}
                   onChangeText={(t) => {
                     const n = Number(t.replace(/[^0-9.]/g, ''));
-                    setAnswers((prev) => ({ ...prev, weightKg: isNaN(n) ? null : n }));
+                    const lb = isNaN(n) ? null : n;
+                    setWeightLb(lb);
+                    const kg = (lb ?? 0) * 0.45359237;
+                    setAnswers((prev) => ({ ...prev, weightKg: lb ? Math.round(kg * 10) / 10 : null }));
                   }}
                   keyboardType="numeric"
-                  placeholder="e.g., 72"
+                  placeholder="180"
                   placeholderTextColor={Colors.gray500}
-                  testID="biometrics-weight"
+                  testID="biometrics-weight-lb"
                 />
               </View>
             </View>
@@ -1281,7 +1308,7 @@ function QuizScreen() {
                     setAnswers((prev) => ({ ...prev, ageYears: isNaN(n) ? null : n }));
                   }}
                   keyboardType="number-pad"
-                  placeholder="e.g., 28"
+                  placeholder="28"
                   placeholderTextColor={Colors.gray500}
                   testID="biometrics-age"
                 />
@@ -1950,6 +1977,9 @@ function QuizScreen() {
   );
 
   const [tagDraft, setTagDraft] = useState<string>('');
+  const [heightFeet, setHeightFeet] = useState<number | null>(null);
+  const [heightInches, setHeightInches] = useState<number | null>(null);
+  const [weightLb, setWeightLb] = useState<number | null>(null);
   const commonRestrictionSuggestions = useMemo<string[]>(
     () => [
       'peanuts',
@@ -1988,6 +2018,31 @@ function QuizScreen() {
         : { ...prev, dietaryRestrictions: [...prev.dietaryRestrictions, normalized] }
     ));
   };
+
+  // Initialize imperial fields from metric answers for a smooth edit experience
+  const initImperialFromMetric = useMemo(() => {
+    const cm = answers.heightCm ?? null;
+    const kg = answers.weightKg ?? null;
+    let ft: number | null = null;
+    let inch: number | null = null;
+    let lbVal: number | null = null;
+    if (cm && cm > 0) {
+      const totalInches = cm / 2.54;
+      ft = Math.floor(totalInches / 12);
+      inch = Math.round(totalInches - ft * 12);
+    }
+    if (kg && kg > 0) {
+      lbVal = Math.round(kg / 0.45359237);
+    }
+    return { ft, inch, lbVal };
+  }, [answers.heightCm, answers.weightKg]);
+
+  React.useEffect(() => {
+    if (heightFeet === null && initImperialFromMetric.ft !== null) setHeightFeet(initImperialFromMetric.ft);
+    if (heightInches === null && initImperialFromMetric.inch !== null) setHeightInches(initImperialFromMetric.inch);
+    if (weightLb === null && initImperialFromMetric.lbVal !== null) setWeightLb(initImperialFromMetric.lbVal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initImperialFromMetric.ft, initImperialFromMetric.inch, initImperialFromMetric.lbVal]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -4273,6 +4328,20 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginBottom: 8,
     fontWeight: '500',
+  },
+  heightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  heightInput: {
+    flex: 1,
+  },
+  heightUnitLabel: {
+    width: 24,
+    textAlign: 'center',
+    color: Colors.textSecondary,
+    fontWeight: '600',
   },
   sexContainer: {
     flexDirection: 'row',
