@@ -46,15 +46,31 @@ export default function GoalsScreen() {
   const [allergensModalVisible, setAllergensModalVisible] = useState(false);
   const [newAllergen, setNewAllergen] = useState('');
 
-  // Biometrics local state
-  const [heightCm, setHeightCm] = useState<string>(profile.heightCm !== null && profile.heightCm !== undefined ? String(profile.heightCm) : '');
-  const [weightKg, setWeightKg] = useState<string>(profile.weightKg !== null && profile.weightKg !== undefined ? String(profile.weightKg) : '');
+  const [heightFeet, setHeightFeet] = useState<string>('');
+  const [heightInches, setHeightInches] = useState<string>('');
+  const [weightLb, setWeightLb] = useState<string>('');
   const [sex, setSex] = useState<'male' | 'female' | 'other' | null>(profile.sex ?? null);
   const [activityLevel, setActivityLevel] = useState<'inactive' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active' | null>(profile.activityLevel ?? null);
 
   useEffect(() => {
-    setHeightCm(profile.heightCm !== null && profile.heightCm !== undefined ? String(profile.heightCm) : '');
-    setWeightKg(profile.weightKg !== null && profile.weightKg !== undefined ? String(profile.weightKg) : '');
+    const cm = profile.heightCm ?? null;
+    if (cm && !isNaN(cm)) {
+      const totalInches = cm / 2.54;
+      const feet = Math.floor(totalInches / 12);
+      const inches = Math.round(totalInches - feet * 12);
+      setHeightFeet(String(feet));
+      setHeightInches(String(inches));
+    } else {
+      setHeightFeet('');
+      setHeightInches('');
+    }
+    const kg = profile.weightKg ?? null;
+    if (kg && !isNaN(kg)) {
+      const lb = kg * 2.2046226218;
+      setWeightLb(String(Math.round(lb)));
+    } else {
+      setWeightLb('');
+    }
     setSex(profile.sex ?? null);
     setActivityLevel(profile.activityLevel ?? null);
   }, [profile.heightCm, profile.weightKg, profile.sex, profile.activityLevel]);
@@ -1134,23 +1150,52 @@ export default function GoalsScreen() {
                 <View style={styles.inputIconContainer}>
                   <Text style={styles.inputIcon}>📏</Text>
                 </View>
-                <TextInput
-                  style={styles.textInput}
-                  keyboardType="numeric"
-                  placeholder="Height (cm)"
-                  placeholderTextColor={colors.textSecondary}
-                  value={heightCm}
-                  onChangeText={setHeightCm}
-                  onBlur={async () => {
-                    const v = heightCm.trim();
-                    const num = v ? Number(v) : null;
-                    if (v && isNaN(Number(v))) {
-                      Alert.alert('Invalid height', 'Please enter a valid number in cm.');
-                      return;
-                    }
-                    await updateProfile({ heightCm: num });
-                  }}
-                />
+                <View style={{ flex: 1, flexDirection: 'row', gap: 12 }}>
+                  <TextInput
+                    style={[styles.textInput, { flex: 1 }]}
+                    keyboardType="numeric"
+                    placeholder="Ft"
+                    placeholderTextColor={colors.textSecondary}
+                    value={heightFeet}
+                    onChangeText={setHeightFeet}
+                    onBlur={async () => {
+                      const f = heightFeet.trim();
+                      const i = heightInches.trim();
+                      if ((f && isNaN(Number(f))) || (i && isNaN(Number(i)))) {
+                        Alert.alert('Invalid height', 'Use numbers for feet and inches.');
+                        return;
+                      }
+                      const feetNum = f ? Number(f) : 0;
+                      const inchesNum = i ? Number(i) : 0;
+                      const totalInches = feetNum * 12 + inchesNum;
+                      const cm = totalInches > 0 ? Math.round(totalInches * 2.54) : null;
+                      await updateProfile({ heightCm: cm });
+                    }}
+                    testID="heightFeetInput"
+                  />
+                  <TextInput
+                    style={[styles.textInput, { flex: 1 }]}
+                    keyboardType="numeric"
+                    placeholder="In"
+                    placeholderTextColor={colors.textSecondary}
+                    value={heightInches}
+                    onChangeText={setHeightInches}
+                    onBlur={async () => {
+                      const f = heightFeet.trim();
+                      const i = heightInches.trim();
+                      if ((f && isNaN(Number(f))) || (i && isNaN(Number(i)))) {
+                        Alert.alert('Invalid height', 'Use numbers for feet and inches.');
+                        return;
+                      }
+                      const feetNum = f ? Number(f) : 0;
+                      const inchesNum = i ? Number(i) : 0;
+                      const totalInches = feetNum * 12 + inchesNum;
+                      const cm = totalInches > 0 ? Math.round(totalInches * 2.54) : null;
+                      await updateProfile({ heightCm: cm });
+                    }}
+                    testID="heightInchesInput"
+                  />
+                </View>
               </View>
 
               <View style={styles.inputField} testID="weightField">
@@ -1160,19 +1205,21 @@ export default function GoalsScreen() {
                 <TextInput
                   style={styles.textInput}
                   keyboardType="numeric"
-                  placeholder="Weight (kg)"
+                  placeholder="Weight (lb)"
                   placeholderTextColor={colors.textSecondary}
-                  value={weightKg}
-                  onChangeText={setWeightKg}
+                  value={weightLb}
+                  onChangeText={setWeightLb}
                   onBlur={async () => {
-                    const v = weightKg.trim();
-                    const num = v ? Number(v) : null;
+                    const v = weightLb.trim();
                     if (v && isNaN(Number(v))) {
-                      Alert.alert('Invalid weight', 'Please enter a valid number in kg.');
+                      Alert.alert('Invalid weight', 'Please enter a valid number in lb.');
                       return;
                     }
-                    await updateProfile({ weightKg: num });
+                    const lb = v ? Number(v) : 0;
+                    const kg = lb > 0 ? Math.round((lb / 2.2046226218) * 10) / 10 : null;
+                    await updateProfile({ weightKg: kg });
                   }}
+                  testID="weightLbInput"
                 />
               </View>
 
@@ -1239,18 +1286,23 @@ export default function GoalsScreen() {
                 style={styles.saveButton}
                 testID="saveBiometricsButton"
                 onPress={async () => {
-                  const h = heightCm.trim();
-                  const w = weightKg.trim();
-                  const heightNum = h ? Number(h) : null;
-                  const weightNum = w ? Number(w) : null;
-                  if ((h && isNaN(Number(h))) || (w && isNaN(Number(w)))) {
-                    Alert.alert('Invalid values', 'Please enter valid numbers for height and weight.');
+                  const f = heightFeet.trim();
+                  const i = heightInches.trim();
+                  const w = weightLb.trim();
+                  if ((f && isNaN(Number(f))) || (i && isNaN(Number(i))) || (w && isNaN(Number(w)))) {
+                    Alert.alert('Invalid values', 'Use numbers for feet, inches, and pounds.');
                     return;
                   }
+                  const feetNum = f ? Number(f) : 0;
+                  const inchesNum = i ? Number(i) : 0;
+                  const totalInches = feetNum * 12 + inchesNum;
+                  const cm = totalInches > 0 ? Math.round(totalInches * 2.54) : null;
+                  const lb = w ? Number(w) : 0;
+                  const kg = lb > 0 ? Math.round((lb / 2.2046226218) * 10) / 10 : null;
                   await updateProfile({
                     name: editingName && tempName.trim() ? tempName.trim() : profile.name,
-                    heightCm: heightNum,
-                    weightKg: weightNum,
+                    heightCm: cm,
+                    weightKg: kg,
                     sex: sex ?? null,
                     activityLevel: activityLevel ?? null,
                   });
