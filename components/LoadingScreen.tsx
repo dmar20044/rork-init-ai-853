@@ -52,7 +52,7 @@ const progressSteps = [
   { label: 'Personalizing', duration: 1000, icon: User }
 ];
 
-export default function LoadingScreen({ isVisible, onCancel, onComplete, onProductNotFound, progress }: LoadingScreenProps) {
+const LoadingScreen = React.memo<LoadingScreenProps>(({ isVisible, onCancel, onComplete, onProductNotFound, progress }) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
   const { isDarkMode } = useTheme();
 
@@ -793,11 +793,14 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
                           },
                         ]} />
                       ) : (
-                        <Animated.View style={{
-                          transform: [
-                            { scale: stepIconScales.current[index] },
-                          ],
-                        }}>
+                        <Animated.View style={[
+                          styles.stepIconContainer,
+                          {
+                            transform: [
+                              { scale: stepIconScales.current[index] },
+                            ],
+                          },
+                        ]}>
                           <IconComponent 
                             size={16} 
                             color={shouldBeHighlighted ? themeColors.white : themeColors.textTertiary} 
@@ -881,7 +884,11 @@ export default function LoadingScreen({ isVisible, onCancel, onComplete, onProdu
       )}
     </View>
   );
-}
+});
+
+LoadingScreen.displayName = 'LoadingScreen';
+
+export default LoadingScreen;
 
 const styles = StyleSheet.create({
   loadingContainer: {
@@ -1144,6 +1151,10 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     fontStyle: 'normal',
     fontSize: 16,
+  },
+  stepIconContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
 });

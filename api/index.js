@@ -52,6 +52,20 @@ app.get('/debug', (c) => {
   });
 });
 
+// Test tRPC endpoint
+app.get('/test-trpc', (c) => {
+  console.log('Test tRPC endpoint called');
+  return c.json({
+    status: 'ok',
+    message: 'tRPC test endpoint working',
+    availableRoutes: {
+      'food.analyze': 'POST /api/trpc/food.analyze',
+      'example.hi': 'POST /api/trpc/example.hi'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Create a simple tRPC router for food analysis
 const { initTRPC } = require('@trpc/server');
 const { z } = require('zod');
@@ -61,6 +75,20 @@ const publicProcedure = t.procedure;
 const router = t.router;
 
 const appRouter = router({
+  example: router({
+    hi: publicProcedure
+      .input(z.object({
+        name: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        console.log('Example hi called with:', input);
+        return {
+          message: `Hello ${input.name || 'World'}!`,
+          timestamp: new Date().toISOString(),
+          usingRorkAPI: true
+        };
+      })
+  }),
   food: router({
     analyze: publicProcedure
       .input(z.object({
@@ -270,6 +298,16 @@ function compressBase64Image(base64Data, maxSizeKB = 500) {
 
 // Mount tRPC router at /trpc
 app.use(
+  '/trpc/*',
+  trpcServer({
+    endpoint: '/trpc',
+    router: appRouter,
+    createContext: () => ({}),
+  })
+);
+
+// Also mount at /api/trpc for compatibility
+app.use(
   '/api/trpc/*',
   trpcServer({
     endpoint: '/api/trpc',
@@ -297,7 +335,9 @@ module.exports = async (req, res) => {
       hasBody: !!req.body,
       bodyType: typeof req.body,
       contentType: req.headers['content-type'],
-      usingRorkAPI: true
+      usingRorkAPI: true,
+      host: req.headers.host,
+      userAgent: req.headers['user-agent']
     });
     
     // Create a proper Request object for Hono
@@ -339,8 +379,18 @@ module.exports = async (req, res) => {
     console.log('Hono response:', {
       status: response.status,
       statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
+      headers: Object.fromEntries(response.headers.entries()),
+      ok: response.ok
     });
+    
+    // If response is not ok and it's HTML, log the content for debugging
+    if (!response.ok) {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        const htmlContent = await response.clone().text();
+        console.error('HTML error response:', htmlContent.substring(0, 1000));
+      }
+    }
     
     // Set status
     res.status(response.status);
@@ -352,7 +402,13 @@ module.exports = async (req, res) => {
     
     // Send response
     const responseText = await response.text();
-    console.log('Sending response, length:', responseText.length);
+    console.log('Sending response, length:', responseText.length, 'status:', response.status);
+    
+    // For debugging, log first part of response if it's an error
+    if (!response.ok) {
+      console.log('Error response preview:', responseText.substring(0, 500));
+    }
+    
     res.send(responseText);
     
   } catch (error) {
