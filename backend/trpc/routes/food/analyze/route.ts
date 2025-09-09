@@ -276,10 +276,53 @@ If you cannot identify the food clearly, respond with:
         throw new Error(`API request failed: ${response.status} - ${errorText}`);
       }
 
-      const result = await response.json().catch((jsonError) => {
+      let result;
+      let responseText: string = '';
+      try {
+        responseText = await response.text();
+        console.log('Raw response text:', responseText.substring(0, 500));
+        result = JSON.parse(responseText);
+      } catch (jsonError) {
         console.error('Failed to parse JSON response:', jsonError);
-        throw new Error('Invalid JSON response from AI service');
-      });
+        console.error('Response that failed to parse:', responseText ? responseText.substring(0, 1000) : 'No response text available');
+        
+        // Return fallback analysis instead of throwing error
+        return {
+          success: true,
+          data: {
+            name: 'Food Item (AI Parse Error)',
+            calories: 150,
+            protein: 3,
+            carbs: 20,
+            fat: 5,
+            saturatedFat: 2,
+            fiber: 2,
+            sugar: 8,
+            sodium: 200,
+            servingSize: '1 serving',
+            healthScore: 45,
+            ingredients: ['Unable to parse AI response'],
+            allergens: [],
+            additives: [],
+            isOrganic: false,
+            grade: 'mediocre' as const,
+            recommendations: [
+              'AI response could not be parsed',
+              'This is a placeholder analysis',
+              'Please try again'
+            ],
+            warnings: ['Analysis unavailable - AI parsing error'],
+            reasons: ['AI response parsing issue'],
+            flags: ['ai_parse_error'],
+            scoreBreakdown: {
+              nutritionScore: 40,
+              additivesScore: 0,
+              organicScore: 0,
+              totalScore: 45
+            }
+          }
+        };
+      }
       console.log('Rork AI Analysis result received');
       
       // Parse the Rork AI response
