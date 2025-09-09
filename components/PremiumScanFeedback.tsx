@@ -1803,6 +1803,34 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           </Text>
                         </View>
                       )}
+                      
+                      {/* Overall Score Circle */}
+                      <View style={styles.overallScoreContainer}>
+                        <View style={styles.overallScoreCircleContainer}>
+                          <View style={[styles.overallScoreCircle, { 
+                            backgroundColor: colors.surface,
+                            shadowColor: getScoreColor(nutrition.personalScore ?? nutrition.healthScore),
+                            borderColor: getScoreColor(nutrition.personalScore ?? nutrition.healthScore) + '30'
+                          }]}>
+                            <View style={styles.overallScoreInner}>
+                              <Text style={[styles.overallScoreNumber, { 
+                                color: getScoreColor(nutrition.personalScore ?? nutrition.healthScore) 
+                              }]}>
+                                {nutrition.personalScore ?? nutrition.healthScore}
+                              </Text>
+                            </View>
+                            {/* Animated progress ring */}
+                            <View style={[
+                              styles.overallScoreRing,
+                              {
+                                borderColor: getScoreColor(nutrition.personalScore ?? nutrition.healthScore),
+                                transform: [{ rotate: '-90deg' }]
+                              }
+                            ]} />
+                          </View>
+                        </View>
+                        <Text style={[styles.overallScoreLabel, { color: colors.textPrimary }]}>Overall</Text>
+                      </View>
                     </View>
                   </View>
                 </View>
@@ -3193,6 +3221,65 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 0.5,
     color: Colors.retroSlateGray,
+  },
+  
+  // Overall Score Circle Styles
+  overallScoreContainer: {
+    alignItems: 'center',
+    marginTop: 32,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: Colors.retroSoftGray + '30',
+  },
+  
+  overallScoreCircleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  
+  overallScoreCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+    borderWidth: 2,
+    position: 'relative',
+  },
+  
+  overallScoreInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  overallScoreNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  
+  overallScoreRing: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderStyle: 'solid',
+    borderTopColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+  },
+  
+  overallScoreLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    color: Colors.retroCharcoalBlack,
   },
 
 });
