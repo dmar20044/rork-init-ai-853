@@ -59,7 +59,7 @@ interface PremiumScanFeedbackProps {
   onBack?: () => void;
 }
 
-const { height: screenHeight } = Dimensions.get('window');
+const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
 // Helper functions for personalization breakdown using actual nutritional data
 const getHealthGoalRating = (nutrition: NutritionInfo, goals: UserGoals): string => {
@@ -773,11 +773,9 @@ export default function PremiumScanFeedback({
         
         // Minimal resistance when trying to swipe beyond available tabs
         if (translationX > 0) {
-          // Light resistance when swiping right beyond first tab
-          translationX = dx * 0.6;
+          translationX = dx * 0.9;
         } else if (translationX < -screenWidth) {
-          // Light resistance when swiping left beyond last tab
-          translationX = -screenWidth + (dx + screenWidth) * 0.6;
+          translationX = -screenWidth + (dx + screenWidth) * 0.9;
         }
         
         tabTranslateX.setValue(translationX);
@@ -787,8 +785,8 @@ export default function PremiumScanFeedback({
         const screenWidth = Dimensions.get('window').width;
         
         // Ultra-sensitive thresholds for effortless swiping
-        const distanceThreshold = screenWidth * 0.05; // Just 5% of screen width
-        const velocityThreshold = 0.08; // Very low velocity threshold
+        const distanceThreshold = screenWidth * 0.02;
+        const velocityThreshold = 0.04
         
         // Determine if we should switch tabs based on distance OR velocity
         const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
@@ -821,8 +819,8 @@ export default function PremiumScanFeedback({
         // Animate to target position with ultra-smooth spring
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 150,
-          friction: 6,
+          tension: 90,
+          friction: 10,
           useNativeDriver: true,
         }).start();
       },
@@ -832,8 +830,8 @@ export default function PremiumScanFeedback({
         const targetTranslation = activeTab === 0 ? 0 : -screenWidth;
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 150,
-          friction: 6,
+          tension: 90,
+          friction: 10,
           useNativeDriver: true,
         }).start();
       },
@@ -1597,7 +1595,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 {...panResponder.panHandlers}
               >
                 {/* Tab 1: Product and Score Comparison */}
-                <View style={[styles.tabContent, { width: Dimensions.get('window').width - 32 }]}>
+                <View style={[styles.tabContent, { width: screenWidth }]}>
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     {/* Product Header */}
                     <View style={styles.productHeader}>
@@ -1701,8 +1699,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               setActiveTab(0);
                               Animated.spring(tabTranslateX, {
                                 toValue: 0,
-                                tension: 150,
-                                friction: 6,
+                                tension: 90,
+                                friction: 10,
                                 useNativeDriver: true,
                               }).start();
                             }
@@ -1722,8 +1720,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               const screenWidth = Dimensions.get('window').width;
                               Animated.spring(tabTranslateX, {
                                 toValue: -screenWidth,
-                                tension: 150,
-                                friction: 6,
+                                tension: 90,
+                                friction: 10,
                                 useNativeDriver: true,
                               }).start();
                             }
@@ -1736,7 +1734,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 </View>
                 
                 {/* Tab 2: Goal Rating Bars */}
-                <View style={[styles.tabContent, { width: Dimensions.get('window').width - 32 }]}>
+                <View style={[styles.tabContent, { width: screenWidth }]}>
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.cardHeader}>
                       <Target size={20} color={Colors.retroPink} />
@@ -3031,12 +3029,12 @@ const styles = StyleSheet.create({
   // Tab Content Styles
   tabContentContainer: {
     flexDirection: 'row',
-    marginHorizontal: 16,
+    marginHorizontal: 0,
     marginBottom: 16,
   },
   
   tabContent: {
-    marginRight: 16,
+    marginRight: 0,
   },
   
   tabPlaceholder: {
