@@ -8,6 +8,7 @@ import {
   Image,
   Animated,
   Dimensions,
+  PanResponder,
 } from 'react-native';
 import {
   Sparkles,
@@ -90,7 +91,57 @@ export default function PremiumScanFeedback({
   const cardScale = useRef(new Animated.Value(0.8)).current;
   const cardOpacity = useRef(new Animated.Value(0)).current;
   
+  // Sliding functionality state
+  const [currentView, setCurrentView] = useState<'score' | 'goals'>('score');
+  const slideAnimation = useRef(new Animated.Value(0)).current;
+  const { width: screenWidth } = Dimensions.get('window');
+  
   const loadingMessages = getLoadingMessages();
+  
+  // Pan responder for sliding between views
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only respond to horizontal gestures with minimal vertical movement
+        return Math.abs(gestureState.dx) > Math.abs(gestureState.dy) && Math.abs(gestureState.dx) > 10;
+      },
+      onPanResponderGrant: () => {
+        slideAnimation.setOffset((slideAnimation as any)._value);
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // Constrain movement to prevent over-sliding
+        const newValue = Math.max(-screenWidth, Math.min(0, gestureState.dx));
+        slideAnimation.setValue(newValue);
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        slideAnimation.flattenOffset();
+        
+        const threshold = screenWidth * 0.2; // 20% of screen width
+        const velocity = gestureState.vx;
+        
+        // Determine target based on gesture
+        let targetView: 'score' | 'goals';
+        if (Math.abs(velocity) > 0.5) {
+          // Fast swipe - use velocity direction
+          targetView = velocity < 0 ? 'goals' : 'score';
+        } else {
+          // Slow swipe - use distance threshold
+          targetView = gestureState.dx < -threshold ? 'goals' : 'score';
+        }
+        
+        // Animate to target position
+        const targetValue = targetView === 'score' ? 0 : -screenWidth;
+        Animated.spring(slideAnimation, {
+          toValue: targetValue,
+          useNativeDriver: true,
+          tension: 100,
+          friction: 8,
+        }).start();
+        
+        setCurrentView(targetView);
+      },
+    })
+  ).current;
 
   const normalized = useCallback((s: string) => s.toLowerCase().trim(), []);
   const alerts = useMemo(() => {
@@ -782,63 +833,153 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               </View>
             </View>
             
-            {/* Main Score Ring */}
-            <View style={styles.scoreSection}>
-              <View style={styles.scoreRingContainer}>
-                <View style={[styles.scoreRing, { shadowColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} testID="score-ring">
-                  <View style={styles.scoreRingInner}>
-                    <Text style={[styles.scoreNumber, { color: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]}>
-                      {showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore}
-                    </Text>
-                    <Text style={styles.scoreOutOf}>/100</Text>
-                  </View>
-                </View>
-                <View style={[styles.scoreRingProgress, { borderColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} />
-              </View>
-              
-              <Text style={styles.personalScoreSubtitle}>Personal Score</Text>
-
-              {alerts.length > 0 && (
-                <View style={styles.alertPill} testID="allergen-preference-pill">
-                  <AlertTriangle size={14} color={Colors.white} />
-                  <Text style={styles.alertPillText}>Contains items you avoid</Text>
-                </View>
-              )}
-              
-              {/* Score Comparison Row */}
-              {showPersonalized && nutrition.personalScore !== undefined && nutrition.personalScore !== nutrition.healthScore && (
-                <View style={styles.comparisonContainer}>
-                  <View style={styles.comparisonRow}>
-                    <View style={styles.baseScoreChip}>
-                      <Text style={styles.baseScoreLabel}>Base Score</Text>
-                      <Text style={styles.baseScoreValue}>{nutrition.healthScore}</Text>
+            {/* Sliding Views Container */}
+            <View style={styles.slidingContainer} {...panResponder.panHandlers}>
+              <Animated.View 
+                style={[
+                  styles.slidingContent,
+                  {
+                    transform: [{ translateX: slideAnimation }],
+                  },
+                ]}
+              >
+                {/* Score View */}
+                <View style={[styles.slideView, { width: screenWidth - 32 }]}>
+                  <View style={styles.scoreSection}>
+                    <View style={styles.scoreRingContainer}>
+                      <View style={[styles.scoreRing, { shadowColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} testID="score-ring">
+                        <View style={styles.scoreRingInner}>
+                          <Text style={[styles.scoreNumber, { color: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]}>
+                            {showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore}
+                          </Text>
+                          <Text style={styles.scoreOutOf}>/100</Text>
+                        </View>
+                      </View>
+                      <View style={[styles.scoreRingProgress, { borderColor: getScoreColor(showPersonalized && nutrition.personalScore !== undefined ? nutrition.personalScore : nutrition.healthScore) }]} />
                     </View>
                     
-                    <View style={styles.deltaContainer}>
-                      <View style={styles.deltaIconContainer}>
-                        {nutrition.personalScore > nutrition.healthScore ? (
-                          <TrendingUp size={16} color={Colors.success} />
-                        ) : (
-                          <TrendingDown size={16} color={Colors.error} />
+                    <Text style={styles.personalScoreSubtitle}>Personal Score</Text>
+
+                    {alerts.length > 0 && (
+                      <View style={styles.alertPill} testID="allergen-preference-pill">
+                        <AlertTriangle size={14} color={Colors.white} />
+                        <Text style={styles.alertPillText}>Contains items you avoid</Text>
+                      </View>
+                    )}
+                    
+                    {/* Score Comparison Row */}
+                    {showPersonalized && nutrition.personalScore !== undefined && nutrition.personalScore !== nutrition.healthScore && (
+                      <View style={styles.comparisonContainer}>
+                        <View style={styles.comparisonRow}>
+                          <View style={styles.baseScoreChip}>
+                            <Text style={styles.baseScoreLabel}>Base Score</Text>
+                            <Text style={styles.baseScoreValue}>{nutrition.healthScore}</Text>
+                          </View>
+                          
+                          <View style={styles.deltaContainer}>
+                            <View style={styles.deltaIconContainer}>
+                              {nutrition.personalScore > nutrition.healthScore ? (
+                                <TrendingUp size={16} color={Colors.success} />
+                              ) : (
+                                <TrendingDown size={16} color={Colors.error} />
+                              )}
+                              <Text style={[styles.deltaValue, {
+                                color: nutrition.personalScore > nutrition.healthScore ? Colors.success : Colors.error
+                              }]}>
+                                {nutrition.personalScore > nutrition.healthScore ? '+' : ''}{nutrition.personalScore - nutrition.healthScore}
+                              </Text>
+                            </View>
+                          </View>
+                          
+                          <View style={styles.personalScoreChip}>
+                            <Text style={styles.personalScoreLabel}>Your Score</Text>
+                            <Text style={styles.personalScoreValue}>{nutrition.personalScore}</Text>
+                          </View>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                
+                {/* Goals View */}
+                {showPersonalized && profile.goals && (
+                  <View style={[styles.slideView, { width: screenWidth - 32 }]}>
+                    <View style={styles.goalsSection}>
+                      <Text style={styles.goalsSectionTitle}>Life Goals</Text>
+                      
+                      {/* Goal Ratings */}
+                      <View style={styles.goalRatings}>
+                        {profile.goals.dietGoal && (
+                          <View style={styles.goalRating}>
+                            <Text style={styles.goalLabel}>Diet Goal</Text>
+                            <Text style={styles.goalValue}>{profile.goals.dietGoal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                            <View style={styles.goalScoreContainer}>
+                              <View style={[styles.goalScoreRing, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                <Text style={[styles.goalScoreText, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                  {Math.round((nutrition.personalScore || nutrition.healthScore) * 0.9)}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
                         )}
-                        <Text style={[styles.deltaValue, {
-                          color: nutrition.personalScore > nutrition.healthScore ? Colors.success : Colors.error
-                        }]}>
-                          {nutrition.personalScore > nutrition.healthScore ? '+' : ''}{nutrition.personalScore - nutrition.healthScore}
-                        </Text>
+                        
+                        {profile.goals.healthGoal && (
+                          <View style={styles.goalRating}>
+                            <Text style={styles.goalLabel}>Health Goal</Text>
+                            <Text style={styles.goalValue}>{profile.goals.healthGoal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                            <View style={styles.goalScoreContainer}>
+                              <View style={[styles.goalScoreRing, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                <Text style={[styles.goalScoreText, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                  {Math.round((nutrition.personalScore || nutrition.healthScore) * 0.85)}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        )}
+                        
+                        {profile.goals.bodyGoal && (
+                          <View style={styles.goalRating}>
+                            <Text style={styles.goalLabel}>Body Goal</Text>
+                            <Text style={styles.goalValue}>{profile.goals.bodyGoal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                            <View style={styles.goalScoreContainer}>
+                              <View style={[styles.goalScoreRing, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                <Text style={[styles.goalScoreText, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                  {Math.round((nutrition.personalScore || nutrition.healthScore) * 0.95)}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                      
+                      {/* Overall Score Circle */}
+                      <View style={styles.overallScoreContainer}>
+                        <Text style={styles.overallScoreLabel}>Overall</Text>
+                        <View style={styles.overallScoreRingContainer}>
+                          <View style={[styles.overallScoreRing, { shadowColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                            <View style={styles.overallScoreRingInner}>
+                              <Text style={[styles.overallScoreNumber, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                {nutrition.personalScore || nutrition.healthScore}
+                              </Text>
+                              <Text style={styles.overallScoreOutOf}>/100</Text>
+                            </View>
+                          </View>
+                          <View style={[styles.overallScoreRingProgress, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]} />
+                        </View>
                       </View>
                     </View>
-                    
-                    <View style={styles.personalScoreChip}>
-                      <Text style={styles.personalScoreLabel}>Your Score</Text>
-                      <Text style={styles.personalScoreValue}>{nutrition.personalScore}</Text>
-                    </View>
                   </View>
-                  
-
-                </View>
-              )}
+                )}
+              </Animated.View>
             </View>
+            
+            {/* Dots Indicator */}
+            {showPersonalized && profile.goals && (
+              <View style={styles.dotsContainer}>
+                <View style={[styles.dot, currentView === 'score' && styles.dotActive]} />
+                <View style={[styles.dot, currentView === 'goals' && styles.dotActive]} />
+              </View>
+            )}
             
             {/* Result Label */}
             <View style={styles.resultSection}>
@@ -913,51 +1054,62 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             </View>
           )}
 
-          {/* Macro Breakdown Section */}
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Zap size={20} color={Colors.primary} />
-              <Text style={styles.cardTitle}>Macro Breakdown</Text>
+          {/* Macro Breakdown Section - positioned based on current view */}
+          <Animated.View 
+            style={[
+              styles.macroBreakdownContainer,
+              {
+                transform: [{
+                  translateY: currentView === 'goals' ? 100 : 0
+                }]
+              }
+            ]}
+          >
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Zap size={20} color={Colors.primary} />
+                <Text style={styles.cardTitle}>Macro Breakdown</Text>
+              </View>
+              
+              <View style={styles.macroGrid}>
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroValue}>{nutrition.calories}</Text>
+                  <Text style={styles.macroLabel}>Calories</Text>
+                </View>
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroValue}>{nutrition.protein}g</Text>
+                  <Text style={styles.macroLabel}>Protein</Text>
+                </View>
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroValue}>{nutrition.carbs}g</Text>
+                  <Text style={styles.macroLabel}>Carbs</Text>
+                </View>
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroValue}>{nutrition.fat}g</Text>
+                  <Text style={styles.macroLabel}>Fat</Text>
+                </View>
+              </View>
+              
+              <View style={styles.macroSecondaryGrid}>
+                <View style={styles.macroSecondaryItem}>
+                  <Text style={styles.macroSecondaryValue}>{nutrition.fiber}g</Text>
+                  <Text style={styles.macroSecondaryLabel}>Fiber</Text>
+                </View>
+                <View style={styles.macroSecondaryItem}>
+                  <Text style={styles.macroSecondaryValue}>{nutrition.sugar}g</Text>
+                  <Text style={styles.macroSecondaryLabel}>Sugar</Text>
+                </View>
+                <View style={styles.macroSecondaryItem}>
+                  <Text style={styles.macroSecondaryValue}>{nutrition.saturatedFat}g</Text>
+                  <Text style={styles.macroSecondaryLabel}>Sat Fat</Text>
+                </View>
+                <View style={styles.macroSecondaryItem}>
+                  <Text style={styles.macroSecondaryValue}>{nutrition.sodium}mg</Text>
+                  <Text style={styles.macroSecondaryLabel}>Sodium</Text>
+                </View>
+              </View>
             </View>
-            
-            <View style={styles.macroGrid}>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{nutrition.calories}</Text>
-                <Text style={styles.macroLabel}>Calories</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{nutrition.protein}g</Text>
-                <Text style={styles.macroLabel}>Protein</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{nutrition.carbs}g</Text>
-                <Text style={styles.macroLabel}>Carbs</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={styles.macroValue}>{nutrition.fat}g</Text>
-                <Text style={styles.macroLabel}>Fat</Text>
-              </View>
-            </View>
-            
-            <View style={styles.macroSecondaryGrid}>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={styles.macroSecondaryValue}>{nutrition.fiber}g</Text>
-                <Text style={styles.macroSecondaryLabel}>Fiber</Text>
-              </View>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={styles.macroSecondaryValue}>{nutrition.sugar}g</Text>
-                <Text style={styles.macroSecondaryLabel}>Sugar</Text>
-              </View>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={styles.macroSecondaryValue}>{nutrition.saturatedFat}g</Text>
-                <Text style={styles.macroSecondaryLabel}>Sat Fat</Text>
-              </View>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={styles.macroSecondaryValue}>{nutrition.sodium}mg</Text>
-                <Text style={styles.macroSecondaryLabel}>Sodium</Text>
-              </View>
-            </View>
-          </View>
+          </Animated.View>
 
           {/* Ingredient Breakdown Section */}
           {nutrition.ingredients && nutrition.ingredients.length > 0 && (
@@ -1964,6 +2116,163 @@ const styles = StyleSheet.create({
     color: Colors.primary,
     textAlign: 'center',
     fontWeight: '500',
+  },
+  
+  // Sliding functionality styles
+  slidingContainer: {
+    height: 400,
+    overflow: 'hidden',
+  },
+  
+  slidingContent: {
+    flexDirection: 'row',
+    height: '100%',
+  },
+  
+  slideView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  goalsSection: {
+    alignItems: 'center',
+    width: '100%',
+  },
+  
+  goalsSectionTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    marginBottom: 24,
+  },
+  
+  goalRatings: {
+    width: '100%',
+    gap: 16,
+    marginBottom: 32,
+  },
+  
+  goalRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.gray50,
+    borderRadius: 12,
+    padding: 16,
+  },
+  
+  goalLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  
+  goalValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: Colors.textPrimary,
+    flex: 1,
+    marginLeft: 12,
+  },
+  
+  goalScoreContainer: {
+    alignItems: 'center',
+  },
+  
+  goalScoreRing: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.white,
+  },
+  
+  goalScoreText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  overallScoreContainer: {
+    alignItems: 'center',
+  },
+  
+  overallScoreLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: 12,
+  },
+  
+  overallScoreRingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  overallScoreRing: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  
+  overallScoreRingInner: {
+    alignItems: 'center',
+  },
+  
+  overallScoreNumber: {
+    fontSize: 28,
+    fontWeight: 'bold',
+  },
+  
+  overallScoreOutOf: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: -2,
+  },
+  
+  overallScoreRingProgress: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 4,
+    borderStyle: 'solid',
+  },
+  
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 16,
+  },
+  
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.gray300,
+  },
+  
+  dotActive: {
+    backgroundColor: Colors.primary,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  
+  macroBreakdownContainer: {
+    // Container for animated macro breakdown positioning
   },
 
 });
