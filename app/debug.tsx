@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// import { trpcClient } from '@/lib/trpc';
+import { trpcClient } from '@/lib/trpc';
 import { Stack } from 'expo-router';
 
 export default function DebugScreen() {
@@ -53,7 +53,7 @@ export default function DebugScreen() {
 
       // Test debug endpoint
       try {
-        const debugResponse = await fetch(`${baseUrl}/debug`);
+        const debugResponse = await fetch(`${baseUrl}/api/debug`);
         const debugData = await debugResponse.json();
         addResult('Debug Endpoint Test', { status: debugResponse.status, data: debugData });
       } catch (error) {
@@ -63,37 +63,28 @@ export default function DebugScreen() {
         });
       }
 
-      // Test food analysis endpoint with a simple base64 image
+      // Test tRPC basic endpoint
+      try {
+        const hiResult = await trpcClient.example.hi.mutate({ name: 'Debug Test' });
+        addResult('tRPC Basic Test', hiResult);
+      } catch (error) {
+        addResult('tRPC Basic Test', null, { 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+        });
+      }
+
+      // Test tRPC food analysis endpoint
       try {
         // Simple 1x1 pixel red image in base64
         const testImage = '/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/2wBDAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQH/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwA/wA==';
         
-        const response = await fetch(`${baseUrl}/api/analyze-food`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            base64Image: testImage,
-            userGoals: {
-              healthGoal: 'general-health'
-            }
-          }),
+        const analysisResult = await trpcClient.food.analyze.mutate({
+          base64Image: testImage
         });
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          addResult('Food Analysis Test', null, {
-            status: response.status,
-            error: errorText,
-            headers: Object.fromEntries(response.headers.entries())
-          });
-        } else {
-          const analysisResult = await response.json();
-          addResult('Food Analysis Test', analysisResult);
-        }
+        addResult('tRPC Food Analysis Test', analysisResult);
       } catch (error) {
-        addResult('Food Analysis Test', null, { 
+        addResult('tRPC Food Analysis Test', null, { 
           message: error instanceof Error ? error.message : 'Unknown error',
           type: error instanceof TypeError ? 'Network Error' : 'Other Error'
         });

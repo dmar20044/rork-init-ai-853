@@ -244,12 +244,12 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
         };
       }
       
-      // Check if it's a JSON parsing error
-      if (trpcError instanceof Error && trpcError.message.includes('JSON Parse error')) {
-        console.error('Backend returned non-JSON response, likely HTML error page');
+      // Check if it's a JSON parsing error or HTML response
+      if (trpcError instanceof Error && (trpcError.message.includes('JSON Parse error') || trpcError.message.includes('HTML instead of JSON'))) {
+        console.error('Backend returned non-JSON response, likely HTML error page or server error');
         return {
           success: false,
-          error: 'Failed to process server response. Please try again.'
+          error: 'Server is experiencing issues. Please try again in a few moments.'
         };
       }
       
