@@ -24,11 +24,15 @@ export interface UserProfile {
   goals: UserGoals;
   hasCompletedQuiz: boolean;
   dietaryRestrictions?: string[];
+  heightCm?: number | null;
+  weightKg?: number | null;
+  sex?: 'male' | 'female' | 'other' | null;
+  activityLevel?: 'inactive' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active' | null;
 
   currentStreak: number;
   longestStreak: number;
-  lastScanDate: string | null; // ISO date string of last scan
-  scanDates: string[]; // Array of ISO date strings when user scanned
+  lastScanDate: string | null;
+  scanDates: string[];
 }
 
 export interface AuthState {
@@ -51,6 +55,10 @@ const defaultProfile: UserProfile = {
   },
   hasCompletedQuiz: false,
   dietaryRestrictions: [],
+  heightCm: null,
+  weightKg: null,
+  sex: null,
+  activityLevel: null,
 
   currentStreak: 0,
   longestStreak: 0,
@@ -177,6 +185,8 @@ export const [UserProvider, useUser] = createContextHook(() => {
               name: supabaseProfile.name
             });
             
+            const dietaryPrefs = supabaseProfile.dietary_preferences || [];
+            const biometricsPref = Array.isArray(dietaryPrefs) ? null : (dietaryPrefs?.biometrics ?? null);
             const profileFromSupabase: UserProfile = {
               name: supabaseProfile.name,
               email: supabaseProfile.email || user.email || '',
@@ -192,6 +202,10 @@ export const [UserProvider, useUser] = createContextHook(() => {
               },
               hasCompletedQuiz: supabaseProfile.has_completed_quiz,
               dietaryRestrictions: supabaseProfile.dietary_restrictions || [],
+              heightCm: (supabaseProfile as any).height_cm ?? biometricsPref?.height_cm ?? null,
+              weightKg: (supabaseProfile as any).weight_kg ?? biometricsPref?.weight_kg ?? null,
+              sex: (supabaseProfile as any).sex ?? biometricsPref?.sex ?? null,
+              activityLevel: biometricsPref?.activity_level ?? null,
               currentStreak: supabaseProfile.current_streak || 0,
               longestStreak: supabaseProfile.longest_streak || 0,
               lastScanDate: supabaseProfile.last_scan_date || null,
@@ -224,17 +238,16 @@ export const [UserProvider, useUser] = createContextHook(() => {
             ...defaultProfile.goals,
             ...(parsedProfile.goals || {})
           },
-
-          // Ensure streak fields exist for older profiles
           currentStreak: parsedProfile.currentStreak ?? 0,
           longestStreak: parsedProfile.longestStreak ?? 0,
           lastScanDate: parsedProfile.lastScanDate ?? null,
           scanDates: parsedProfile.scanDates ?? [],
-          // Ensure profile picture field exists for older profiles
           profilePictureUri: parsedProfile.profilePictureUri ?? null,
-          // Ensure dietary restrictions exists for older profiles
           dietaryRestrictions: parsedProfile.dietaryRestrictions ?? [],
-          // Update email from auth if available
+          heightCm: parsedProfile.heightCm ?? null,
+          weightKg: parsedProfile.weightKg ?? null,
+          sex: parsedProfile.sex ?? null,
+          activityLevel: parsedProfile.activityLevel ?? null,
           email: user?.email || parsedProfile.email || '',
         };
         setProfile(validProfile);
@@ -315,6 +328,20 @@ export const [UserProvider, useUser] = createContextHook(() => {
         }
         
         if (Object.keys(supabaseUpdates).length > 0) {
+          const currentPrefs: any = (profile as any).dietaryPreferences || (profile as any).dietary_preferences || {};
+          const nextPrefs = {
+            ...(Array.isArray(currentPrefs) ? {} : currentPrefs),
+            biometrics: {
+              height_cm: updates.heightCm ?? profile.heightCm ?? null,
+              weight_kg: updates.weightKg ?? profile.weightKg ?? null,
+              sex: updates.sex ?? profile.sex ?? null,
+              activity_level: updates.activityLevel ?? profile.activityLevel ?? null,
+            },
+          };
+          if (updates.heightCm !== undefined) supabaseUpdates.height_cm = updates.heightCm;
+          if (updates.weightKg !== undefined) supabaseUpdates.weight_kg = updates.weightKg;
+          if (updates.sex !== undefined) supabaseUpdates.sex = updates.sex;
+          if (updates.activityLevel !== undefined) supabaseUpdates.dietary_preferences = nextPrefs;
           await updateUserProfile(authState.user.id, supabaseUpdates);
           console.log('[UserContext] Profile updates synced to Supabase successfully');
         }

@@ -46,6 +46,19 @@ export default function GoalsScreen() {
   const [allergensModalVisible, setAllergensModalVisible] = useState(false);
   const [newAllergen, setNewAllergen] = useState('');
 
+  // Biometrics local state
+  const [heightCm, setHeightCm] = useState<string>(profile.heightCm !== null && profile.heightCm !== undefined ? String(profile.heightCm) : '');
+  const [weightKg, setWeightKg] = useState<string>(profile.weightKg !== null && profile.weightKg !== undefined ? String(profile.weightKg) : '');
+  const [sex, setSex] = useState<'male' | 'female' | 'other' | null>(profile.sex ?? null);
+  const [activityLevel, setActivityLevel] = useState<'inactive' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active' | null>(profile.activityLevel ?? null);
+
+  useEffect(() => {
+    setHeightCm(profile.heightCm !== null && profile.heightCm !== undefined ? String(profile.heightCm) : '');
+    setWeightKg(profile.weightKg !== null && profile.weightKg !== undefined ? String(profile.weightKg) : '');
+    setSex(profile.sex ?? null);
+    setActivityLevel(profile.activityLevel ?? null);
+  }, [profile.heightCm, profile.weightKg, profile.sex, profile.activityLevel]);
+
   
   // Animation values
   const flameAnim = useRef(new Animated.Value(1)).current;
@@ -1058,7 +1071,7 @@ export default function GoalsScreen() {
             
             {/* Input Fields */}
             <View style={styles.inputSection}>
-              <View style={styles.inputField}>
+              <View style={styles.inputField} testID="nameField">
                 <View style={styles.inputIconContainer}>
                   <User size={20} color={colors.textSecondary} />
                 </View>
@@ -1070,6 +1083,7 @@ export default function GoalsScreen() {
                     placeholder="Enter your name"
                     placeholderTextColor={colors.textSecondary}
                     autoFocus
+                    returnKeyType="done"
                     onSubmitEditing={async () => {
                       if (tempName.trim()) {
                         await updateProfile({ name: tempName.trim() });
@@ -1100,7 +1114,7 @@ export default function GoalsScreen() {
                 )}
               </View>
               
-              <View style={styles.inputField}>
+              <View style={styles.inputField} testID="emailField">
                 <View style={styles.inputIconContainer}>
                   <Text style={styles.inputIcon}>✉️</Text>
                 </View>
@@ -1109,6 +1123,107 @@ export default function GoalsScreen() {
                     {profile.email || 'Email not set'}
                   </Text>
                 </View>
+              </View>
+
+              {/* Biometrics & Activity */}
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionHeaderTitle}>Biometrics & Activity</Text>
+              </View>
+
+              <View style={styles.inputField} testID="heightField">
+                <View style={styles.inputIconContainer}>
+                  <Text style={styles.inputIcon}>📏</Text>
+                </View>
+                <TextInput
+                  style={styles.textInput}
+                  keyboardType="numeric"
+                  placeholder="Height (cm)"
+                  placeholderTextColor={colors.textSecondary}
+                  value={heightCm}
+                  onChangeText={setHeightCm}
+                  onBlur={async () => {
+                    const v = heightCm.trim();
+                    const num = v ? Number(v) : null;
+                    if (v && isNaN(Number(v))) {
+                      Alert.alert('Invalid height', 'Please enter a valid number in cm.');
+                      return;
+                    }
+                    await updateProfile({ heightCm: num });
+                  }}
+                />
+              </View>
+
+              <View style={styles.inputField} testID="weightField">
+                <View style={styles.inputIconContainer}>
+                  <Text style={styles.inputIcon}>⚖️</Text>
+                </View>
+                <TextInput
+                  style={styles.textInput}
+                  keyboardType="numeric"
+                  placeholder="Weight (kg)"
+                  placeholderTextColor={colors.textSecondary}
+                  value={weightKg}
+                  onChangeText={setWeightKg}
+                  onBlur={async () => {
+                    const v = weightKg.trim();
+                    const num = v ? Number(v) : null;
+                    if (v && isNaN(Number(v))) {
+                      Alert.alert('Invalid weight', 'Please enter a valid number in kg.');
+                      return;
+                    }
+                    await updateProfile({ weightKg: num });
+                  }}
+                />
+              </View>
+
+              <View style={styles.chipsRow} testID="sexChips">
+                {(['male','female','other'] as const).map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    style={[styles.chip, sex === s && styles.chipActive]}
+                    onPress={async () => {
+                      setSex(s);
+                      await updateProfile({ sex: s });
+                      if (Platform.OS !== 'web') {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[styles.chipText, sex === s && styles.chipTextActive]}>{s.charAt(0).toUpperCase() + s.slice(1)}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionHeaderTitle}>Activity Level</Text>
+              </View>
+              <View style={styles.activityList} testID="activityLevelOptions">
+                {([
+                  { key: 'inactive', label: 'Inactive' },
+                  { key: 'lightly-active', label: 'Lightly Active' },
+                  { key: 'moderately-active', label: 'Moderately Active' },
+                  { key: 'very-active', label: 'Very Active' },
+                  { key: 'extra-active', label: 'Extra Active' },
+                ] as const).map((opt) => (
+                  <TouchableOpacity
+                    key={opt.key}
+                    style={[styles.activityItem, activityLevel === opt.key && styles.activityItemActive]}
+                    onPress={async () => {
+                      setActivityLevel(opt.key);
+                      await updateProfile({ activityLevel: opt.key });
+                      if (Platform.OS !== 'web') {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      }
+                    }}
+                    activeOpacity={0.85}
+                  >
+                    <View style={[styles.radioOuter, activityLevel === opt.key && styles.radioOuterActive]}>
+                      {activityLevel === opt.key && <View style={styles.radioInner} />}
+                    </View>
+                    <Text style={[styles.activityLabel, activityLevel === opt.key && styles.activityLabelActive]}>{opt.label}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
             
@@ -1119,24 +1234,36 @@ export default function GoalsScreen() {
             </View>
             
             {/* Action Buttons */}
-            {editingName && (
-              <View style={styles.actionButtons}>
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={async () => {
-                    if (tempName.trim()) {
-                      await updateProfile({ name: tempName.trim() });
-                      setEditingName(false);
-                      if (Platform.OS !== 'web') {
-                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                      }
-                    } else {
-                      Alert.alert('Error', 'Name cannot be empty');
-                    }
-                  }}
-                >
-                  <Text style={styles.saveButtonText}>Save Changes</Text>
-                </TouchableOpacity>
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={styles.saveButton}
+                testID="saveBiometricsButton"
+                onPress={async () => {
+                  const h = heightCm.trim();
+                  const w = weightKg.trim();
+                  const heightNum = h ? Number(h) : null;
+                  const weightNum = w ? Number(w) : null;
+                  if ((h && isNaN(Number(h))) || (w && isNaN(Number(w)))) {
+                    Alert.alert('Invalid values', 'Please enter valid numbers for height and weight.');
+                    return;
+                  }
+                  await updateProfile({
+                    name: editingName && tempName.trim() ? tempName.trim() : profile.name,
+                    heightCm: heightNum,
+                    weightKg: weightNum,
+                    sex: sex ?? null,
+                    activityLevel: activityLevel ?? null,
+                  });
+                  setEditingName(false);
+                  if (Platform.OS !== 'web') {
+                    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  }
+                  Alert.alert('Saved', 'Your details were updated.');
+                }}
+              >
+                <Text style={styles.saveButtonText}>Save Changes</Text>
+              </TouchableOpacity>
+              {editingName && (
                 <TouchableOpacity
                   style={styles.cancelActionButton}
                   onPress={() => {
@@ -1146,8 +1273,8 @@ export default function GoalsScreen() {
                 >
                   <Text style={styles.cancelActionButtonText}>Cancel</Text>
                 </TouchableOpacity>
-              </View>
-            )}
+              )}
+            </View>
           </ScrollView>
         </SafeAreaView>
       </Modal>
@@ -2537,6 +2664,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     textAlign: 'center',
   },
   
+  sectionHeaderRow: {
+    marginTop: 8,
+    marginBottom: 6,
+    paddingHorizontal: 6,
+  },
+  sectionHeaderTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+
   // Input Section
   inputSection: {
     paddingHorizontal: 20,
@@ -2581,6 +2719,78 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     color: colors.textPrimary,
     fontWeight: '500',
+  },
+
+  chipsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: colors.backgroundTertiary,
+    borderWidth: 1,
+    borderColor: colors.textTertiary + '30',
+  },
+  chipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  chipText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '600',
+  },
+  chipTextActive: {
+    color: colors.white,
+  },
+
+  activityList: {
+    marginTop: 8,
+    gap: 10,
+  },
+  activityItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: colors.textTertiary + '30',
+  },
+  activityItemActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
+  },
+  radioOuter: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: colors.textTertiary,
+    marginRight: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioOuterActive: {
+    borderColor: colors.primary,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.primary,
+  },
+  activityLabel: {
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontWeight: '600',
+  },
+  activityLabelActive: {
+    color: colors.primary,
   },
   placeholderText: {
     color: colors.textSecondary,
