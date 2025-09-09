@@ -3134,8 +3134,8 @@ const styles = StyleSheet.create({
   // Tab Indicator Styles
   tabIndicatorContainer: {
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 8,
+    marginTop: 8,
+    marginBottom: 0,
   },
   
   tabIndicators: {
@@ -3153,7 +3153,7 @@ const styles = StyleSheet.create({
   tabContentContainer: {
     flexDirection: 'row',
     marginHorizontal: 0,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   
   tabContent: {
@@ -3295,6 +3295,7 @@ const styles = StyleSheet.create({
   swipeableContainer: {
     position: 'relative',
     overflow: 'hidden',
+    marginBottom: 0,
   },
   
   swipeIndicator: {
