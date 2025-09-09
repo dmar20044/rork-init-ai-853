@@ -35,7 +35,7 @@ import {
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useTheme } from '@/contexts/ThemeContext';
-import { NutritionInfo } from '@/services/foodAnalysis';
+import { NutritionInfo, personalScore } from '@/services/foodAnalysis';
 import ParticleEffects from './ParticleEffects';
 import BetterSwapsModal from './BetterSwapsModal';
 
@@ -738,6 +738,7 @@ export default function PremiumScanFeedback({
   const forYouSectionHeight = useRef(new Animated.Value(0)).current;
   const [allergenWarnings, setAllergenWarnings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [categoryScores, setCategoryScores] = useState<{ health?: number; diet?: number; body?: number; life?: number }>({});
   const tabTranslateX = useRef(new Animated.Value(0)).current;
   
   const slideUpValue = useRef(new Animated.Value(screenHeight)).current;
@@ -970,6 +971,35 @@ export default function PremiumScanFeedback({
       ]).start();
     }
   }, [isLoading, nutrition, slideUpValue, cardScale, cardOpacity]);
+  
+  useEffect(() => {
+    if (!nutrition || !profile?.goals) return;
+    try {
+      console.log('Computing category scores from personalized engine');
+      const neutralGoals = {
+        healthGoal: 'balanced' as const,
+        dietGoal: 'balanced' as const,
+        bodyGoal: 'maintain-weight' as const,
+        lifeGoal: 'eat-healthier' as const,
+        healthStrictness: 'neutral' as const,
+        dietStrictness: 'neutral' as const,
+        lifeStrictness: 'neutral' as const,
+      };
+      const healthGoals = { ...neutralGoals, healthGoal: profile.goals.healthGoal ?? 'balanced', healthStrictness: profile.goals.healthStrictness ?? 'neutral' };
+      const dietGoals = { ...neutralGoals, dietGoal: profile.goals.dietGoal ?? 'balanced', dietStrictness: profile.goals.dietStrictness ?? 'neutral' };
+      const bodyGoals = { ...neutralGoals, bodyGoal: profile.goals.bodyGoal ?? 'maintain-weight' };
+      const lifeGoals = { ...neutralGoals, lifeGoal: profile.goals.lifeGoal ?? 'eat-healthier', lifeStrictness: profile.goals.lifeStrictness ?? 'neutral' };
+      const h = Math.round(personalScore(nutrition, healthGoals as any).score * 2) / 2;
+      const d = Math.round(personalScore(nutrition, dietGoals as any).score * 2) / 2;
+      const b = Math.round(personalScore(nutrition, bodyGoals as any).score * 2) / 2;
+      const l = Math.round(personalScore(nutrition, lifeGoals as any).score * 2) / 2;
+      console.log('Category scores computed:', { h, d, b, l });
+      setCategoryScores({ health: h, diet: d, body: b, life: l });
+    } catch (e) {
+      console.error('Failed computing category scores', e);
+      setCategoryScores({});
+    }
+  }, [nutrition, profile?.goals]);
   
   const getScoreColor = (score: number) => {
     if (score >= 86) return Colors.scoreExcellent; // Bright green for excellent (86-100)
@@ -1719,8 +1749,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         <View style={styles.goalRatingItem}>
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Health Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getHealthGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(nutrition, profile.goals, 'health')}
+                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.health ?? 0) }]}>
+
+                              {categoryScores.health ?? 0}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1728,8 +1759,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'health')}%`,
-                                  backgroundColor: getHealthGoalRatingColor(nutrition, profile.goals),
+                                  width: `${categoryScores.health ?? 0}%`,
+                                  backgroundColor: getScoreColor(categoryScores.health ?? 0),
                                 }
                               ]}
                             />
@@ -1745,8 +1776,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         <View style={styles.goalRatingItem}>
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Diet Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getDietGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(nutrition, profile.goals, 'diet')}
+                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.diet ?? 0) }]}>
+
+                              {categoryScores.diet ?? 0}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1754,8 +1786,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'diet')}%`,
-                                  backgroundColor: getDietGoalRatingColor(nutrition, profile.goals),
+                                  width: `${categoryScores.diet ?? 0}%`,
+                                  backgroundColor: getScoreColor(categoryScores.diet ?? 0),
                                 }
                               ]}
                             />
@@ -1771,8 +1803,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         <View style={styles.goalRatingItem}>
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Body Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getBodyGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(nutrition, profile.goals, 'body')}
+                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.body ?? 0) }]}>
+
+                              {categoryScores.body ?? 0}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1780,8 +1813,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'body')}%`,
-                                  backgroundColor: getBodyGoalRatingColor(nutrition, profile.goals),
+                                  width: `${categoryScores.body ?? 0}%`,
+                                  backgroundColor: getScoreColor(categoryScores.body ?? 0),
                                 }
                               ]}
                             />
@@ -1797,8 +1830,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         <View style={styles.goalRatingItem}>
                           <View style={styles.goalRatingHeader}>
                             <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Life Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getLifeGoalRatingColor(nutrition, profile.goals) }]}>
-                              {getGoalRatingScore(nutrition, profile.goals, 'life')}
+                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.life ?? 0) }]}>
+
+                              {categoryScores.life ?? 0}
                             </Text>
                           </View>
                           <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
@@ -1806,8 +1840,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               style={[
                                 styles.goalRatingBar,
                                 {
-                                  width: `${getGoalRatingScore(nutrition, profile.goals, 'life')}%`,
-                                  backgroundColor: getLifeGoalRatingColor(nutrition, profile.goals),
+                                  width: `${categoryScores.life ?? 0}%`,
+                                  backgroundColor: getScoreColor(categoryScores.life ?? 0),
                                 }
                               ]}
                             />
