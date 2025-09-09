@@ -2257,7 +2257,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 {
                   maxHeight: forYouSectionHeight.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 300], // Increased max height to prevent cutoff
+                    outputRange: [0, 420],
                   }),
                   opacity: forYouSectionHeight.interpolate({
                     inputRange: [0, 0.5, 1],
@@ -2285,6 +2285,66 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <Text style={[styles.vibeCheckTitle, { color: colors.textPrimary }]}>Personalized Insights</Text>
                         </View>
                         <Text style={[styles.vibeCheckText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
+                        <View style={styles.inlineActions}>
+                          <TouchableOpacity
+                            testID="for-you-add-to-grocery"
+                            style={[styles.inlineActionButton, { borderColor: Colors.retroNeonTurquoise }]}
+                            onPress={async () => {
+                              if (Platform.OS !== 'web') {
+                                await Haptics.selectionAsync();
+                              }
+                              try {
+                                const productDetails = {
+                                  imageUri: nutrition.imageUrl || imageUri,
+                                  healthScore: nutrition.healthScore,
+                                  personalScore: nutrition.personalScore,
+                                  calories: nutrition.calories,
+                                  protein: nutrition.protein,
+                                };
+                                await addItem(nutrition.name, productDetails);
+                                console.log('Added to grocery list from For You:', nutrition.name);
+                              } catch (error) {
+                                console.error('Error adding to grocery list:', error);
+                              }
+                            }}
+                            activeOpacity={0.8}
+                          >
+                            <ShoppingCart size={16} color={Colors.retroNeonTurquoise} />
+                            <Text style={[styles.inlineActionText, { color: Colors.retroNeonTurquoise }]}>Add to list</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            testID="for-you-better-bites"
+                            style={[styles.inlineActionButtonFilled, { backgroundColor: Colors.retroNeonTurquoise }]}
+                            onPress={async () => {
+                              if (Platform.OS !== 'web') {
+                                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              }
+                              setShowBetterSwapsModal(true);
+                            }}
+                            activeOpacity={0.8}
+                          >
+                            <Text style={[styles.inlineActionTextFilled, { color: colors.white }]}>Better Bites</Text>
+                            <ArrowRight size={16} color={colors.white} />
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            testID="for-you-saved"
+                            style={[styles.inlineActionButton, { borderColor: Colors.success }]}
+                            onPress={onSaveToHistory}
+                            activeOpacity={0.8}
+                          >
+                            <CheckCircle size={16} color={Colors.success} />
+                            <Text style={[styles.inlineActionText, { color: Colors.success }]}>Saved</Text>
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            testID="for-you-scan-another"
+                            style={[styles.inlineActionButton, { borderColor: Colors.retroPink }]}
+                            onPress={onScanAnother}
+                            activeOpacity={0.8}
+                          >
+                            <Sparkles size={16} color={Colors.retroPink} />
+                            <Text style={[styles.inlineActionText, { color: Colors.retroPink }]}>Scan another</Text>
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
                   </ScrollView>
@@ -2523,9 +2583,9 @@ const styles = StyleSheet.create({
   // Hero Card Styles
   heroCard: {
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     backgroundColor: Colors.retroCreamWhite,
     shadowColor: Colors.retroSoftGray,
     shadowOffset: { width: 0, height: 4 },
@@ -2742,9 +2802,9 @@ const styles = StyleSheet.create({
   // Card Styles
   card: {
     marginHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     backgroundColor: Colors.retroCreamWhite,
     shadowColor: Colors.retroSoftGray,
     shadowOffset: { width: 0, height: 4 },
@@ -3025,6 +3085,37 @@ const styles = StyleSheet.create({
     color: Colors.retroSlateGray,
   },
   
+  inlineActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 4,
+  },
+  inlineActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  inlineActionButtonFilled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    gap: 6,
+  },
+  inlineActionText: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  inlineActionTextFilled: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
   // For You Analysis Styles
   loadingAnalysis: {
     padding: 16,
@@ -3042,9 +3133,9 @@ const styles = StyleSheet.create({
   },
   
   analysisContent: {
-    padding: 20,
-    paddingTop: 16,
-    paddingBottom: 24,
+    padding: 12,
+    paddingTop: 8,
+    paddingBottom: 12,
   },
   
   vibeCheckContainer: {
@@ -3053,7 +3144,7 @@ const styles = StyleSheet.create({
   
   vibeCheckCard: {
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     shadowColor: Colors.retroPink,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -3066,8 +3157,8 @@ const styles = StyleSheet.create({
   vibeCheckHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
+    marginBottom: 8,
+    gap: 8,
   },
   
   vibeCheckIcon: {
@@ -3085,12 +3176,13 @@ const styles = StyleSheet.create({
   },
   
   vibeCheckText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 20,
     fontWeight: '400',
     letterSpacing: 0.1,
     textAlign: 'left',
     color: Colors.retroCharcoalBlack,
+    marginBottom: 8,
   },
   
   // Inline Macro containers (no gaps)
