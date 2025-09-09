@@ -756,10 +756,20 @@ export default function PremiumScanFeedback({
   // Pan responder for swipe gestures
   const panResponder = useRef(
     PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
       onMoveShouldSetPanResponder: (_evt, gestureState) => {
         const { dx, dy } = gestureState;
-        return Math.abs(dx) > 0.5 && Math.abs(dx) > Math.abs(dy) * 0.2;
+        const adx = Math.abs(dx);
+        const ady = Math.abs(dy);
+        return adx > 8 && adx > ady * 1.5 && ady < 14;
       },
+      onMoveShouldSetPanResponderCapture: (_evt, gestureState) => {
+        const { dx, dy } = gestureState;
+        const adx = Math.abs(dx);
+        const ady = Math.abs(dy);
+        return adx > 8 && adx > ady * 1.5 && ady < 14;
+      },
+      onPanResponderTerminationRequest: () => false,
       onPanResponderGrant: () => {
         tabTranslateX.stopAnimation();
         if (Platform.OS !== 'web') {
@@ -767,7 +777,12 @@ export default function PremiumScanFeedback({
         }
       },
       onPanResponderMove: (_evt, gestureState) => {
-        const { dx } = gestureState;
+        const { dx, dy } = gestureState;
+        const adx = Math.abs(dx);
+        const ady = Math.abs(dy);
+        if (ady > adx || ady > 20) {
+          return;
+        }
         const width = Dimensions.get('window').width;
         const baseTranslation = activeTabRef.current === 0 ? 0 : -width;
         let translationX = baseTranslation + dx;
