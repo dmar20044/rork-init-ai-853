@@ -1767,7 +1767,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         {
                           maxHeight: ingredientSectionHeight.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [0, 400],
+                            outputRange: [0, 800],
                           }),
                           opacity: ingredientSectionHeight.interpolate({
                             inputRange: [0, 0.5, 1],
@@ -1785,6 +1785,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                             contentContainerStyle={styles.ingredientsContent}
                             showsVerticalScrollIndicator={true}
                             nestedScrollEnabled={true}
+                            scrollEnabled={true}
                           >
                             {ingredientAnalysis.length > 0 ? (
                               ingredientAnalysis.map((analysis, index) => {
@@ -2124,7 +2125,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 {
                   maxHeight: ingredientSectionHeight.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 400],
+                    outputRange: [0, 800],
                   }),
                   opacity: ingredientSectionHeight.interpolate({
                     inputRange: [0, 0.5, 1],
@@ -2142,6 +2143,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     contentContainerStyle={styles.ingredientsContent}
                     showsVerticalScrollIndicator={true}
                     nestedScrollEnabled={true}
+                    scrollEnabled={true}
                   >
                     {ingredientAnalysis.length > 0 ? (
                       ingredientAnalysis.map((analysis, index) => {
@@ -2979,7 +2981,8 @@ const styles = StyleSheet.create({
   },
   
   ingredientsScrollView: {
-    maxHeight: 400,
+    maxHeight: 800,
+    flex: 1,
   },
   
   ingredientsContent: {
