@@ -18,6 +18,9 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     -- New: store lists like allergies (peanuts) and preferences (no seed oils)
     dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
     dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+    height_cm DECIMAL(5,1),
+    weight_kg DECIMAL(5,1),
+    sex TEXT CHECK (sex IN ('male', 'female', 'other')),
     motivation TEXT,
     referral_source TEXT,
     has_completed_quiz BOOLEAN DEFAULT FALSE,
@@ -42,6 +45,9 @@ CREATE TABLE IF NOT EXISTS public.quiz_responses (
     -- New: capture responses at submission time
     dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
     dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+    height_cm DECIMAL(5,1),
+    weight_kg DECIMAL(5,1),
+    sex TEXT CHECK (sex IN ('male', 'female', 'other')),
     motivation TEXT NOT NULL,
     referral_source TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -53,11 +59,17 @@ ALTER TABLE public.user_profiles
   ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS health_strictness TEXT DEFAULT 'neutral',
   ADD COLUMN IF NOT EXISTS diet_strictness TEXT DEFAULT 'neutral',
-  ADD COLUMN IF NOT EXISTS life_strictness TEXT DEFAULT 'neutral';
+  ADD COLUMN IF NOT EXISTS life_strictness TEXT DEFAULT 'neutral',
+  ADD COLUMN IF NOT EXISTS height_cm DECIMAL(5,1),
+  ADD COLUMN IF NOT EXISTS weight_kg DECIMAL(5,1),
+  ADD COLUMN IF NOT EXISTS sex TEXT CHECK (sex IN ('male', 'female', 'other'));
 
 ALTER TABLE public.quiz_responses
   ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb;
+  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS height_cm DECIMAL(5,1),
+  ADD COLUMN IF NOT EXISTS weight_kg DECIMAL(5,1),
+  ADD COLUMN IF NOT EXISTS sex TEXT CHECK (sex IN ('male', 'female', 'other'));
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
