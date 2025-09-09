@@ -1701,6 +1701,48 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       </View>
                     </View>
                     
+                    <View style={styles.macroInlineContainer}>
+                      <View style={styles.macroInlineHeader}>
+                        <Zap size={18} color={Colors.retroNeonTurquoise} />
+                        <Text style={[styles.macroInlineTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
+                      </View>
+                      <View style={styles.macroGrid}>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.calories}</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Calories</Text>
+                        </View>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.protein}g</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Protein</Text>
+                        </View>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.carbs}g</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Carbs</Text>
+                        </View>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.fat}g</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Fat</Text>
+                        </View>
+                      </View>
+                      <View style={[styles.macroSecondaryGrid, { backgroundColor: colors.textSecondary + '05' }]}>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.fiber}g</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Fiber</Text>
+                        </View>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.sugar}g</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sugar</Text>
+                        </View>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.saturatedFat}g</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sat Fat</Text>
+                        </View>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.sodium}mg</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sodium</Text>
+                        </View>
+                      </View>
+                    </View>
 
                   </View>
                 </View>
@@ -1863,6 +1905,49 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         <Text style={[styles.overallScoreLabel, { color: colors.textPrimary }]}>Overall</Text>
                       </View>
                     </View>
+
+                    <View style={styles.macroInlineContainerGoal}>
+                      <View style={styles.macroInlineHeader}>
+                        <Zap size={18} color={Colors.retroNeonTurquoise} />
+                        <Text style={[styles.macroInlineTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
+                      </View>
+                      <View style={styles.macroGrid}>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.calories}</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Calories</Text>
+                        </View>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.protein}g</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Protein</Text>
+                        </View>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.carbs}g</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Carbs</Text>
+                        </View>
+                        <View style={styles.macroItem}>
+                          <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.fat}g</Text>
+                          <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Fat</Text>
+                        </View>
+                      </View>
+                      <View style={[styles.macroSecondaryGrid, { backgroundColor: colors.textSecondary + '05' }]}>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.fiber}g</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Fiber</Text>
+                        </View>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.sugar}g</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sugar</Text>
+                        </View>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.saturatedFat}g</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sat Fat</Text>
+                        </View>
+                        <View style={styles.macroSecondaryItem}>
+                          <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.sodium}mg</Text>
+                          <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sodium</Text>
+                        </View>
+                      </View>
+                    </View>
                   </View>
                 </View>
               </Animated.View>
@@ -1964,51 +2049,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 
 
 
-          {/* Macro Breakdown Section */}
-          <View style={[styles.card, { backgroundColor: colors.surface }]}>
-            <View style={styles.cardHeader}>
-              <Zap size={20} color={Colors.retroNeonTurquoise} />
-              <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
-            </View>
-            
-            <View style={styles.macroGrid}>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.calories}</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Calories</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.protein}g</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Protein</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.carbs}g</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Carbs</Text>
-              </View>
-              <View style={styles.macroItem}>
-                <Text style={[styles.macroValue, { color: Colors.retroNeonTurquoise }]}>{nutrition.fat}g</Text>
-                <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Fat</Text>
-              </View>
-            </View>
-            
-            <View style={[styles.macroSecondaryGrid, { backgroundColor: colors.textSecondary + '05' }]}>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.fiber}g</Text>
-                <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Fiber</Text>
-              </View>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.sugar}g</Text>
-                <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sugar</Text>
-              </View>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.saturatedFat}g</Text>
-                <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sat Fat</Text>
-              </View>
-              <View style={styles.macroSecondaryItem}>
-                <Text style={[styles.macroSecondaryValue, { color: colors.textPrimary }]}>{nutrition.sodium}mg</Text>
-                <Text style={[styles.macroSecondaryLabel, { color: colors.textSecondary }]}>Sodium</Text>
-              </View>
-            </View>
-          </View>
+
 
           {/* Ingredient Breakdown Section */}
           {nutrition.ingredients && nutrition.ingredients.length > 0 && (
@@ -2960,6 +3001,27 @@ const styles = StyleSheet.create({
     color: Colors.retroCharcoalBlack,
   },
   
+  // Inline Macro containers (no gaps)
+  macroInlineContainer: {
+    marginTop: 0,
+    paddingTop: 8,
+  },
+  macroInlineContainerGoal: {
+    marginTop: 16,
+    paddingTop: 8,
+    marginHorizontal: 16,
+  },
+  macroInlineHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+  },
+  macroInlineTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
   // Macro Breakdown Styles
   macroGrid: {
     flexDirection: 'row',
