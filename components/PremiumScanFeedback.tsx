@@ -3226,10 +3226,8 @@ const styles = StyleSheet.create({
   // Overall Score Circle Styles
   overallScoreContainer: {
     alignItems: 'center',
-    marginTop: 32,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: Colors.retroSoftGray + '30',
+    marginTop: 16,
+    paddingTop: 8,
   },
   
   overallScoreCircleContainer: {
