@@ -751,9 +751,8 @@ export default function PremiumScanFeedback({
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        // Ultra-sensitive horizontal detection - start with minimal movement
         const { dx, dy } = gestureState;
-        return Math.abs(dx) > 1 && Math.abs(dx) > Math.abs(dy) * 0.3;
+        return Math.abs(dx) > 0.5 && Math.abs(dx) > Math.abs(dy) * 0.2;
       },
       onPanResponderGrant: () => {
         // Stop any ongoing animations when user starts panning
@@ -773,9 +772,9 @@ export default function PremiumScanFeedback({
         
         // Minimal resistance when trying to swipe beyond available tabs
         if (translationX > 0) {
-          translationX = dx * 0.9;
+          translationX = dx * 0.98;
         } else if (translationX < -screenWidth) {
-          translationX = -screenWidth + (dx + screenWidth) * 0.9;
+          translationX = -screenWidth + (dx + screenWidth) * 0.98;
         }
         
         tabTranslateX.setValue(translationX);
@@ -784,9 +783,9 @@ export default function PremiumScanFeedback({
         const { dx, vx } = gestureState;
         const screenWidth = Dimensions.get('window').width;
         
-        // Ultra-sensitive thresholds for effortless swiping
-        const distanceThreshold = screenWidth * 0.02;
-        const velocityThreshold = 0.04
+        // Even looser thresholds for effortless swiping
+        const distanceThreshold = 8;
+        const velocityThreshold = 0.01
         
         // Determine if we should switch tabs based on distance OR velocity
         const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
@@ -816,11 +815,11 @@ export default function PremiumScanFeedback({
           }
         }
         
-        // Animate to target position with ultra-smooth spring
+        // Animate to target position with ultra-smooth, snappy spring
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
-          tension: 90,
-          friction: 10,
+          tension: 110,
+          friction: 7,
           useNativeDriver: true,
         }).start();
       },
