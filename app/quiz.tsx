@@ -242,8 +242,9 @@ function QuizScreen() {
     lifeStrictness: string | null;
     heightCm: number | null;
     weightKg: number | null;
+    ageYears: number | null;
     sex: 'male' | 'female' | 'other' | null;
-    activityLevel: string | null;
+    activityLevel: 'inactive' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extremely-active' | null;
   }>({
     bodyGoal: null,
     healthGoal: null,
@@ -257,6 +258,7 @@ function QuizScreen() {
     lifeStrictness: null,
     heightCm: null,
     weightKg: null,
+    ageYears: null,
     sex: null,
     activityLevel: null,
   });
@@ -661,20 +663,39 @@ function QuizScreen() {
         console.log('[Quiz] Saving dietary restrictions to profile:', answers.dietaryRestrictions);
         await updateProfile({ dietaryRestrictions: answers.dietaryRestrictions });
       }
-      if (answers.heightCm && answers.weightKg && answers.sex && answers.activityLevel) {
+      if (answers.heightCm && answers.weightKg && answers.sex && answers.activityLevel && answers.ageYears) {
         try {
           const { data: userData } = await supabase.auth.getUser();
           const userId = userData?.user?.id;
           if (userId) {
-            console.log('[Quiz] Saving biometrics to Supabase');
+            console.log('[Quiz] Saving biometrics & calorie targets to Supabase');
+            const sex = answers.sex === 'male' || answers.sex === 'female' ? answers.sex : 'female';
+            const bodyGoal = (answers.bodyGoal as any) ?? 'maintain-weight';
+            const { calculateCalorieTargets } = await import('@/utils/calorie');
+            const targets = calculateCalorieTargets({
+              heightCm: answers.heightCm,
+              weightKg: answers.weightKg,
+              age: answers.ageYears,
+              sex,
+              activityLevel: answers.activityLevel,
+              bodyGoal,
+            });
             await updateUserProfile(userId, {
               dietary_preferences: {
                 biometrics: {
                   height_cm: answers.heightCm,
                   weight_kg: answers.weightKg,
+                  age_years: answers.ageYears,
                   sex: answers.sex,
                   activity_level: answers.activityLevel,
                 },
+                calorie_targets: {
+                  bmr: targets.bmr,
+                  tdee: targets.tdee,
+                  target_calories: targets.targetCalories,
+                  activity_factor: targets.activityFactor,
+                  goal_adjustment: targets.goalAdjustment,
+                }
               },
             });
           } else {
@@ -858,9 +879,11 @@ function QuizScreen() {
         const h = answers.heightCm ?? 0;
         const w = answers.weightKg ?? 0;
         const s = answers.sex;
+        const a = answers.ageYears ?? 0;
         const heightOk = h > 80 && h < 260;
         const weightOk = w > 30 && w < 400;
-        return heightOk && weightOk && !!s;
+        const ageOk = a >= 13 && a <= 100;
+        return heightOk && weightOk && ageOk && !!s;
       }
       case 'activityLevel':
         return answers.activityLevel !== null;
@@ -1246,6 +1269,24 @@ function QuizScreen() {
                   testID="biometrics-weight"
                 />
               </View>
+            </View>
+            <View style={styles.biometricsRow}>
+              <View style={styles.biometricsField}>
+                <Text style={styles.biometricsLabel}>Age (years)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={answers.ageYears?.toString() ?? ''}
+                  onChangeText={(t) => {
+                    const n = Number(t.replace(/[^0-9]/g, ''));
+                    setAnswers((prev) => ({ ...prev, ageYears: isNaN(n) ? null : n }));
+                  }}
+                  keyboardType="number-pad"
+                  placeholder="e.g., 28"
+                  placeholderTextColor={Colors.gray500}
+                  testID="biometrics-age"
+                />
+              </View>
+              <View style={[styles.biometricsField, { opacity: 0 }]} />
             </View>
             <View style={styles.sexContainer}>
               {(['male','female','other'] as const).map((s) => (

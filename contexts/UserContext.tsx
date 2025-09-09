@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format, subDays, differenceInDays } from 'date-fns';
 
 import { supabase, createUserProfile, updateUserProfile, getUserProfile, saveQuizResponse } from '@/lib/supabase';
+import { calculateCalorieTargets, type CalorieInputs, type CalorieTargets } from '@/utils/calorie';
 import type { User } from '@supabase/supabase-js';
 
 export interface UserGoals {
@@ -733,6 +734,10 @@ export const [UserProvider, useUser] = createContextHook(() => {
     return history;
   }, [profile.scanDates]);
   
+  const getCalorieTargets = useCallback((inputs: CalorieInputs): CalorieTargets => {
+    return calculateCalorieTargets(inputs);
+  }, []);
+
   return useMemo(() => ({
     profile,
     isLoading,
@@ -743,5 +748,6 @@ export const [UserProvider, useUser] = createContextHook(() => {
     updateScanStreak,
     getStreakHistory,
     logout,
-  }), [profile, isLoading, authState, updateProfile, updateGoals, completeQuiz, updateScanStreak, getStreakHistory, logout]);
+    getCalorieTargets,
+  }), [profile, isLoading, authState, updateProfile, updateGoals, completeQuiz, updateScanStreak, getStreakHistory, logout, getCalorieTargets]);
 });
