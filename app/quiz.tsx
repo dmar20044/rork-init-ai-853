@@ -1240,7 +1240,7 @@ function QuizScreen() {
             <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
             <View style={styles.biometricsRow}>
               <View style={styles.biometricsField}>
-                <Text style={styles.biometricsLabel}>Height</Text>
+                <Text style={styles.biometricsLabel}>Height (ft/in)</Text>
                 <View style={styles.heightRow}>
                   <TextInput
                     style={[styles.textInput, styles.heightInput]}
