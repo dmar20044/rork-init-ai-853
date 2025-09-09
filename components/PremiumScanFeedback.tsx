@@ -738,6 +738,7 @@ export default function PremiumScanFeedback({
   const forYouSectionHeight = useRef(new Animated.Value(0)).current;
   const [allergenWarnings, setAllergenWarnings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const [ingredientContentHeight, setIngredientContentHeight] = useState<number>(0);
   const activeTabRef = useRef<number>(0);
   const [categoryScores, setCategoryScores] = useState<{ health?: number; diet?: number; body?: number; life?: number }>({});
   const tabTranslateX = useRef(new Animated.Value(0)).current;
@@ -1765,9 +1766,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       <Animated.View style={[
                         styles.collapsibleContent,
                         {
-                          maxHeight: ingredientSectionHeight.interpolate({
+                          height: ingredientSectionHeight.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [0, 400],
+                            outputRange: [0, ingredientContentHeight],
                           }),
                           opacity: ingredientSectionHeight.interpolate({
                             inputRange: [0, 0.5, 1],
@@ -1780,11 +1781,12 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                             <Text style={[styles.loadingIngredientsText, { color: colors.textSecondary }]}>Analyzing ingredients...</Text>
                           </View>
                         ) : (
-                          <ScrollView 
-                            style={styles.ingredientsScrollView}
-                            contentContainerStyle={styles.ingredientsContent}
-                            showsVerticalScrollIndicator={true}
-                            nestedScrollEnabled={true}
+                          <View 
+                            style={styles.ingredientsContent}
+                            onLayout={(e) => {
+                              const h = e.nativeEvent.layout.height;
+                              if (h !== ingredientContentHeight) setIngredientContentHeight(h);
+                            }}
                           >
                             {ingredientAnalysis.length > 0 ? (
                               ingredientAnalysis.map((analysis, index) => {
@@ -1831,7 +1833,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                 No ingredient analysis available
                               </Text>
                             )}
-                          </ScrollView>
+                          </View>
                         )}
                       </Animated.View>
                     </View>
@@ -2122,9 +2124,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
               <Animated.View style={[
                 styles.collapsibleContent,
                 {
-                  maxHeight: ingredientSectionHeight.interpolate({
+                  height: ingredientSectionHeight.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 400],
+                    outputRange: [0, ingredientContentHeight],
                   }),
                   opacity: ingredientSectionHeight.interpolate({
                     inputRange: [0, 0.5, 1],
@@ -2137,11 +2139,12 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     <Text style={[styles.loadingIngredientsText, { color: colors.textSecondary }]}>Analyzing ingredients...</Text>
                   </View>
                 ) : (
-                  <ScrollView 
-                    style={styles.ingredientsScrollView}
-                    contentContainerStyle={styles.ingredientsContent}
-                    showsVerticalScrollIndicator={true}
-                    nestedScrollEnabled={true}
+                  <View 
+                    style={styles.ingredientsContent}
+                    onLayout={(e) => {
+                      const h = e.nativeEvent.layout.height;
+                      if (h !== ingredientContentHeight) setIngredientContentHeight(h);
+                    }}
                   >
                     {ingredientAnalysis.length > 0 ? (
                       ingredientAnalysis.map((analysis, index) => {
@@ -2188,7 +2191,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         No ingredient analysis available
                       </Text>
                     )}
-                  </ScrollView>
+                  </View>
                 )}
               </Animated.View>
             </View>
