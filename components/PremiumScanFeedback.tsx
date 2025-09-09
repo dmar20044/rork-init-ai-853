@@ -1457,6 +1457,53 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         )}
                       </View>
                     </View>
+                    
+                    {/* Tab Indicators - Moved to same slide */}
+                    <View style={styles.tabIndicatorContainer}>
+                      <View style={styles.tabIndicators}>
+                        <TouchableOpacity
+                          style={[
+                            styles.tabIndicator,
+                            {
+                              backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                            },
+                          ]}
+                          onPress={() => {
+                            if (activeTab !== 0) {
+                              setActiveTab(0);
+                              Animated.spring(tabTranslateX, {
+                                toValue: 0,
+                                tension: 100,
+                                friction: 8,
+                                useNativeDriver: true,
+                              }).start();
+                            }
+                          }}
+                          activeOpacity={0.7}
+                        />
+                        <TouchableOpacity
+                          style={[
+                            styles.tabIndicator,
+                            {
+                              backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                            },
+                          ]}
+                          onPress={() => {
+                            if (activeTab !== 1) {
+                              setActiveTab(1);
+                              const screenWidth = Dimensions.get('window').width;
+                              Animated.spring(tabTranslateX, {
+                                toValue: -screenWidth,
+                                tension: 100,
+                                friction: 8,
+                                useNativeDriver: true,
+                              }).start();
+                            }
+                          }}
+                          activeOpacity={0.7}
+                        />
+                      </View>
+                    </View>
                   </View>
                 </View>
                 
@@ -1576,62 +1623,6 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                   </View>
                 </View>
               </Animated.View>
-              
-              {/* Visual swipe indicator */}
-              <View style={styles.swipeIndicator}>
-                <View style={[styles.swipeHint, { opacity: 0.3 }]}>
-                  <Text style={[styles.swipeHintText, { color: colors.textSecondary }]}>← Swipe →</Text>
-                </View>
-              </View>
-            </View>
-          )}
-          
-          {/* Tab Indicators - Show above swipeable content */}
-          {showPersonalized && nutrition.personalScore !== undefined && (
-            <View style={styles.tabIndicatorContainer}>
-              <View style={styles.tabIndicators}>
-                <TouchableOpacity
-                  style={[
-                    styles.tabIndicator,
-                    {
-                      backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
-                    },
-                  ]}
-                  onPress={() => {
-                    if (activeTab !== 0) {
-                      setActiveTab(0);
-                      Animated.spring(tabTranslateX, {
-                        toValue: 0,
-                        tension: 100,
-                        friction: 8,
-                        useNativeDriver: true,
-                      }).start();
-                    }
-                  }}
-                  activeOpacity={0.7}
-                />
-                <TouchableOpacity
-                  style={[
-                    styles.tabIndicator,
-                    {
-                      backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
-                    },
-                  ]}
-                  onPress={() => {
-                    if (activeTab !== 1) {
-                      setActiveTab(1);
-                      const screenWidth = Dimensions.get('window').width;
-                      Animated.spring(tabTranslateX, {
-                        toValue: -screenWidth,
-                        tension: 100,
-                        friction: 8,
-                        useNativeDriver: true,
-                      }).start();
-                    }
-                  }}
-                  activeOpacity={0.7}
-                />
-              </View>
             </View>
           )}
           
@@ -2790,7 +2781,8 @@ const styles = StyleSheet.create({
   // Tab Indicator Styles
   tabIndicatorContainer: {
     alignItems: 'center',
-    marginTop: 16,
+    marginTop: 20,
+    marginBottom: 8,
   },
   
   tabIndicators: {
