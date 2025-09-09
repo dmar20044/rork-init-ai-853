@@ -463,41 +463,53 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
       
       switch (healthGoal) {
         case 'low-sugar':
-          if (nutrition.sugar <= 2) rawScore = 95;
-          else if (nutrition.sugar <= 5) rawScore = 85;
-          else if (nutrition.sugar <= 10) rawScore = 70;
-          else if (nutrition.sugar <= 15) rawScore = 55;
-          else if (nutrition.sugar <= 25) rawScore = 40;
-          else rawScore = 25;
+          // More granular scoring based on sugar content
+          if (nutrition.sugar <= 1) rawScore = 95;
+          else if (nutrition.sugar <= 3) rawScore = 87.5;
+          else if (nutrition.sugar <= 6) rawScore = 78;
+          else if (nutrition.sugar <= 10) rawScore = 65.5;
+          else if (nutrition.sugar <= 15) rawScore = 52;
+          else if (nutrition.sugar <= 20) rawScore = 38.5;
+          else if (nutrition.sugar <= 30) rawScore = 26;
+          else rawScore = 15.5;
           break;
           
         case 'high-protein':
-          if (nutrition.protein >= 20) rawScore = 95;
-          else if (nutrition.protein >= 15) rawScore = 85;
-          else if (nutrition.protein >= 10) rawScore = 70;
-          else if (nutrition.protein >= 5) rawScore = 55;
-          else if (nutrition.protein >= 2) rawScore = 40;
-          else rawScore = 25;
+          // Enhanced protein scoring with more precision
+          if (nutrition.protein >= 25) rawScore = 95;
+          else if (nutrition.protein >= 20) rawScore = 89;
+          else if (nutrition.protein >= 15) rawScore = 81.5;
+          else if (nutrition.protein >= 12) rawScore = 73;
+          else if (nutrition.protein >= 8) rawScore = 62.5;
+          else if (nutrition.protein >= 5) rawScore = 49;
+          else if (nutrition.protein >= 3) rawScore = 35.5;
+          else if (nutrition.protein >= 1) rawScore = 24;
+          else rawScore = 12.5;
           break;
           
         case 'low-fat':
-          if (nutrition.fat <= 1) rawScore = 95;
-          else if (nutrition.fat <= 3) rawScore = 85;
-          else if (nutrition.fat <= 6) rawScore = 70;
-          else if (nutrition.fat <= 10) rawScore = 55;
-          else if (nutrition.fat <= 15) rawScore = 40;
-          else rawScore = 25;
+          // More precise fat content evaluation
+          if (nutrition.fat <= 0.5) rawScore = 95;
+          else if (nutrition.fat <= 2) rawScore = 86.5;
+          else if (nutrition.fat <= 4) rawScore = 76;
+          else if (nutrition.fat <= 7) rawScore = 63.5;
+          else if (nutrition.fat <= 12) rawScore = 48;
+          else if (nutrition.fat <= 18) rawScore = 32.5;
+          else rawScore = 19;
           break;
           
         case 'keto':
-          const carbScore = nutrition.carbs <= 2 ? 50 : nutrition.carbs <= 5 ? 40 : nutrition.carbs <= 10 ? 25 : 10;
-          const fatScore = nutrition.fat >= 15 ? 45 : nutrition.fat >= 10 ? 35 : nutrition.fat >= 5 ? 25 : 10;
-          rawScore = carbScore + fatScore;
+          // Refined keto scoring with better balance
+          const carbPenalty = nutrition.carbs <= 1 ? 0 : nutrition.carbs <= 3 ? -8 : nutrition.carbs <= 6 ? -18 : nutrition.carbs <= 10 ? -32 : -50;
+          const fatBonus = nutrition.fat >= 20 ? 25 : nutrition.fat >= 15 ? 20 : nutrition.fat >= 10 ? 12 : nutrition.fat >= 5 ? 6 : 0;
+          const proteinBonus = nutrition.protein >= 15 ? 15 : nutrition.protein >= 10 ? 10 : nutrition.protein >= 5 ? 5 : 0;
+          rawScore = Math.max(15, 70 + carbPenalty + fatBonus + proteinBonus);
           break;
           
         case 'balanced':
         default:
-          rawScore = nutrition.healthScore;
+          // Use health score with slight variation
+          rawScore = nutrition.healthScore + (nutrition.fiber * 0.8) - (nutrition.sugar * 0.3);
           break;
       }
       break;
@@ -516,11 +528,14 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
             ing.toLowerCase().includes('flavor')
           ) || false;
           
-          if (additiveCount === 0 && !hasArtificialIngredients) rawScore = 95;
-          else if (additiveCount <= 2 && !hasArtificialIngredients) rawScore = 80;
-          else if (additiveCount <= 5) rawScore = 65;
-          else if (additiveCount <= 8) rawScore = 45;
-          else rawScore = 25;
+          // More nuanced whole foods scoring
+          if (additiveCount === 0 && !hasArtificialIngredients) rawScore = 94.5;
+          else if (additiveCount <= 1 && !hasArtificialIngredients) rawScore = 83;
+          else if (additiveCount <= 3 && !hasArtificialIngredients) rawScore = 71.5;
+          else if (additiveCount <= 5) rawScore = 58;
+          else if (additiveCount <= 8) rawScore = 42.5;
+          else if (additiveCount <= 12) rawScore = 29;
+          else rawScore = 16.5;
           break;
           
         case 'vegan':
@@ -533,7 +548,9 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
                    ingredient.includes('honey') || ingredient.includes('butter');
           }) || false;
           
-          rawScore = veganUnfriendly ? 15 : 90;
+          // Add fiber bonus for plant-based foods
+          const veganFiberBonus = nutrition.fiber >= 5 ? 5 : nutrition.fiber >= 3 ? 3 : 0;
+          rawScore = veganUnfriendly ? 13.5 : (87 + veganFiberBonus);
           break;
           
         case 'vegetarian':
@@ -544,7 +561,9 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
                    ingredient.includes('pork') || ingredient.includes('gelatin');
           }) || false;
           
-          rawScore = vegetarianUnfriendly ? 15 : 85;
+          // Slight variation from vegan scoring
+          const vegFiberBonus = nutrition.fiber >= 4 ? 4 : nutrition.fiber >= 2 ? 2 : 0;
+          rawScore = vegetarianUnfriendly ? 17 : (82.5 + vegFiberBonus);
           break;
           
         case 'gluten-free':
@@ -555,19 +574,26 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
                    ingredient.includes('flour') || ingredient.includes('malt');
           }) || false;
           
-          rawScore = glutenIngredients ? 10 : 90;
+          // Account for naturally gluten-free vs processed alternatives
+          const naturallyGF = !glutenIngredients && (nutrition.additives?.length || 0) <= 3;
+          rawScore = glutenIngredients ? 8.5 : (naturallyGF ? 91.5 : 78);
           break;
           
         case 'carnivore':
-          if (nutrition.protein >= 15) rawScore = 90;
-          else if (nutrition.protein >= 10) rawScore = 75;
-          else if (nutrition.protein >= 5) rawScore = 50;
-          else rawScore = 20;
+          // Enhanced carnivore scoring based on protein density
+          if (nutrition.protein >= 25) rawScore = 93;
+          else if (nutrition.protein >= 20) rawScore = 84.5;
+          else if (nutrition.protein >= 15) rawScore = 74;
+          else if (nutrition.protein >= 10) rawScore = 59.5;
+          else if (nutrition.protein >= 6) rawScore = 43;
+          else if (nutrition.protein >= 3) rawScore = 28.5;
+          else rawScore = 16;
           break;
           
         case 'balanced':
         default:
-          rawScore = nutrition.healthScore;
+          // Balanced with slight fiber emphasis
+          rawScore = nutrition.healthScore + (nutrition.fiber * 0.6) - (nutrition.sodium * 0.002);
           break;
       }
       break;
@@ -579,39 +605,47 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
       switch (bodyGoal) {
         case 'lose-weight':
         case 'slightly-lose-weight':
+          // More sophisticated weight loss scoring
           const caloriesPerGram = nutrition.calories / 100;
-          const fiberScore = nutrition.fiber >= 5 ? 25 : nutrition.fiber >= 3 ? 20 : nutrition.fiber >= 1 ? 15 : 5;
-          const proteinScore = nutrition.protein >= 10 ? 25 : nutrition.protein >= 5 ? 20 : nutrition.protein >= 2 ? 15 : 5;
-          const sugarPenalty = nutrition.sugar > 15 ? -20 : nutrition.sugar > 10 ? -10 : nutrition.sugar > 5 ? -5 : 0;
+          const fiberScore = nutrition.fiber >= 8 ? 28 : nutrition.fiber >= 5 ? 22 : nutrition.fiber >= 3 ? 16 : nutrition.fiber >= 1 ? 8 : 2;
+          const proteinScore = nutrition.protein >= 15 ? 26 : nutrition.protein >= 10 ? 20 : nutrition.protein >= 6 ? 14 : nutrition.protein >= 3 ? 8 : 2;
+          const sugarPenalty = nutrition.sugar > 20 ? -25 : nutrition.sugar > 15 ? -18 : nutrition.sugar > 10 ? -12 : nutrition.sugar > 6 ? -6 : 2;
+          const satietyBonus = (fiberScore + proteinScore) > 35 ? 8 : 0;
           
-          if (caloriesPerGram <= 1.5) rawScore = 50 + fiberScore + proteinScore + sugarPenalty;
-          else if (caloriesPerGram <= 2.5) rawScore = 40 + fiberScore + proteinScore + sugarPenalty;
-          else if (caloriesPerGram <= 3.5) rawScore = 30 + fiberScore + proteinScore + sugarPenalty;
-          else rawScore = 20 + fiberScore + proteinScore + sugarPenalty;
+          if (caloriesPerGram <= 1.2) rawScore = 52 + fiberScore + proteinScore + sugarPenalty + satietyBonus;
+          else if (caloriesPerGram <= 2.0) rawScore = 44 + fiberScore + proteinScore + sugarPenalty + satietyBonus;
+          else if (caloriesPerGram <= 3.0) rawScore = 34 + fiberScore + proteinScore + sugarPenalty + satietyBonus;
+          else if (caloriesPerGram <= 4.5) rawScore = 22 + fiberScore + proteinScore + sugarPenalty + satietyBonus;
+          else rawScore = 12 + fiberScore + proteinScore + sugarPenalty + satietyBonus;
           break;
           
         case 'gain-weight':
         case 'slightly-gain-weight':
+          // Enhanced weight gain scoring
           const caloriesPerGramGain = nutrition.calories / 100;
-          const healthyFatScore = nutrition.fat >= 10 ? 30 : nutrition.fat >= 5 ? 20 : 10;
-          const proteinScoreGain = nutrition.protein >= 8 ? 30 : nutrition.protein >= 4 ? 20 : 10;
+          const healthyFatScore = nutrition.fat >= 15 ? 32 : nutrition.fat >= 10 ? 24 : nutrition.fat >= 6 ? 16 : nutrition.fat >= 3 ? 8 : 2;
+          const proteinScoreGain = nutrition.protein >= 12 ? 28 : nutrition.protein >= 8 ? 22 : nutrition.protein >= 5 ? 16 : nutrition.protein >= 2 ? 8 : 2;
+          const densityBonus = caloriesPerGramGain >= 5 ? 12 : caloriesPerGramGain >= 4 ? 8 : caloriesPerGramGain >= 3 ? 4 : 0;
           
-          if (caloriesPerGramGain >= 4) rawScore = 40 + healthyFatScore + proteinScoreGain;
-          else if (caloriesPerGramGain >= 3) rawScore = 35 + healthyFatScore + proteinScoreGain;
-          else if (caloriesPerGramGain >= 2) rawScore = 25 + healthyFatScore + proteinScoreGain;
-          else rawScore = 15 + healthyFatScore + proteinScoreGain;
+          if (caloriesPerGramGain >= 4.5) rawScore = 38 + healthyFatScore + proteinScoreGain + densityBonus;
+          else if (caloriesPerGramGain >= 3.5) rawScore = 32 + healthyFatScore + proteinScoreGain + densityBonus;
+          else if (caloriesPerGramGain >= 2.5) rawScore = 24 + healthyFatScore + proteinScoreGain + densityBonus;
+          else if (caloriesPerGramGain >= 1.8) rawScore = 16 + healthyFatScore + proteinScoreGain + densityBonus;
+          else rawScore = 8 + healthyFatScore + proteinScoreGain + densityBonus;
           break;
           
         case 'maintain-weight':
         default:
+          // Refined maintenance scoring
           const balancedScore = nutrition.healthScore;
-          const proteinBonus = nutrition.protein >= 8 ? 10 : nutrition.protein >= 4 ? 5 : 0;
-          const fiberBonus = nutrition.fiber >= 3 ? 10 : nutrition.fiber >= 1 ? 5 : 0;
-          rawScore = Math.min(95, balancedScore + proteinBonus + fiberBonus);
+          const proteinBonus = nutrition.protein >= 12 ? 12 : nutrition.protein >= 8 ? 8 : nutrition.protein >= 4 ? 4 : 0;
+          const fiberBonus = nutrition.fiber >= 5 ? 10 : nutrition.fiber >= 3 ? 6 : nutrition.fiber >= 1 ? 3 : 0;
+          const balanceBonus = (nutrition.protein >= 8 && nutrition.fiber >= 3 && nutrition.sugar <= 12) ? 6 : 0;
+          rawScore = Math.min(95, balancedScore + proteinBonus + fiberBonus + balanceBonus - (nutrition.sugar * 0.4));
           break;
       }
       
-      rawScore = Math.max(10, Math.min(95, rawScore));
+      rawScore = Math.max(12, Math.min(95, rawScore));
       break;
       
     case 'life':
@@ -620,48 +654,56 @@ const getGoalRatingScore = (nutrition: NutritionInfo, goals: UserGoals, goalType
       
       switch (lifeGoal) {
         case 'boost-energy':
-          const complexCarbScore = nutrition.fiber >= 3 ? 25 : nutrition.fiber >= 1 ? 15 : 5;
-          const proteinEnergyScore = nutrition.protein >= 8 ? 25 : nutrition.protein >= 4 ? 15 : 5;
-          const sugarCrashPenalty = nutrition.sugar > 20 ? -25 : nutrition.sugar > 10 ? -15 : nutrition.sugar > 5 ? -5 : 10;
-          const sodiumPenalty = nutrition.sodium > 800 ? -10 : nutrition.sodium > 400 ? -5 : 0;
+          // More precise energy scoring
+          const complexCarbScore = nutrition.fiber >= 5 ? 24 : nutrition.fiber >= 3 ? 18 : nutrition.fiber >= 1 ? 10 : 3;
+          const proteinEnergyScore = nutrition.protein >= 12 ? 22 : nutrition.protein >= 8 ? 17 : nutrition.protein >= 4 ? 11 : nutrition.protein >= 2 ? 6 : 1;
+          const sugarCrashPenalty = nutrition.sugar > 25 ? -28 : nutrition.sugar > 18 ? -20 : nutrition.sugar > 12 ? -14 : nutrition.sugar > 8 ? -8 : nutrition.sugar > 4 ? -3 : 4;
+          const sodiumPenalty = nutrition.sodium > 1000 ? -12 : nutrition.sodium > 600 ? -8 : nutrition.sodium > 300 ? -4 : 0;
+          const ironBonus = nutrition.protein >= 10 ? 3 : 0; // Proxy for iron content
           
-          rawScore = 50 + complexCarbScore + proteinEnergyScore + sugarCrashPenalty + sodiumPenalty;
+          rawScore = 48 + complexCarbScore + proteinEnergyScore + sugarCrashPenalty + sodiumPenalty + ironBonus;
           break;
           
         case 'clear-skin':
-          const antiInflammatoryScore = nutrition.fiber >= 4 ? 20 : nutrition.fiber >= 2 ? 10 : 0;
-          const sugarSkinPenalty = nutrition.sugar > 15 ? -30 : nutrition.sugar > 8 ? -20 : nutrition.sugar > 4 ? -10 : 15;
-          const processedPenalty = (nutrition.additives?.length || 0) > 5 ? -15 : (nutrition.additives?.length || 0) > 2 ? -10 : 5;
-          const saturatedFatPenalty = nutrition.saturatedFat > 8 ? -15 : nutrition.saturatedFat > 4 ? -10 : 0;
+          // Enhanced skin health scoring
+          const antiInflammatoryScore = nutrition.fiber >= 6 ? 22 : nutrition.fiber >= 4 ? 16 : nutrition.fiber >= 2 ? 10 : nutrition.fiber >= 1 ? 5 : 0;
+          const sugarSkinPenalty = nutrition.sugar > 20 ? -32 : nutrition.sugar > 15 ? -24 : nutrition.sugar > 10 ? -16 : nutrition.sugar > 6 ? -8 : nutrition.sugar > 3 ? -3 : 6;
+          const processedPenalty = (nutrition.additives?.length || 0) > 8 ? -18 : (nutrition.additives?.length || 0) > 5 ? -14 : (nutrition.additives?.length || 0) > 2 ? -8 : (nutrition.additives?.length || 0) > 0 ? -3 : 8;
+          const saturatedFatPenalty = nutrition.saturatedFat > 12 ? -16 : nutrition.saturatedFat > 8 ? -12 : nutrition.saturatedFat > 4 ? -6 : nutrition.saturatedFat > 2 ? -2 : 2;
+          const antioxidantBonus = nutrition.fiber >= 4 ? 4 : 0; // Proxy for antioxidants
           
-          rawScore = 60 + antiInflammatoryScore + sugarSkinPenalty + processedPenalty + saturatedFatPenalty;
+          rawScore = 58 + antiInflammatoryScore + sugarSkinPenalty + processedPenalty + saturatedFatPenalty + antioxidantBonus;
           break;
           
         case 'feel-better':
-          const wholeFoodScore = (nutrition.additives?.length || 0) <= 2 ? 25 : (nutrition.additives?.length || 0) <= 5 ? 15 : 5;
-          const balancedNutritionScore = (nutrition.protein >= 5 && nutrition.fiber >= 2) ? 20 : 10;
-          const lowSugarBonus = nutrition.sugar <= 8 ? 15 : nutrition.sugar <= 15 ? 5 : -10;
-          const lowSodiumBonus = nutrition.sodium <= 300 ? 15 : nutrition.sodium <= 600 ? 5 : -5;
+          // Comprehensive wellness scoring
+          const wholeFoodScore = (nutrition.additives?.length || 0) <= 1 ? 26 : (nutrition.additives?.length || 0) <= 3 ? 20 : (nutrition.additives?.length || 0) <= 6 ? 14 : (nutrition.additives?.length || 0) <= 10 ? 8 : 3;
+          const balancedNutritionScore = (nutrition.protein >= 6 && nutrition.fiber >= 3) ? 18 : (nutrition.protein >= 3 && nutrition.fiber >= 1) ? 12 : 6;
+          const lowSugarBonus = nutrition.sugar <= 6 ? 16 : nutrition.sugar <= 10 ? 10 : nutrition.sugar <= 15 ? 4 : nutrition.sugar <= 20 ? -2 : -8;
+          const lowSodiumBonus = nutrition.sodium <= 200 ? 14 : nutrition.sodium <= 400 ? 8 : nutrition.sodium <= 700 ? 3 : nutrition.sodium <= 1000 ? -2 : -6;
+          const digestibilityBonus = nutrition.fiber >= 3 && nutrition.fiber <= 8 ? 4 : 0;
           
-          rawScore = 25 + wholeFoodScore + balancedNutritionScore + lowSugarBonus + lowSodiumBonus;
+          rawScore = 22 + wholeFoodScore + balancedNutritionScore + lowSugarBonus + lowSodiumBonus + digestibilityBonus;
           break;
           
         case 'eat-healthier':
         default:
+          // Enhanced general health scoring
           const baseHealthScore = nutrition.healthScore;
-          const fiberBonus = nutrition.fiber >= 5 ? 15 : nutrition.fiber >= 3 ? 10 : nutrition.fiber >= 1 ? 5 : 0;
-          const proteinBonus = nutrition.protein >= 10 ? 10 : nutrition.protein >= 5 ? 5 : 0;
-          const lowProcessingBonus = (nutrition.additives?.length || 0) <= 1 ? 10 : 0;
+          const fiberBonus = nutrition.fiber >= 8 ? 14 : nutrition.fiber >= 5 ? 10 : nutrition.fiber >= 3 ? 6 : nutrition.fiber >= 1 ? 3 : 0;
+          const proteinBonus = nutrition.protein >= 15 ? 9 : nutrition.protein >= 10 ? 6 : nutrition.protein >= 5 ? 3 : 0;
+          const lowProcessingBonus = (nutrition.additives?.length || 0) <= 1 ? 8 : (nutrition.additives?.length || 0) <= 3 ? 4 : 0;
+          const micronutrientProxy = (nutrition.fiber + nutrition.protein) >= 12 ? 5 : 0;
           
-          rawScore = Math.min(95, baseHealthScore + fiberBonus + proteinBonus + lowProcessingBonus);
+          rawScore = Math.min(95, baseHealthScore + fiberBonus + proteinBonus + lowProcessingBonus + micronutrientProxy - (nutrition.sugar * 0.5));
           break;
       }
       
-      rawScore = Math.max(15, Math.min(95, rawScore));
+      rawScore = Math.max(14, Math.min(95, rawScore));
       break;
   }
   
-  // Round to nearest 0.5
+  // Round to nearest 0.5 for precise but readable scores
   return Math.round(rawScore * 2) / 2;
 };
 
