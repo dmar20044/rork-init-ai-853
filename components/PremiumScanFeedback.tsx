@@ -1587,7 +1587,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Swipeable Tab Content */}
           {showPersonalized && nutrition.personalScore !== undefined && (
-            <View style={[styles.swipeableContainer, { minHeight: containerHeight || undefined }]>
+            <View style={[styles.swipeableContainer, { height: containerHeight || undefined }]}>
 
               <Animated.View
                 style={[
@@ -1767,7 +1767,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         {
                           maxHeight: ingredientSectionHeight.interpolate({
                             inputRange: [0, 1],
-                            outputRange: [0, 1200],
+                            outputRange: [0, 400],
                           }),
                           opacity: ingredientSectionHeight.interpolate({
                             inputRange: [0, 0.5, 1],
@@ -2124,7 +2124,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 {
                   maxHeight: ingredientSectionHeight.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, 1200],
+                    outputRange: [0, 400],
                   }),
                   opacity: ingredientSectionHeight.interpolate({
                     inputRange: [0, 0.5, 1],
@@ -2979,7 +2979,7 @@ const styles = StyleSheet.create({
   },
   
   ingredientsScrollView: {
-    maxHeight: 1000,
+    maxHeight: 400,
   },
   
   ingredientsContent: {
