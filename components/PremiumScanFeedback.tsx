@@ -738,6 +738,7 @@ export default function PremiumScanFeedback({
   const forYouSectionHeight = useRef(new Animated.Value(0)).current;
   const [allergenWarnings, setAllergenWarnings] = useState<string[]>([]);
   const [activeTab, setActiveTab] = useState<number>(0);
+  const activeTabRef = useRef<number>(0);
   const [categoryScores, setCategoryScores] = useState<{ health?: number; diet?: number; body?: number; life?: number }>({});
   const tabTranslateX = useRef(new Animated.Value(0)).current;
   
@@ -747,75 +748,60 @@ export default function PremiumScanFeedback({
   
   const loadingMessages = getLoadingMessages();
   
+  // Keep ref in sync with state so gesture handlers always see latest tab
+  useEffect(() => {
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
+
   // Pan responder for swipe gestures
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (evt, gestureState) => {
+      onMoveShouldSetPanResponder: (_evt, gestureState) => {
         const { dx, dy } = gestureState;
         return Math.abs(dx) > 0.5 && Math.abs(dx) > Math.abs(dy) * 0.2;
       },
       onPanResponderGrant: () => {
-        // Stop any ongoing animations when user starts panning
         tabTranslateX.stopAnimation();
-        // Add haptic feedback on start
         if (Platform.OS !== 'web') {
           Haptics.selectionAsync();
         }
       },
-      onPanResponderMove: (evt, gestureState) => {
+      onPanResponderMove: (_evt, gestureState) => {
         const { dx } = gestureState;
-        const screenWidth = Dimensions.get('window').width;
-        
-        // Calculate the base translation based on current active tab
-        const baseTranslation = activeTab === 0 ? 0 : -screenWidth;
+        const width = Dimensions.get('window').width;
+        const baseTranslation = activeTabRef.current === 0 ? 0 : -width;
         let translationX = baseTranslation + dx;
-        
-        // Minimal resistance when trying to swipe beyond available tabs
         if (translationX > 0) {
           translationX = dx * 0.98;
-        } else if (translationX < -screenWidth) {
-          translationX = -screenWidth + (dx + screenWidth) * 0.98;
+        } else if (translationX < -width) {
+          translationX = -width + (dx + width) * 0.98;
         }
-        
         tabTranslateX.setValue(translationX);
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: (_evt, gestureState) => {
         const { dx, vx } = gestureState;
-        const screenWidth = Dimensions.get('window').width;
-        
-        // Even looser thresholds for effortless swiping
+        const width = Dimensions.get('window').width;
         const distanceThreshold = 8;
-        const velocityThreshold = 0.01
-        
-        // Determine if we should switch tabs based on distance OR velocity
-        const shouldSwitchByDistance = Math.abs(dx) > distanceThreshold;
-        const shouldSwitchByVelocity = Math.abs(vx) > velocityThreshold;
-        const shouldSwitch = shouldSwitchByDistance || shouldSwitchByVelocity;
-        
-        let targetTab = activeTab;
-        let targetTranslation = activeTab === 0 ? 0 : -screenWidth;
-        
+        const velocityThreshold = 0.01;
+        const shouldSwitch = Math.abs(dx) > distanceThreshold || Math.abs(vx) > velocityThreshold;
+        let targetTab = activeTabRef.current;
+        let targetTranslation = activeTabRef.current === 0 ? 0 : -width;
         if (shouldSwitch) {
-          if (dx > 0 && activeTab === 1) {
-            // Swipe right - go to tab 0 (from goal ratings back to score)
+          if (dx > 0 && activeTabRef.current === 1) {
             targetTab = 0;
             targetTranslation = 0;
-          } else if (dx < 0 && activeTab === 0) {
-            // Swipe left - go to tab 1 (from score to goal ratings)
+          } else if (dx < 0 && activeTabRef.current === 0) {
             targetTab = 1;
-            targetTranslation = -screenWidth;
+            targetTranslation = -width;
           }
         }
-        
-        // Update active tab if it changed
-        if (targetTab !== activeTab) {
+        if (targetTab !== activeTabRef.current) {
           setActiveTab(targetTab);
+          activeTabRef.current = targetTab;
           if (Platform.OS !== 'web') {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }
         }
-        
-        // Animate to target position with ultra-smooth, snappy spring
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
           tension: 110,
@@ -824,9 +810,8 @@ export default function PremiumScanFeedback({
         }).start();
       },
       onPanResponderTerminate: () => {
-        // Handle termination with smooth snap back
-        const screenWidth = Dimensions.get('window').width;
-        const targetTranslation = activeTab === 0 ? 0 : -screenWidth;
+        const width = Dimensions.get('window').width;
+        const targetTranslation = activeTabRef.current === 0 ? 0 : -width;
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
           tension: 90,
