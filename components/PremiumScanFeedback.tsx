@@ -741,6 +741,8 @@ export default function PremiumScanFeedback({
   const activeTabRef = useRef<number>(0);
   const [categoryScores, setCategoryScores] = useState<{ health?: number; diet?: number; body?: number; life?: number }>({});
   const tabTranslateX = useRef(new Animated.Value(0)).current;
+  const [tabHeights, setTabHeights] = useState<number[]>([0, 0]);
+  const [containerHeight, setContainerHeight] = useState<number>(0);
   
   const slideUpValue = useRef(new Animated.Value(screenHeight)).current;
   const cardScale = useRef(new Animated.Value(0.8)).current;
@@ -813,6 +815,8 @@ export default function PremiumScanFeedback({
         if (targetTab !== activeTabRef.current) {
           setActiveTab(targetTab);
           activeTabRef.current = targetTab;
+          const newHeight = tabHeights[targetTab] ?? 0;
+          if (newHeight > 0) setContainerHeight(newHeight);
           if (Platform.OS !== 'web') {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }
@@ -1583,7 +1587,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Swipeable Tab Content */}
           {showPersonalized && nutrition.personalScore !== undefined && (
-            <View style={styles.swipeableContainer}>
+            <View style={[styles.swipeableContainer, { height: containerHeight || undefined }]}>
+
               <Animated.View
                 style={[
                   styles.tabContentContainer,
@@ -1594,7 +1599,20 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 {...panResponder.panHandlers}
               >
                 {/* Tab 1: Product and Score Comparison */}
-                <View style={[styles.tabContent, { width: screenWidth }]}>
+                <View
+                  style={[styles.tabContent, { width: screenWidth }]}
+                  onLayout={(e) => {
+                    const h = e.nativeEvent.layout.height;
+                    setTabHeights((prev) => {
+                      const next = [...prev] as number[];
+                      next[0] = h;
+                      return next;
+                    });
+                    if (activeTabRef.current === 0 && (!containerHeight || containerHeight < 10)) {
+                      setContainerHeight(h);
+                    }
+                  }}
+                >
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     {/* Product Header */}
                     <View style={styles.productHeader}>
@@ -1688,7 +1706,20 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 </View>
                 
                 {/* Tab 2: Goal Rating Bars */}
-                <View style={[styles.tabContent, { width: screenWidth }]}>
+                <View
+                  style={[styles.tabContent, { width: screenWidth }]}
+                  onLayout={(e) => {
+                    const h = e.nativeEvent.layout.height;
+                    setTabHeights((prev) => {
+                      const next = [...prev] as number[];
+                      next[1] = h;
+                      return next;
+                    });
+                    if (activeTabRef.current === 1 && (!containerHeight || containerHeight < 10)) {
+                      setContainerHeight(h);
+                    }
+                  }}
+                >
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.cardHeader}>
                       <Target size={20} color={Colors.retroPink} />
@@ -3201,6 +3232,7 @@ const styles = StyleSheet.create({
   // Swipe Container Styles
   swipeableContainer: {
     position: 'relative',
+    overflow: 'hidden',
   },
   
   swipeIndicator: {
