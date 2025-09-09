@@ -2,6 +2,16 @@
 -- Run these SQL commands in your Supabase SQL editor
 -- IMPORTANT: Make sure to run this entire script to create all tables and policies
 
+-- Activity level is stored in dietary_preferences JSONB as:
+-- {
+--   "biometrics": {
+--     "height_cm": 175,
+--     "weight_kg": 70,
+--     "sex": "male",
+--     "activity_level": "moderately-active"
+--   }
+-- }
+
 -- First, ensure we're working in the public schema
 SET search_path TO public;
 

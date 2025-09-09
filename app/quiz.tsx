@@ -76,6 +76,20 @@ const quizSteps: QuizStep[] = [
     type: 'biometrics',
   },
   {
+    id: 'activityLevel',
+    title: 'What\'s your activity level?',
+    subtitle: 'This helps us calculate your personalized nutrition needs',
+    icon: <TrendingUp size={48} color={Colors.primary} />,
+    type: 'single-select',
+    options: [
+      { id: 'inactive', label: 'Inactive', description: 'Little to no exercise' },
+      { id: 'lightly-active', label: 'Lightly Active', description: 'Light exercise 1-3 days/week' },
+      { id: 'moderately-active', label: 'Moderately Active', description: 'Moderate exercise 3-5 days/week' },
+      { id: 'very-active', label: 'Very Active', description: 'Hard exercise 6-7 days/week' },
+      { id: 'extremely-active', label: 'Extremely Active', description: 'Very hard exercise, physical job' },
+    ],
+  },
+  {
     id: 'bodyGoal',
     title: 'What\'s your body goal?',
     subtitle: 'Choose what best describes your current objective',
@@ -229,6 +243,7 @@ function QuizScreen() {
     heightCm: number | null;
     weightKg: number | null;
     sex: 'male' | 'female' | 'other' | null;
+    activityLevel: string | null;
   }>({
     bodyGoal: null,
     healthGoal: null,
@@ -243,6 +258,7 @@ function QuizScreen() {
     heightCm: null,
     weightKg: null,
     sex: null,
+    activityLevel: null,
   });
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -645,7 +661,7 @@ function QuizScreen() {
         console.log('[Quiz] Saving dietary restrictions to profile:', answers.dietaryRestrictions);
         await updateProfile({ dietaryRestrictions: answers.dietaryRestrictions });
       }
-      if (answers.heightCm && answers.weightKg && answers.sex) {
+      if (answers.heightCm && answers.weightKg && answers.sex && answers.activityLevel) {
         try {
           const { data: userData } = await supabase.auth.getUser();
           const userId = userData?.user?.id;
@@ -657,6 +673,7 @@ function QuizScreen() {
                   height_cm: answers.heightCm,
                   weight_kg: answers.weightKg,
                   sex: answers.sex,
+                  activity_level: answers.activityLevel,
                 },
               },
             });
@@ -845,6 +862,8 @@ function QuizScreen() {
         const weightOk = w > 30 && w < 400;
         return heightOk && weightOk && !!s;
       }
+      case 'activityLevel':
+        return answers.activityLevel !== null;
       case 'bodyGoal':
         return answers.bodyGoal !== null;
       case 'healthGoal':
