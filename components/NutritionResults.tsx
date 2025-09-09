@@ -898,6 +898,51 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                         </View>
                       </View>
                     )}
+                    {/* Macro Breakdown directly under personalized score */}
+                    <View style={styles.macroInlineContainer} testID="macro-breakdown-inline">
+                      <View style={styles.card}>
+                        <View style={styles.cardHeader}>
+                          <Zap size={20} color={Colors.primary} />
+                          <Text style={styles.cardTitle}>Macro Breakdown</Text>
+                        </View>
+                        <View style={styles.macroGrid}>
+                          <View style={styles.macroItem}>
+                            <Text style={styles.macroValue}>{nutrition.calories}</Text>
+                            <Text style={styles.macroLabel}>Calories</Text>
+                          </View>
+                          <View style={styles.macroItem}>
+                            <Text style={styles.macroValue}>{nutrition.protein}g</Text>
+                            <Text style={styles.macroLabel}>Protein</Text>
+                          </View>
+                          <View style={styles.macroItem}>
+                            <Text style={styles.macroValue}>{nutrition.carbs}g</Text>
+                            <Text style={styles.macroLabel}>Carbs</Text>
+                          </View>
+                          <View style={styles.macroItem}>
+                            <Text style={styles.macroValue}>{nutrition.fat}g</Text>
+                            <Text style={styles.macroLabel}>Fat</Text>
+                          </View>
+                        </View>
+                        <View style={styles.macroSecondaryGrid}>
+                          <View style={styles.macroSecondaryItem}>
+                            <Text style={styles.macroSecondaryValue}>{nutrition.fiber}g</Text>
+                            <Text style={styles.macroSecondaryLabel}>Fiber</Text>
+                          </View>
+                          <View style={styles.macroSecondaryItem}>
+                            <Text style={styles.macroSecondaryValue}>{nutrition.sugar}g</Text>
+                            <Text style={styles.macroSecondaryLabel}>Sugar</Text>
+                          </View>
+                          <View style={styles.macroSecondaryItem}>
+                            <Text style={styles.macroSecondaryValue}>{nutrition.saturatedFat}g</Text>
+                            <Text style={styles.macroSecondaryLabel}>Sat Fat</Text>
+                          </View>
+                          <View style={styles.macroSecondaryItem}>
+                            <Text style={styles.macroSecondaryValue}>{nutrition.sodium}mg</Text>
+                            <Text style={styles.macroSecondaryLabel}>Sodium</Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
                   </View>
                 </View>
                 
@@ -981,6 +1026,62 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
               </View>
             )}
             
+            {/* When on goals view, move macro breakdown down below hero */}
+            {currentView === 'goals' && (
+              <Animated.View 
+                style={[
+                  styles.macroBelowWhenGoals,
+                  {
+                    transform: [{ translateY: 40 }],
+                  },
+                ]}
+                testID="macro-breakdown-goals"
+              >
+                <View style={styles.card}>
+                  <View style={styles.cardHeader}>
+                    <Zap size={20} color={Colors.primary} />
+                    <Text style={styles.cardTitle}>Macro Breakdown</Text>
+                  </View>
+                  <View style={styles.macroGrid}>
+                    <View style={styles.macroItem}>
+                      <Text style={styles.macroValue}>{nutrition.calories}</Text>
+                      <Text style={styles.macroLabel}>Calories</Text>
+                    </View>
+                    <View style={styles.macroItem}>
+                      <Text style={styles.macroValue}>{nutrition.protein}g</Text>
+                      <Text style={styles.macroLabel}>Protein</Text>
+                    </View>
+                    <View style={styles.macroItem}>
+                      <Text style={styles.macroValue}>{nutrition.carbs}g</Text>
+                      <Text style={styles.macroLabel}>Carbs</Text>
+                    </View>
+                    <View style={styles.macroItem}>
+                      <Text style={styles.macroValue}>{nutrition.fat}g</Text>
+                      <Text style={styles.macroLabel}>Fat</Text>
+                    </View>
+                  </View>
+                  <View style={styles.macroSecondaryGrid}>
+                    <View style={styles.macroSecondaryItem}>
+                      <Text style={styles.macroSecondaryValue}>{nutrition.fiber}g</Text>
+                      <Text style={styles.macroSecondaryLabel}>Fiber</Text>
+                    </View>
+                    <View style={styles.macroSecondaryItem}>
+                      <Text style={styles.macroSecondaryValue}>{nutrition.sugar}g</Text>
+                      <Text style={styles.macroSecondaryLabel}>Sugar</Text>
+                    </View>
+                    <View style={styles.macroSecondaryItem}>
+                      <Text style={styles.macroSecondaryValue}>{nutrition.saturatedFat}g</Text>
+                      <Text style={styles.macroSecondaryLabel}>Sat Fat</Text>
+                    </View>
+                    <View style={styles.macroSecondaryItem}>
+                      <Text style={styles.macroSecondaryValue}>{nutrition.sodium}mg</Text>
+                      <Text style={styles.macroSecondaryLabel}>Sodium</Text>
+                    </View>
+                  </View>
+                </View>
+              </Animated.View>
+            )}
+            
             {/* Result Label */}
             <View style={styles.resultSection}>
               <View style={[styles.resultBadge, { 
@@ -1054,62 +1155,6 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             </View>
           )}
 
-          {/* Macro Breakdown Section - positioned based on current view */}
-          <Animated.View 
-            style={[
-              styles.macroBreakdownContainer,
-              {
-                transform: [{
-                  translateY: currentView === 'goals' ? 100 : 0
-                }]
-              }
-            ]}
-          >
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Zap size={20} color={Colors.primary} />
-                <Text style={styles.cardTitle}>Macro Breakdown</Text>
-              </View>
-              
-              <View style={styles.macroGrid}>
-                <View style={styles.macroItem}>
-                  <Text style={styles.macroValue}>{nutrition.calories}</Text>
-                  <Text style={styles.macroLabel}>Calories</Text>
-                </View>
-                <View style={styles.macroItem}>
-                  <Text style={styles.macroValue}>{nutrition.protein}g</Text>
-                  <Text style={styles.macroLabel}>Protein</Text>
-                </View>
-                <View style={styles.macroItem}>
-                  <Text style={styles.macroValue}>{nutrition.carbs}g</Text>
-                  <Text style={styles.macroLabel}>Carbs</Text>
-                </View>
-                <View style={styles.macroItem}>
-                  <Text style={styles.macroValue}>{nutrition.fat}g</Text>
-                  <Text style={styles.macroLabel}>Fat</Text>
-                </View>
-              </View>
-              
-              <View style={styles.macroSecondaryGrid}>
-                <View style={styles.macroSecondaryItem}>
-                  <Text style={styles.macroSecondaryValue}>{nutrition.fiber}g</Text>
-                  <Text style={styles.macroSecondaryLabel}>Fiber</Text>
-                </View>
-                <View style={styles.macroSecondaryItem}>
-                  <Text style={styles.macroSecondaryValue}>{nutrition.sugar}g</Text>
-                  <Text style={styles.macroSecondaryLabel}>Sugar</Text>
-                </View>
-                <View style={styles.macroSecondaryItem}>
-                  <Text style={styles.macroSecondaryValue}>{nutrition.saturatedFat}g</Text>
-                  <Text style={styles.macroSecondaryLabel}>Sat Fat</Text>
-                </View>
-                <View style={styles.macroSecondaryItem}>
-                  <Text style={styles.macroSecondaryValue}>{nutrition.sodium}mg</Text>
-                  <Text style={styles.macroSecondaryLabel}>Sodium</Text>
-                </View>
-              </View>
-            </View>
-          </Animated.View>
 
           {/* Ingredient Breakdown Section */}
           {nutrition.ingredients && nutrition.ingredients.length > 0 && (
@@ -2271,8 +2316,13 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   
-  macroBreakdownContainer: {
-    // Container for animated macro breakdown positioning
+  macroInlineContainer: {
+    width: '100%',
+    marginTop: 16,
+  },
+  macroBelowWhenGoals: {
+    marginHorizontal: 0,
+    marginTop: 8,
   },
 
 });
