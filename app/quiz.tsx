@@ -36,7 +36,7 @@ import {
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useUser, UserGoals } from '@/contexts/UserContext';
-import { supabase } from '@/lib/supabase';
+import { supabase, updateUserProfile } from '@/lib/supabase';
 import * as StoreReview from 'expo-store-review';
 import * as Notifications from 'expo-notifications';
 
@@ -45,7 +45,7 @@ interface QuizStep {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection' | 'tags-input' | 'ingredient-confusion';
+  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection' | 'tags-input' | 'ingredient-confusion' | 'biometrics';
   options?: {
     id: string;
     label: string;
@@ -67,6 +67,13 @@ const quizSteps: QuizStep[] = [
     subtitle: 'Please wait while we create your custom experience...',
     icon: <Sparkles size={48} color={Colors.primary} />,
     type: 'loading',
+  },
+  {
+    id: 'biometrics',
+    title: 'Tell us about you',
+    subtitle: 'Height, weight, and sex help personalize insights',
+    icon: <Users size={48} color={Colors.primary} />,
+    type: 'biometrics',
   },
   {
     id: 'bodyGoal',
@@ -219,6 +226,9 @@ function QuizScreen() {
     healthStrictness: string | null;
     dietStrictness: string | null;
     lifeStrictness: string | null;
+    heightCm: number | null;
+    weightKg: number | null;
+    sex: 'male' | 'female' | 'other' | null;
   }>({
     bodyGoal: null,
     healthGoal: null,
@@ -230,6 +240,9 @@ function QuizScreen() {
     healthStrictness: null,
     dietStrictness: null,
     lifeStrictness: null,
+    heightCm: null,
+    weightKg: null,
+    sex: null,
   });
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
@@ -632,6 +645,28 @@ function QuizScreen() {
         console.log('[Quiz] Saving dietary restrictions to profile:', answers.dietaryRestrictions);
         await updateProfile({ dietaryRestrictions: answers.dietaryRestrictions });
       }
+      if (answers.heightCm && answers.weightKg && answers.sex) {
+        try {
+          const { data: userData } = await supabase.auth.getUser();
+          const userId = userData?.user?.id;
+          if (userId) {
+            console.log('[Quiz] Saving biometrics to Supabase');
+            await updateUserProfile(userId, {
+              dietary_preferences: {
+                biometrics: {
+                  height_cm: answers.heightCm,
+                  weight_kg: answers.weightKg,
+                  sex: answers.sex,
+                },
+              },
+            });
+          } else {
+            console.log('[Quiz] Cannot save biometrics yet - user not authenticated');
+          }
+        } catch (biometricErr) {
+          console.error('[Quiz] Failed to save biometrics:', biometricErr);
+        }
+      }
       handleNext();
     } catch (error) {
       console.error('[Quiz] Error completing quiz:', error);
@@ -802,6 +837,14 @@ function QuizScreen() {
       case 'welcome':
         return true;
 
+      case 'biometrics': {
+        const h = answers.heightCm ?? 0;
+        const w = answers.weightKg ?? 0;
+        const s = answers.sex;
+        const heightOk = h > 80 && h < 260;
+        const weightOk = w > 30 && w < 400;
+        return heightOk && weightOk && !!s;
+      }
       case 'bodyGoal':
         return answers.bodyGoal !== null;
       case 'healthGoal':
@@ -1144,6 +1187,60 @@ function QuizScreen() {
                 <View style={[styles.loadingBarFill, { width: `${loadingProgress}%` }]} />
               </View>
               <Text style={styles.loadingPercentage}>{Math.round(loadingProgress)}%</Text>
+            </View>
+          </View>
+        );
+      case 'biometrics':
+        return (
+          <View style={styles.selectContent}>
+            <View style={styles.iconContainer}>{currentStepData.icon}</View>
+            <Text style={styles.title}>{currentStepData.title}</Text>
+            <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
+            <View style={styles.biometricsRow}>
+              <View style={styles.biometricsField}>
+                <Text style={styles.biometricsLabel}>Height (cm)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={answers.heightCm?.toString() ?? ''}
+                  onChangeText={(t) => {
+                    const n = Number(t.replace(/[^0-9.]/g, ''));
+                    setAnswers((prev) => ({ ...prev, heightCm: isNaN(n) ? null : n }));
+                  }}
+                  keyboardType="numeric"
+                  placeholder="e.g., 175"
+                  placeholderTextColor={Colors.gray500}
+                  testID="biometrics-height"
+                />
+              </View>
+              <View style={styles.biometricsField}>
+                <Text style={styles.biometricsLabel}>Weight (kg)</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={answers.weightKg?.toString() ?? ''}
+                  onChangeText={(t) => {
+                    const n = Number(t.replace(/[^0-9.]/g, ''));
+                    setAnswers((prev) => ({ ...prev, weightKg: isNaN(n) ? null : n }));
+                  }}
+                  keyboardType="numeric"
+                  placeholder="e.g., 72"
+                  placeholderTextColor={Colors.gray500}
+                  testID="biometrics-weight"
+                />
+              </View>
+            </View>
+            <View style={styles.sexContainer}>
+              {(['male','female','other'] as const).map((s) => (
+                <TouchableOpacity
+                  key={s}
+                  style={[styles.sexChip, answers.sex === s && styles.sexChipSelected]}
+                  onPress={() => setAnswers((prev) => ({ ...prev, sex: s }))}
+                  testID={`biometrics-sex-${s}`}
+                >
+                  <Text style={[styles.sexChipText, answers.sex === s && styles.sexChipTextSelected]}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         );
@@ -4103,6 +4200,45 @@ const styles = StyleSheet.create({
   strictnessOptionTextSelected: {
     color: Colors.white,
     fontWeight: '600',
+  },
+  biometricsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  biometricsField: {
+    flex: 1,
+  },
+  biometricsLabel: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    marginBottom: 8,
+    fontWeight: '500',
+  },
+  sexContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 16,
+  },
+  sexChip: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.borderLight,
+    borderRadius: 12,
+    backgroundColor: Colors.surface,
+  },
+  sexChipSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  sexChipText: {
+    color: Colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  sexChipTextSelected: {
+    color: Colors.white,
   },
 });
 
