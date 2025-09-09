@@ -1746,7 +1746,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 
                   </View>
 
-                  {nutrition.ingredients && nutrition.ingredients.length > 0 && (
+                  {false && nutrition.ingredients && nutrition.ingredients.length > 0 && (
                     <View style={[styles.card, { backgroundColor: colors.surface }]}>
                       <TouchableOpacity 
                         style={styles.cardHeader}
