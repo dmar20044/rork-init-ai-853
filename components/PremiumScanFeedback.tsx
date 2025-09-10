@@ -1254,9 +1254,29 @@ Be thorough and educational - this information helps me make informed food choic
         }
       }
       
-      console.log('Cleaned ingredient analysis response:', cleanedResponse);
+      console.log('Cleaned ingredient analysis response:', cleanedResponse.substring(0, 200));
       
-      const analysisData = JSON.parse(cleanedResponse);
+      let analysisData;
+      try {
+        analysisData = JSON.parse(cleanedResponse);
+      } catch (parseError) {
+        console.error('Initial JSON parsing failed:', parseError);
+        console.error('Response that failed to parse:', cleanedResponse.substring(0, 500));
+        
+        // Try to extract JSON more aggressively by looking for array patterns
+        const arrayMatch = cleanedResponse.match(/\[\s*{[\s\S]*}\s*\]/);
+        if (arrayMatch) {
+          console.log('Trying array match:', arrayMatch[0].substring(0, 200));
+          try {
+            analysisData = JSON.parse(arrayMatch[0]);
+          } catch (arrayError) {
+            console.error('Array match parsing also failed:', arrayError);
+            throw new Error('Failed to parse ingredient analysis response');
+          }
+        } else {
+          throw new Error('No valid JSON array found in response');
+        }
+      }
       
       if (Array.isArray(analysisData)) {
         setIngredientAnalysis(analysisData);
