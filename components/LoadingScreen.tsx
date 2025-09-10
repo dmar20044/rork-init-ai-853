@@ -52,7 +52,7 @@ const progressSteps = [
   { label: 'Personalizing', duration: 1000, icon: User }
 ];
 
-const LoadingScreen = React.memo<LoadingScreenProps>(({ isVisible, onCancel, onComplete, onProductNotFound, progress }) => {
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onComplete, onProductNotFound, progress }) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
   const { isDarkMode } = useTheme();
 
@@ -884,9 +884,7 @@ const LoadingScreen = React.memo<LoadingScreenProps>(({ isVisible, onCancel, onC
       )}
     </View>
   );
-});
-
-LoadingScreen.displayName = 'LoadingScreen';
+};
 
 export default LoadingScreen;
 
