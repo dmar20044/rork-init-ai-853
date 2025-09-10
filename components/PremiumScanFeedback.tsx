@@ -1867,59 +1867,96 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <Text style={[styles.loadingIngredientsText, { color: colors.textSecondary }]}>Analyzing ingredients...</Text>
                         </View>
                       ) : (
-                        <ScrollView 
-                          style={styles.ingredientsScrollView}
-                          contentContainerStyle={styles.ingredientsContent}
-                          showsVerticalScrollIndicator={true}
-                          nestedScrollEnabled={true}
-                          scrollEnabled={true}
-                        >
-                          {ingredientAnalysis.length > 0 ? (
-                            ingredientAnalysis.map((analysis, index) => {
-                              const isExpanded = expandedIngredients.has(index);
-                              return (
-                                <View key={index} style={[styles.ingredientItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: Colors.retroNeonTurquoise }]}>
-                                  <TouchableOpacity 
-                                    style={styles.ingredientHeader}
-                                    onPress={() => toggleIngredientExpansion(index)}
-                                    activeOpacity={0.7}
-                                  >
-                                    <View style={styles.ingredientIcon}>
-                                      {analysis.isGood ? (
-                                        <CheckCircle size={16} color={Colors.success} />
-                                      ) : (
-                                        <AlertTriangle size={16} color={Colors.warning} />
-                                      )}
-                                    </View>
-                                    <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{analysis.ingredient}</Text>
-                                    {isExpanded ? (
-                                      <ChevronDown size={20} color={colors.textSecondary} />
-                                    ) : (
-                                      <ChevronRight size={20} color={colors.textSecondary} />
-                                    )}
-                                  </TouchableOpacity>
-                                  
-                                  {isExpanded && (
-                                    <View style={[styles.ingredientDetails, { borderTopColor: colors.textSecondary + '20' }]}>
-                                      <Text style={[styles.ingredientDescription, {
-                                        color: analysis.isGood ? colors.textSecondary : colors.error
-                                      }]}>
-                                        {analysis.description}
-                                      </Text>
-                                      <Text style={[styles.ingredientPurpose, { color: colors.textSecondary }]}>
-                                        Purpose: {analysis.purpose}
-                                      </Text>
-                                    </View>
-                                  )}
+                        <View style={styles.ingredientSummaryLayout}>
+                          {/* Left side - Circular Summary */}
+                          <View style={styles.ingredientSummaryLeft}>
+                            <Text style={[styles.ingredientSummaryTitle, { color: colors.textPrimary }]}>Ingredients Summary</Text>
+                            
+                            <View style={styles.ingredientCircleContainer}>
+                              <View style={[styles.ingredientCircle, { backgroundColor: colors.surface, borderColor: colors.textSecondary + '20' }]}>
+                                <Text style={[styles.ingredientCircleNumber, { color: colors.textPrimary }]}>
+                                  {ingredientAnalysis.length}
+                                </Text>
+                                <Text style={[styles.ingredientCircleLabel, { color: colors.textSecondary }]}>Ingredients</Text>
+                              </View>
+                            </View>
+                          </View>
+                          
+                          {/* Right side - Category Breakdown */}
+                          <View style={styles.ingredientSummaryRight}>
+                            <TouchableOpacity 
+                              style={styles.ingredientListHeader}
+                              onPress={() => {
+                                // Navigate to full ingredient list or expand
+                                console.log('Navigate to ingredient list');
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={[styles.ingredientListTitle, { color: Colors.retroNeonTurquoise }]}>Ingredient List</Text>
+                              <ChevronRight size={16} color={Colors.retroNeonTurquoise} />
+                            </TouchableOpacity>
+                            
+                            {ingredientAnalysis.length > 0 ? (
+                              <View style={styles.ingredientCategoryList}>
+                                {/* Clean Ingredients */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: Colors.success,
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Clean ({ingredientAnalysis.filter(i => i.isGood).length})
+                                  </Text>
                                 </View>
-                              );
-                            })
-                          ) : (
-                            <Text style={[styles.noIngredientsText, { color: colors.textSecondary }]}>
-                              No ingredient analysis available
-                            </Text>
-                          )}
-                        </ScrollView>
+                                
+                                {/* Questionable Ingredients */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: Colors.warning,
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => !i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Questionable ({ingredientAnalysis.filter(i => !i.isGood).length})
+                                  </Text>
+                                </View>
+                                
+                                {/* Processed Ingredients */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: Colors.error,
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Processed ({ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length})
+                                  </Text>
+                                </View>
+                                
+                                {/* Not Rated */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: colors.textSecondary + '40',
+                                      width: '5%'
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Not Rated (0)
+                                  </Text>
+                                </View>
+                              </View>
+                            ) : (
+                              <Text style={[styles.noIngredientsText, { color: colors.textSecondary }]}>
+                                No ingredient analysis available
+                              </Text>
+                            )}
+                          </View>
+                        </View>
                       )}
                     </View>
                   </View>
@@ -3447,6 +3484,102 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
+    color: Colors.retroCharcoalBlack,
+  },
+  
+  // New Ingredient Summary Layout Styles
+  ingredientSummaryLayout: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    gap: 20,
+  },
+  
+  ingredientSummaryLeft: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  
+  ingredientSummaryTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    color: Colors.retroCharcoalBlack,
+  },
+  
+  ingredientCircleContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  ingredientCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  
+  ingredientCircleNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: Colors.retroCharcoalBlack,
+  },
+  
+  ingredientCircleLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginTop: 4,
+    color: Colors.retroSlateGray,
+  },
+  
+  ingredientSummaryRight: {
+    flex: 1.2,
+  },
+  
+  ingredientListHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    paddingVertical: 4,
+  },
+  
+  ingredientListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.retroNeonTurquoise,
+  },
+  
+  ingredientCategoryList: {
+    gap: 12,
+  },
+  
+  ingredientCategoryItem: {
+    gap: 8,
+  },
+  
+  ingredientCategoryBar: {
+    height: 8,
+    backgroundColor: Colors.retroSoftGray + '30',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  
+  ingredientCategoryProgress: {
+    height: '100%',
+    borderRadius: 4,
+    minWidth: 8,
+  },
+  
+  ingredientCategoryLabel: {
+    fontSize: 14,
+    fontWeight: '500',
     color: Colors.retroCharcoalBlack,
   },
 
