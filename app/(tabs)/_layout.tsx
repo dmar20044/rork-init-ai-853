@@ -31,9 +31,118 @@ const AnimatedCameraIcon = memo(function AnimatedCameraIcon({
   const spinValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
   const opacityValue = useRef(new Animated.Value(1)).current;
+  const morphValue = useRef(new Animated.Value(0)).current;
+  
+  // Effect to handle focused state changes
+  React.useEffect(() => {
+    if (focused && !showCheckmark) {
+      // Animate to checkmark when tab becomes focused
+      setIsAnimating(true);
+      
+      Animated.sequence([
+        // Spin and scale down simultaneously
+        Animated.parallel([
+          Animated.timing(spinValue, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleValue, {
+            toValue: 0.3,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Brief pause to switch icons
+        Animated.delay(50),
+      ]).start(() => {
+        // Switch to checkmark
+        setShowCheckmark(true);
+        
+        // Scale up and fade in checkmark
+        Animated.parallel([
+          Animated.timing(scaleValue, {
+            toValue: 1.1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(morphValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          // Scale back to normal
+          Animated.timing(scaleValue, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }).start(() => {
+            setIsAnimating(false);
+          });
+        });
+      });
+    } else if (!focused && showCheckmark) {
+      // Animate back to camera when tab loses focus
+      setIsAnimating(true);
+      
+      Animated.sequence([
+        // Scale down and fade out checkmark
+        Animated.parallel([
+          Animated.timing(scaleValue, {
+            toValue: 0.3,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(morphValue, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Brief pause to switch icons
+        Animated.delay(50),
+      ]).start(() => {
+        // Switch back to camera
+        setShowCheckmark(false);
+        spinValue.setValue(0);
+        
+        // Scale up and fade in camera
+        Animated.parallel([
+          Animated.timing(scaleValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setIsAnimating(false);
+        });
+      });
+    }
+  }, [focused, showCheckmark, spinValue, scaleValue, opacityValue, morphValue]);
   
   const startAnimation = useCallback(() => {
-    if (isAnimating) return;
+    if (isAnimating || focused) return; // Don't animate if already focused or animating
     
     setIsAnimating(true);
     
@@ -82,14 +191,18 @@ const AnimatedCameraIcon = memo(function AnimatedCameraIcon({
           duration: 200,
           useNativeDriver: true,
         }).start(() => {
-          // Reset after delay
-          setTimeout(() => {
-            setShowCheckmark(false);
+          // Reset after delay only if not focused
+          if (!focused) {
+            setTimeout(() => {
+              setShowCheckmark(false);
+              setIsAnimating(false);
+              spinValue.setValue(0);
+              scaleValue.setValue(1);
+              opacityValue.setValue(1);
+            }, 1000);
+          } else {
             setIsAnimating(false);
-            spinValue.setValue(0);
-            scaleValue.setValue(1);
-            opacityValue.setValue(1);
-          }, 1000);
+          }
         });
       });
     });
@@ -98,7 +211,7 @@ const AnimatedCameraIcon = memo(function AnimatedCameraIcon({
     if (onPress) {
       onPress();
     }
-  }, [isAnimating, onPress, spinValue, scaleValue, opacityValue]);
+  }, [isAnimating, focused, onPress, spinValue, scaleValue, opacityValue]);
   
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
