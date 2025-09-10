@@ -70,79 +70,18 @@ export const analyzeFoodProcedure = publicProcedure
       const compressedImage = compressBase64Image(input.base64Image, 500); // 500KB max
       console.log('Image compression completed');
       
-      const systemPrompt = `You are a nutrition expert AI that analyzes food images with high accuracy. Your goal is to provide precise nutritional information by:
+      const systemPrompt = `You are a nutrition expert AI. Analyze food images quickly and accurately.
 
-1. FIRST: Identify if this is a packaged food with a nutrition label visible
-2. If nutrition label is visible: Read the exact values from the label
-3. If no label: Use your knowledge of the specific food item
-4. Always specify realistic serving sizes based on the actual food shown
-5. CRITICAL: Provide a COMPLETE and ACCURATE ingredient list - this is essential for user health
-6. LANGUAGE: Always respond in English, regardless of the language on the product packaging
+TASKS:
+1. Identify the food item and brand (if visible)
+2. Read nutrition label if visible, otherwise estimate
+3. List ALL visible ingredients (translate to English if needed)
+4. Identify additives and allergens
+5. Respond in English only
 
-IMPORTANT GUIDELINES:
-- For packaged foods: Read nutrition facts panel exactly as printed
-- For fresh foods: Use USDA standard serving sizes (1 medium apple = 182g, 1 cup rice = 195g, etc.)
-- For restaurant/prepared foods: Estimate based on portion size visible
-- Be conservative with health claims - only mark as organic if clearly labeled
-- Include ALL visible ingredients from ingredient lists - READ EVERY SINGLE INGREDIENT
-- If ingredient list is partially visible, include what you can see and note "partial list"
-- For fresh foods, list the main components (e.g., apple = ["apples"])
-- Distinguish between natural sugars (fruit) vs added sugars (processed foods)
-- Identify ALL additives, preservatives, artificial colors, flavors, emulsifiers, stabilizers
-- TRANSLATE: If ingredients are in another language, translate them to English
-
-INGREDIENT ANALYSIS REQUIREMENTS:
-- Read ingredient lists character by character if visible
-- Include every single ingredient, even trace amounts
-- Separate ingredients properly (comma-separated typically)
-- Note if ingredients contain sub-ingredients (e.g., "enriched flour (wheat flour, niacin, iron)")
-- Identify all forms of sugar, oils, preservatives, and additives
-- For processed foods, expect 5-20+ ingredients typically
-
-You MUST respond with ONLY a valid JSON object, no additional text or formatting. The JSON should contain:
-- name: string (specific food item name, include brand if visible)
-- calories: number (per serving as defined below)
-- protein: number (grams per serving)
-- carbs: number (grams per serving)
-- fat: number (grams per serving)
-- saturatedFat: number (grams per serving)
-- fiber: number (grams per serving)
-- sugar: number (grams per serving)
-- sodium: number (milligrams per serving)
-- servingSize: string (be specific: "1 medium apple (182g)", "2 slices (57g)", "1 cup cooked (195g)")
-- servingsPerContainer: number (only for packaged foods, omit for fresh foods)
-- healthScore: number (1-100, be realistic - most processed foods should be 30-60)
-- ingredients: string[] (COMPLETE list - every single ingredient visible or commonly found)
-- allergens: string[] (milk, eggs, fish, shellfish, tree nuts, peanuts, wheat, soybeans)
-- additives: string[] (preservatives, artificial colors, flavors, emulsifiers, etc.)
-- isOrganic: boolean (only true if "USDA Organic" or "Certified Organic" is clearly visible)
-- recommendations: string[] (specific, actionable health tips)
-- warnings: string[] (specific health concerns for this food)
-
-Example response format:
+RESPOND WITH ONLY VALID JSON:
 {
-  "name": "Apple",
-  "calories": 95,
-  "protein": 0.5,
-  "carbs": 25,
-  "fat": 0.3,
-  "saturatedFat": 0.1,
-  "fiber": 4.4,
-  "sugar": 19,
-  "sodium": 2,
-  "servingSize": "1 medium apple (182g)",
-  "healthScore": 85,
-  "ingredients": [],
-  "allergens": [],
-  "additives": [],
-  "isOrganic": false,
-  "recommendations": ["Great source of fiber", "Natural antioxidants"],
-  "warnings": []
-}
-
-If you cannot identify the food clearly, respond with:
-{
-  "name": "Unknown Food Item",
+  "name": "Food Name",
   "calories": 0,
   "protein": 0,
   "carbs": 0,
@@ -152,16 +91,18 @@ If you cannot identify the food clearly, respond with:
   "sugar": 0,
   "sodium": 0,
   "servingSize": "1 serving",
-  "healthScore": 0,
+  "healthScore": 50,
   "ingredients": [],
   "allergens": [],
   "additives": [],
   "isOrganic": false,
   "recommendations": [],
-  "warnings": ["Could not identify food item from image"]
-}`;
+  "warnings": []
+}
 
-      const userMessage = 'Please analyze this food image and provide detailed nutritional information in English. CRITICAL: Pay special attention to the ingredient list - read every single ingredient visible on the package. If you can see an ingredient list, include ALL ingredients but translate them to English if they are in another language. This is essential for accurate health analysis. Always respond in English regardless of the product packaging language.';
+Be fast and accurate. Include all visible ingredients.`;
+
+      const userMessage = 'Analyze this food image. Provide nutrition facts and complete ingredient list in JSON format. Be fast and accurate.';
 
       console.log('Making request to Rork AI API...');
       
@@ -170,7 +111,7 @@ If you cannot identify the food clearly, respond with:
       const timeoutId = setTimeout(() => {
         console.log('Request timeout, aborting...');
         abortController.abort();
-      }, 60000); // 60 second timeout
+      }, 30000); // 30 second timeout (reduced from 60s)
       
       let response;
       try {

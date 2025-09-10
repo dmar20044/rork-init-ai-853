@@ -1059,15 +1059,26 @@ export default function PremiumScanFeedback({
     }).start();
   };
 
+  // Create a simple cache for ingredient analysis
+  const ingredientAnalysisCache = useRef<Map<string, IngredientAnalysis[]>>(new Map());
+
   const analyzeIngredients = useCallback(async (ingredients: string[]) => {
     if (!ingredients || ingredients.length === 0) return;
     
-    setIsAnalyzingIngredients(true);
-    console.log('Analyzing ingredients:', ingredients);
-    console.log('User goals:', profile.goals);
-    console.log('User dietary restrictions:', profile.dietaryRestrictions);
+    // Create cache key from ingredients list
+    const cacheKey = ingredients.sort().join('|');
     
-    // Check for allergen warnings first
+    // Check cache first
+    if (ingredientAnalysisCache.current.has(cacheKey)) {
+      console.log('Using cached ingredient analysis');
+      setIngredientAnalysis(ingredientAnalysisCache.current.get(cacheKey)!);
+      return;
+    }
+    
+    setIsAnalyzingIngredients(true);
+    console.log('Analyzing ingredients:', ingredients.length, 'items');
+    
+    // Check for allergen warnings first (this is fast)
     const warnings: string[] = [];
     if (profile.dietaryRestrictions && profile.dietaryRestrictions.length > 0) {
       profile.dietaryRestrictions.forEach(restriction => {
@@ -1121,98 +1132,39 @@ export default function PremiumScanFeedback({
     setAllergenWarnings(warnings);
     
     try {
-      // Build personalized context based on user goals
-      let personalizedContext = '';
+      // Limit ingredients to first 8 for faster processing
+      const limitedIngredients = ingredients.slice(0, 8);
       
+      // Build simplified context based on user goals
+      let goalContext = '';
       if (profile.hasCompletedQuiz && profile.goals) {
-        const { dietGoal, healthGoal, bodyGoal } = profile.goals;
-        
-        personalizedContext = `\n\nIMPORTANT: This user has specific dietary goals that must be considered when evaluating ingredients:\n`;
-        
-        if (dietGoal === 'whole-foods') {
-          personalizedContext += `- WHOLE FOODS DIET: Mark ANY processed ingredients, artificial additives, preservatives, emulsifiers, stabilizers, artificial colors, artificial flavors, or refined ingredients as BAD (isGood: false). Only natural, unprocessed ingredients should be marked as good.\n`;
+        const { dietGoal, healthGoal } = profile.goals;
+        const goals = [dietGoal, healthGoal].filter(Boolean);
+        if (goals.length > 0) {
+          goalContext = `User goals: ${goals.join(', ')}. `;
         }
-        if (dietGoal === 'vegan') {
-          personalizedContext += `- VEGAN DIET: Mark ANY animal-derived ingredients (dairy, eggs, meat, gelatin, etc.) as BAD (isGood: false).\n`;
-        }
-        if (dietGoal === 'vegetarian') {
-          personalizedContext += `- VEGETARIAN DIET: Mark meat and fish ingredients as BAD (isGood: false).\n`;
-        }
-        if (healthGoal === 'keto') {
-          personalizedContext += `- KETO DIET: Mark high-carb ingredients (sugar, flour, starch, grains) as BAD (isGood: false).\n`;
-        }
-        if (dietGoal === 'gluten-free') {
-          personalizedContext += `- GLUTEN-FREE DIET: Mark gluten-containing ingredients (wheat, barley, rye) as BAD (isGood: false).\n`;
-        }
-        if (healthGoal === 'low-sugar') {
-          personalizedContext += `- LOW SUGAR GOAL: Mark ALL forms of sugar and sweeteners as BAD (isGood: false) - including sugar, high fructose corn syrup, cane sugar, honey, agave, etc.\n`;
-        }
-        if (healthGoal === 'low-fat') {
-          personalizedContext += `- LOW FAT GOAL: Mark high-fat ingredients (oils, butter, nuts in large quantities) as BAD (isGood: false).\n`;
-        }
-        if (healthGoal === 'high-protein') {
-          personalizedContext += `- HIGH PROTEIN GOAL: Mark protein sources as GOOD (isGood: true) and low-protein fillers as less favorable.\n`;
-        }
-        if (bodyGoal === 'lose-weight') {
-          personalizedContext += `- WEIGHT LOSS GOAL: Be extra strict on high-calorie, processed ingredients. Mark calorie-dense additives as BAD (isGood: false).\n`;
-        }
-        
-        personalizedContext += `\nBe STRICT and PERSONALIZED. If an ingredient conflicts with their goals, mark it as BAD even if it might be okay for others.`;
       }
       
       const messages = [
         {
           role: 'system' as const,
-          content: `You are a nutrition expert AI that analyzes food ingredients with a focus on personalized dietary goals and comprehensive health education. For each ingredient provided, give a detailed analysis including:
+          content: `You are a nutrition expert. Analyze ingredients quickly and concisely. ${goalContext}For each ingredient, provide:
+- ingredient: exact name
+- description: 1-2 sentences on health impact
+- isGood: true/false based on general health and user goals
+- purpose: brief functional role
 
-1. Whether it's good or bad for health (considering the user's specific goals)
-2. What it does to the body (physiological effects)
-3. Its purpose in the food product (functional role)
-4. Specific health impacts and mechanisms
-
-${personalizedContext}
-
-IMPORTANT ANALYSIS REQUIREMENTS:
-- Provide ACCURATE and DETAILED health information for each ingredient
-- Explain the biological mechanisms and effects on the body
-- Consider both immediate and long-term health impacts
-- Be specific about why an ingredient is good or bad for the user's goals
-- Include information about absorption, metabolism, and cellular effects
-- Mention any potential interactions or cumulative effects
-
-Respond with ONLY a valid JSON array, no additional text. Each object should have:
-- ingredient: string (the ingredient name exactly as provided)
-- description: string (detailed health impact considering user goals, 2-3 sentences explaining mechanisms)
-- isGood: boolean (true if aligns with user goals, false if conflicts)
-- purpose: string (detailed explanation of why it's in the product and its functional role)
-
-Example format:
-[
-  {
-    "ingredient": "High Fructose Corn Syrup",
-    "description": "Conflicts with your low-sugar goal. This processed sweetener bypasses normal glucose metabolism, going directly to the liver where it's converted to fat, promoting insulin resistance and inflammation. Unlike glucose, it doesn't trigger satiety hormones, leading to overconsumption.",
-    "isGood": false,
-    "purpose": "Used as a cheap sweetener and preservative that extends shelf life while providing intense sweetness that enhances palatability and food addiction potential."
-  }
-]`
+Respond with ONLY valid JSON array, no extra text.`
         },
         {
           role: 'user' as const,
-          content: `Please analyze these ingredients with detailed health information: ${ingredients.join(', ')}
-
-For each ingredient, I need to understand:
-1. How it affects my body at the cellular level
-2. Whether it supports or hinders my specific health goals
-3. What role it plays in this food product
-4. Any potential long-term health implications
-
-Be thorough and educational - this information helps me make informed food choices.`
+          content: `Analyze: ${limitedIngredients.join(', ')}`
         }
       ];
 
-      // Add timeout and retry logic
+      // Shorter timeout for faster response
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
       
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
@@ -1226,72 +1178,48 @@ Be thorough and educational - this information helps me make informed food choic
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unable to read error response');
-        throw new Error(`API request failed: ${response.status} - ${errorText}`);
+        throw new Error(`API request failed: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('Ingredient analysis result:', result);
       
-      // Parse the AI response
+      // Parse the AI response more efficiently
       let cleanedResponse = result.completion.trim();
       
-      // Look for JSON content
-      const jsonMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
-                       cleanedResponse.match(/```\s*([\s\S]*?)\s*```/) ||
-                       cleanedResponse.match(/(\[[\s\S]*\])/);
-      
+      // Extract JSON array
+      const jsonMatch = cleanedResponse.match(/\[([\s\S]*?)\]/);
       if (jsonMatch) {
-        cleanedResponse = jsonMatch[1].trim();
+        cleanedResponse = '[' + jsonMatch[1] + ']';
       }
-      
-      // If it doesn't start with [, try to find the JSON array
-      if (!cleanedResponse.startsWith('[')) {
-        const startIndex = cleanedResponse.indexOf('[');
-        const endIndex = cleanedResponse.lastIndexOf(']');
-        if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-          cleanedResponse = cleanedResponse.substring(startIndex, endIndex + 1);
-        }
-      }
-      
-      console.log('Cleaned ingredient analysis response:', cleanedResponse.substring(0, 200));
       
       let analysisData;
       try {
         analysisData = JSON.parse(cleanedResponse);
       } catch (parseError) {
-        console.error('Initial JSON parsing failed:', parseError);
-        console.error('Response that failed to parse:', cleanedResponse.substring(0, 500));
-        
-        // Try to extract JSON more aggressively by looking for array patterns
-        const arrayMatch = cleanedResponse.match(/\[\s*{[\s\S]*}\s*\]/);
-        if (arrayMatch) {
-          console.log('Trying array match:', arrayMatch[0].substring(0, 200));
-          try {
-            analysisData = JSON.parse(arrayMatch[0]);
-          } catch (arrayError) {
-            console.error('Array match parsing also failed:', arrayError);
-            throw new Error('Failed to parse ingredient analysis response');
-          }
-        } else {
-          throw new Error('No valid JSON array found in response');
-        }
+        console.error('JSON parsing failed, using fallback');
+        throw new Error('Failed to parse response');
       }
       
-      if (Array.isArray(analysisData)) {
+      if (Array.isArray(analysisData) && analysisData.length > 0) {
+        // Cache the result
+        ingredientAnalysisCache.current.set(cacheKey, analysisData);
         setIngredientAnalysis(analysisData);
+        console.log('Ingredient analysis completed and cached');
       } else {
-        console.error('Invalid ingredient analysis format:', analysisData);
+        throw new Error('Invalid analysis format');
       }
       
     } catch (error) {
       console.error('Error analyzing ingredients:', error);
-      // Fallback to basic analysis
-      const basicAnalysis = ingredients.map(ingredient => ({
+      // Fast fallback analysis
+      const basicAnalysis = ingredients.slice(0, 8).map(ingredient => ({
         ingredient,
-        description: 'Analysis unavailable - please try again.',
-        isGood: true,
-        purpose: 'Ingredient in product.'
+        description: 'Quick analysis: This ingredient is commonly used in food products.',
+        isGood: !ingredient.toLowerCase().includes('artificial') && 
+                !ingredient.toLowerCase().includes('preservative') &&
+                !ingredient.toLowerCase().includes('color') &&
+                !ingredient.toLowerCase().includes('flavor'),
+        purpose: 'Food ingredient with various functional properties.'
       }));
       setIngredientAnalysis(basicAnalysis);
     } finally {
