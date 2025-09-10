@@ -1308,7 +1308,7 @@ function convertNutritionInfoToProduct(nutrition: NutritionInfo): Product {
 export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals) {
   const product = convertNutritionInfoToProduct(nutritionInfo);
   const profile = convertUserGoalsToProfile(userGoals);
-  
+
   const reasons: string[] = [];
 
   const { d: h, why: wh } = deltaHealth(product, profile.healthFocus, profile.healthStrictness);
@@ -1317,26 +1317,50 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
   const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
   const { d: l, why: wl } = deltaLife(product, profile.lifeGoal, profile.lifeStrictness ?? 'neutral');
 
-  let score = product.baseScore + h + df + b + l;
-  
-  // If dietary restriction is violated, force score to 0
-  if (forceZero) {
-    score = 0;
-  } else {
-    // Round to nearest 0.5 interval
-    score = Math.max(0, Math.min(100, Math.round(score * 2) / 2));
-  }
+  const base = clamp(product.baseScore, 0, 100);
+  const healthScore = forceZero ? 0 : clamp(base + h, 0, 100);
+  const dietScore = forceZero ? 0 : clamp(base + df, 0, 100);
+  const bodyScore = forceZero ? 0 : clamp(base + b, 0, 100);
+  const lifeScore = forceZero ? 0 : clamp(base + l, 0, 100);
+
+  // Weighted average that keeps result in the band of component scores
+  const weights = { base: 0.25, health: 0.3, diet: 0.2, body: 0.15, life: 0.1 } as const;
+  const weighted = (
+    base * weights.base +
+    healthScore * weights.health +
+    dietScore * weights.diet +
+    bodyScore * weights.body +
+    lifeScore * weights.life
+  );
+
+  // Constrain final score to be close to consensus to avoid confusing outliers
+  const minComp = Math.min(healthScore, dietScore, bodyScore, lifeScore, base);
+  const maxComp = Math.max(healthScore, dietScore, bodyScore, lifeScore, base);
+  let score = weighted;
+  score = clamp(score, minComp - 5, maxComp + 5);
+
+  // If dietary restriction is a hard violation, force to 0
+  if (forceZero) score = 0;
+
+  // Round to nearest 0.5
+  score = Math.round(clamp(score, 0, 100) * 2) / 2;
 
   reasons.push(...wh, ...wf, ...wb, ...wl);
-  
-  // Always include a couple of numeric context bullets
+
   const m = product.macros;
   if (profile.healthFocus === 'high_protein') reasons.unshift(`Protein ${m.protein_g}g/serving`);
   if (profile.healthFocus === 'low_sugar' || profile.lifeGoal === 'clear_skin') {
     reasons.unshift(`Sugar ${m.sugar_g}g/serving`);
   }
 
-  // Determine personal grade based on final score
+  reasons.unshift(
+    `Base ${base}`,
+    `Health ${healthScore}`,
+    `Diet ${dietScore}`,
+    `Body ${bodyScore}`,
+    `Life ${lifeScore}`
+  );
+
   let personalGrade: 'poor' | 'mediocre' | 'good' | 'excellent';
   if (score >= 86) {
     personalGrade = 'excellent';
@@ -1348,11 +1372,11 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
     personalGrade = 'poor';
   }
 
-  return { 
-    score, 
-    reasons: reasons.filter(r => r.length > 0), 
+  return {
+    score,
+    reasons: reasons.filter(r => r.length > 0),
     personalGrade,
-    personalAdjustment: forceZero ? -product.baseScore : score - product.baseScore
+    personalAdjustment: forceZero ? -base : score - base,
   };
 }
 
