@@ -1881,7 +1881,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Processed ({ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length})
+                                    Stay Away ({ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length})
                                   </Text>
                                 </View>
                                 
