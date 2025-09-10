@@ -743,7 +743,7 @@ export default function PremiumScanFeedback({
   const activeTabRef = useRef<number>(0);
   const [categoryScores, setCategoryScores] = useState<{ health?: number; diet?: number; body?: number; life?: number }>({});
   const tabTranslateX = useRef(new Animated.Value(0)).current;
-  const [tabHeights, setTabHeights] = useState<number[]>([0, 0]);
+  const [tabHeights, setTabHeights] = useState<number[]>([0, 0, 0]);
   const [containerHeight, setContainerHeight] = useState<number>(0);
   
   const slideUpValue = useRef(new Animated.Value(screenHeight)).current;
@@ -788,32 +788,33 @@ export default function PremiumScanFeedback({
           return;
         }
         const width = Dimensions.get('window').width;
-        const baseTranslation = activeTabRef.current === 0 ? 0 : -width;
+        const tabsCount = 3;
+        const baseTranslation = -width * activeTabRef.current;
         let translationX = baseTranslation + dx;
+        const minTranslate = -width * (tabsCount - 1);
         if (translationX > 0) {
           translationX = dx * 0.98;
-        } else if (translationX < -width) {
-          translationX = -width + (dx + width) * 0.98;
+        } else if (translationX < minTranslate) {
+          translationX = minTranslate + (dx + width) * 0.98;
         }
         tabTranslateX.setValue(translationX);
       },
       onPanResponderRelease: (_evt, gestureState) => {
         const { dx, vx } = gestureState;
         const width = Dimensions.get('window').width;
+        const tabsCount = 3;
         const distanceThreshold = 8;
         const velocityThreshold = 0.01;
         const shouldSwitch = Math.abs(dx) > distanceThreshold || Math.abs(vx) > velocityThreshold;
         let targetTab = activeTabRef.current;
-        let targetTranslation = activeTabRef.current === 0 ? 0 : -width;
         if (shouldSwitch) {
-          if (dx > 0 && activeTabRef.current === 1) {
-            targetTab = 0;
-            targetTranslation = 0;
-          } else if (dx < 0 && activeTabRef.current === 0) {
-            targetTab = 1;
-            targetTranslation = -width;
+          if (dx > 0 && activeTabRef.current > 0) {
+            targetTab = activeTabRef.current - 1;
+          } else if (dx < 0 && activeTabRef.current < tabsCount - 1) {
+            targetTab = activeTabRef.current + 1;
           }
         }
+        const targetTranslation = -width * targetTab;
         if (targetTab !== activeTabRef.current) {
           setActiveTab(targetTab);
           activeTabRef.current = targetTab;
@@ -832,7 +833,7 @@ export default function PremiumScanFeedback({
       },
       onPanResponderTerminate: () => {
         const width = Dimensions.get('window').width;
-        const targetTranslation = activeTabRef.current === 0 ? 0 : -width;
+        const targetTranslation = -width * activeTabRef.current;
         Animated.spring(tabTranslateX, {
           toValue: targetTranslation,
           tension: 90,
@@ -1790,7 +1791,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 
                 </View>
                 
-                {/* Tab 2: Ingredient Breakdown */}
+                {/* Tab 2: Macro Breakdown */}
                 <View
                   style={[styles.tabContent, { width: screenWidth }]}
                   onLayout={(e) => {
@@ -1807,17 +1808,17 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 >
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.cardHeader}>
-                      <List size={20} color={Colors.retroNeonTurquoise} />
-                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Ingredient Breakdown</Text>
+                      <Zap size={20} color={Colors.retroNeonTurquoise} />
+                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Macro Breakdown</Text>
                     </View>
                     
                     <View style={styles.ingredientBreakdownContainer}>
-                      {isAnalyzingIngredients ? (
+                      {false ? (
                         <View style={styles.loadingIngredients}>
                           <Text style={[styles.loadingIngredientsText, { color: colors.textSecondary }]}>Analyzing ingredients...</Text>
                         </View>
                       ) : (
-                        <View style={styles.ingredientSummaryLayout}>
+                        <View>
                           {/* Left side - Circular Summary */}
                           <View style={styles.ingredientSummaryLeft}>
                             <Text style={[styles.ingredientSummaryTitle, { color: colors.textPrimary }]}>Ingredients Summary</Text>
@@ -1915,7 +1916,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
               <View style={styles.tabIndicatorContainer}>
                 <View style={styles.tabIndicators}>
                   <TouchableOpacity
-                    testID="tab-dot-base-personal"
+                    testID="tab-dot-0-score"
                     style={[
                       styles.tabIndicator,
                       {
@@ -1936,7 +1937,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     activeOpacity={0.7}
                   />
                   <TouchableOpacity
-                    testID="tab-dot-goal"
+                    testID="tab-dot-1-macros"
                     style={[
                       styles.tabIndicator,
                       {
@@ -1949,6 +1950,28 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         const screenWidth = Dimensions.get('window').width;
                         Animated.spring(tabTranslateX, {
                           toValue: -screenWidth,
+                          tension: 90,
+                          friction: 10,
+                          useNativeDriver: true,
+                        }).start();
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  />
+                  <TouchableOpacity
+                    testID="tab-dot-2-ingredients"
+                    style={[
+                      styles.tabIndicator,
+                      {
+                        backgroundColor: activeTab === 2 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                      },
+                    ]}
+                    onPress={() => {
+                      if (activeTab !== 2) {
+                        setActiveTab(2);
+                        const screenWidth = Dimensions.get('window').width;
+                        Animated.spring(tabTranslateX, {
+                          toValue: -screenWidth * 2,
                           tension: 90,
                           friction: 10,
                           useNativeDriver: true,
