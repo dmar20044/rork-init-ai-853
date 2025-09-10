@@ -79,7 +79,9 @@ TASKS:
 4. Identify additives and allergens
 5. Respond in English only
 
-RESPOND WITH ONLY VALID JSON:
+IMPORTANT: You MUST respond with ONLY valid JSON. No explanations, no markdown, no extra text.
+
+JSON FORMAT:
 {
   "name": "Food Name",
   "calories": 0,
@@ -100,9 +102,9 @@ RESPOND WITH ONLY VALID JSON:
   "warnings": []
 }
 
-Be fast and accurate. Include all visible ingredients.`;
+Respond with ONLY the JSON object above. No other text.`;
 
-      const userMessage = 'Analyze this food image. Provide nutrition facts and complete ingredient list in JSON format. Be fast and accurate.';
+      const userMessage = 'Analyze this food image. Return ONLY valid JSON with nutrition facts and ingredients. No explanations or extra text.';
 
       console.log('Making request to Rork AI API...');
       
@@ -274,10 +276,11 @@ Be fast and accurate. Include all visible ingredients.`;
       // Clean the response - remove any markdown formatting or extra text
       let cleanedResponse = completion.trim();
       
+      // Remove any leading/trailing text that's not JSON
       // Look for JSON content between ```json and ``` or just find the JSON object
       const jsonMatch = cleanedResponse.match(/```json\s*([\s\S]*?)\s*```/) || 
                        cleanedResponse.match(/```\s*([\s\S]*?)\s*```/) ||
-                       cleanedResponse.match(/({[\s\S]*})/);
+                       cleanedResponse.match(/({[\s\S]*?})/);
       
       if (jsonMatch) {
         cleanedResponse = jsonMatch[1].trim();
@@ -292,29 +295,50 @@ Be fast and accurate. Include all visible ingredients.`;
         }
       }
       
+      // Additional cleaning - remove any non-JSON text before/after
+      cleanedResponse = cleanedResponse.replace(/^[^{]*/, '').replace(/[^}]*$/, '');
+      
       console.log('Cleaned response for parsing:', cleanedResponse.substring(0, 200));
       
       let nutritionData;
       try {
+        // Validate that we have something that looks like JSON
+        if (!cleanedResponse.startsWith('{') || !cleanedResponse.endsWith('}')) {
+          throw new Error('Response does not appear to be valid JSON');
+        }
+        
         nutritionData = JSON.parse(cleanedResponse);
       } catch (parseError) {
         console.error('JSON parsing failed:', parseError);
-        console.error('Failed to parse response:', cleanedResponse);
+        console.error('Failed to parse response:', cleanedResponse.substring(0, 500));
         
-        // Try to extract JSON more aggressively
-        const fallbackMatch = completion.match(/{[^{}]*(?:{[^{}]*}[^{}]*)*}/g);
-        if (fallbackMatch && fallbackMatch.length > 0) {
-          // Try the largest JSON-like string
-          const largestMatch = fallbackMatch.reduce((a: string, b: string) => a.length > b.length ? a : b);
-          console.log('Trying fallback JSON extraction:', largestMatch.substring(0, 200));
-          try {
-            nutritionData = JSON.parse(largestMatch);
-          } catch (fallbackError) {
-            console.error('Fallback JSON parsing also failed:', fallbackError);
-            throw new Error(`Failed to parse AI response as JSON. Response preview: ${completion.substring(0, 500)}`);
+        // Try more aggressive JSON extraction
+        const patterns = [
+          /{[\s\S]*}/,  // Match entire JSON object
+          /\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g,  // Match nested objects
+          /\{[\s\S]*?\}/g  // Match any object-like structure
+        ];
+        
+        let extracted = null;
+        for (const pattern of patterns) {
+          const matches = completion.match(pattern);
+          if (matches && matches.length > 0) {
+            // Try the largest match
+            const largestMatch = matches.reduce((a: string, b: string) => a.length > b.length ? a : b);
+            console.log('Trying pattern extraction:', largestMatch.substring(0, 200));
+            try {
+              extracted = JSON.parse(largestMatch);
+              nutritionData = extracted;
+              break;
+            } catch {
+              console.log('Pattern extraction failed, trying next pattern');
+              continue;
+            }
           }
-        } else {
-          console.log('No valid JSON found, returning fallback analysis');
+        }
+        
+        if (!nutritionData) {
+          console.log('All JSON extraction attempts failed, returning fallback analysis');
           // Return fallback analysis instead of throwing error
           return {
             success: true,
