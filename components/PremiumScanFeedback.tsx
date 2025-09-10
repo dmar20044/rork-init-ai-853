@@ -38,6 +38,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { NutritionInfo, personalScore } from '@/services/foodAnalysis';
 import ParticleEffects from './ParticleEffects';
 import BetterSwapsModal from './BetterSwapsModal';
+import IngredientListModal from './IngredientListModal';
 
 import { getParticleEffect, getLoadingMessages } from '@/utils/toneOfVoice';
 import { useUser, UserGoals } from '@/contexts/UserContext';
@@ -732,6 +733,7 @@ export default function PremiumScanFeedback({
   const [isIngredientSectionExpanded, setIsIngredientSectionExpanded] = useState<boolean>(false);
   const ingredientSectionHeight = useRef(new Animated.Value(0)).current;
   const [showBetterSwapsModal, setShowBetterSwapsModal] = useState<boolean>(false);
+  const [showIngredientListModal, setShowIngredientListModal] = useState<boolean>(false);
   const [forYouAnalysis, setForYouAnalysis] = useState<string>('');
   const [isAnalyzingForYou, setIsAnalyzingForYou] = useState<boolean>(false);
   const [isForYouSectionExpanded, setIsForYouSectionExpanded] = useState<boolean>(false);
@@ -1835,8 +1837,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                             <TouchableOpacity 
                               style={styles.ingredientListHeader}
                               onPress={() => {
-                                // Navigate to full ingredient list or expand
-                                console.log('Navigate to ingredient list');
+                                setShowIngredientListModal(true);
                               }}
                               activeOpacity={0.7}
                             >
@@ -2291,6 +2292,14 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
         visible={showBetterSwapsModal}
         onClose={() => setShowBetterSwapsModal(false)}
         currentProduct={nutrition}
+      />
+      
+      {/* Ingredient List Modal */}
+      <IngredientListModal
+        visible={showIngredientListModal}
+        onClose={() => setShowIngredientListModal(false)}
+        ingredients={ingredientAnalysis}
+        isLoading={isAnalyzingIngredients}
       />
     </View>
   );
