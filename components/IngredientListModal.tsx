@@ -124,68 +124,6 @@ export default function IngredientListModal({
               {/* Summary Stats */}
               <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
                 <Text style={[styles.summaryTitle, { color: colors.textPrimary }]}>Summary</Text>
-                {/* Circle Illustration */}
-                <View style={styles.ringContainer}>
-                  <View style={[styles.ringCircle, { backgroundColor: colors.surface, borderColor: colors.textSecondary + '20' }]}>
-                    <Text style={[styles.ringNumber, { color: colors.textPrimary }]}>{ingredients.length}</Text>
-                    <Text style={[styles.ringLabel, { color: colors.textSecondary }]}>Ingredients</Text>
-                  </View>
-                  {ingredients.length > 0 && (() => {
-                    const cleanCount = groupedIngredients.clean.length;
-                    const questionableCount = groupedIngredients.questionable.length;
-                    const beCautiousCount = groupedIngredients.beCautious.length;
-                    const total = Math.max(1, ingredients.length);
-
-                    const segments: { color: string; startAngle: number; endAngle: number; }[] = [];
-                    let currentAngle = 0;
-
-                    const addSegment = (count: number, color: string) => {
-                      if (count <= 0) return;
-                      const segmentAngle = (count / total) * 360;
-                      segments.push({ color, startAngle: currentAngle, endAngle: currentAngle + segmentAngle });
-
-                      currentAngle += segmentAngle;
-                    };
-
-                    addSegment(cleanCount, Colors.success);
-                    addSegment(questionableCount, Colors.warning);
-                    addSegment(beCautiousCount, Colors.error);
-
-                    return (
-                      <>
-                        {segments.map((segment, sidx) => {
-                          const elements: React.ReactElement[] = [];
-                          const angleStep = 3;
-                          const steps = Math.ceil((segment.endAngle - segment.startAngle) / angleStep);
-                          for (let i = 0; i < steps; i++) {
-                            const stepStart = segment.startAngle + i * angleStep;
-                            const stepEnd = Math.min(segment.startAngle + (i + 1) * angleStep, segment.endAngle);
-                            const mid = (stepStart + stepEnd) / 2;
-                            const radians = (mid - 90) * (Math.PI / 180);
-                            const radius = 54;
-                            const x = Math.cos(radians) * radius;
-                            const y = Math.sin(radians) * radius;
-                            elements.push(
-                              <View
-                                key={`seg-${sidx}-${i}`}
-                                style={[
-                                  styles.ringSegment,
-                                  {
-                                    backgroundColor: segment.color,
-                                    left: 60 + x - 2,
-                                    top: 60 + y - 2,
-                                    transform: [{ rotate: `${mid}deg` }],
-                                  },
-                                ]}
-                              />
-                            );
-                          }
-                          return elements;
-                        })}
-                      </>
-                    );
-                  })()}
-                </View>
                 <View style={styles.summaryStats}>
                   <View style={styles.summaryItem}>
                     <Text style={[styles.summaryNumber, { color: Colors.success }]}>
@@ -375,39 +313,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 1,
     borderColor: Colors.retroDeepIndigo + '15',
-  },
-  ringContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  ringCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    shadowColor: Colors.retroSoftGray,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  ringSegment: {
-    position: 'absolute',
-    width: 4,
-    height: 8,
-    borderRadius: 2,
-  },
-  ringNumber: {
-    fontSize: 28,
-    fontWeight: 'bold',
-  },
-  ringLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 4,
   },
   summaryTitle: {
     fontSize: 18,
