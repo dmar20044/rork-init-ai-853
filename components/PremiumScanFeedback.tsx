@@ -1833,9 +1833,23 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               
                               {/* Proportional color rings */}
                               {ingredientAnalysis.length > 0 && (() => {
-                                const cleanCount = ingredientAnalysis.filter(i => i.isGood).length;
-                                const questionableCount = ingredientAnalysis.filter(i => !i.isGood && !i.ingredient.toLowerCase().includes('artificial') && !i.ingredient.toLowerCase().includes('preservative')).length;
-                                const stayAwayCount = ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length;
+                                // Use the same categorization logic as the modal
+                                const getIngredientCategory = (ingredient: any): string => {
+                                  // Check for "Be Cautious" ingredients
+                                  if (ingredient.ingredient.toLowerCase().includes('artificial') || 
+                                      ingredient.ingredient.toLowerCase().includes('preservative') ||
+                                      ingredient.ingredient.toLowerCase().includes('color') ||
+                                      ingredient.ingredient.toLowerCase().includes('flavor')) {
+                                    return 'Be Cautious';
+                                  }
+                                  
+                                  // Use the isGood property for Clean vs Questionable
+                                  return ingredient.isGood ? 'Clean' : 'Questionable';
+                                };
+                                
+                                const cleanCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Clean').length;
+                                const questionableCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Questionable').length;
+                                const stayAwayCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Be Cautious').length;
                                 const total = ingredientAnalysis.length;
                                 
                                 const cleanPercentage = (cleanCount / total) * 100;
@@ -1941,11 +1955,11 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
                                       backgroundColor: Colors.success,
-                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                      width: `${Math.max(10, (cleanCount / ingredientAnalysis.length) * 100)}%`
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Clean ({ingredientAnalysis.filter(i => i.isGood).length})
+                                    Clean ({cleanCount})
                                   </Text>
                                 </View>
                                 
@@ -1954,24 +1968,24 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
                                       backgroundColor: Colors.warning,
-                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => !i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                      width: `${Math.max(10, (questionableCount / ingredientAnalysis.length) * 100)}%`
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Questionable ({ingredientAnalysis.filter(i => !i.isGood).length})
+                                    Questionable ({questionableCount})
                                   </Text>
                                 </View>
                                 
-                                {/* Processed Ingredients */}
+                                {/* Be Cautious Ingredients */}
                                 <View style={styles.ingredientCategoryItem}>
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
                                       backgroundColor: Colors.error,
-                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
+                                      width: `${Math.max(10, (stayAwayCount / Math.max(1, ingredientAnalysis.length)) * 100)}%`
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Stay Away ({ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length})
+                                    Be Cautious ({stayAwayCount})
                                   </Text>
                                 </View>
                                 
