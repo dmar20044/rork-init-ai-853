@@ -1840,7 +1840,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 
                 </View>
                 
-                {/* Tab 2: Goal Rating Bars */}
+                {/* Tab 2: Ingredient Breakdown */}
                 <View
                   style={[styles.tabContent, { width: screenWidth }]}
                   onLayout={(e) => {
@@ -1857,149 +1857,71 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                 >
                   <View style={[styles.heroCard, { backgroundColor: colors.surface }]}>
                     <View style={styles.cardHeader}>
-                      <Target size={20} color={Colors.retroPink} />
-                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Goal Ratings</Text>
+                      <List size={20} color={Colors.retroNeonTurquoise} />
+                      <Text style={[styles.cardTitle, { color: colors.textPrimary }]}>Ingredient Breakdown</Text>
                     </View>
                     
-                    <View style={styles.goalRatingsContainer}>
-                      {/* Health Goal Bar */}
-                      {profile.goals.healthGoal && (
-                        <View style={styles.goalRatingItem}>
-                          <View style={styles.goalRatingHeader}>
-                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Health Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.health ?? 0) }]}>
-
-                              {categoryScores.health ?? 0}
+                    <View style={styles.ingredientBreakdownContainer}>
+                      {isAnalyzingIngredients ? (
+                        <View style={styles.loadingIngredients}>
+                          <Text style={[styles.loadingIngredientsText, { color: colors.textSecondary }]}>Analyzing ingredients...</Text>
+                        </View>
+                      ) : (
+                        <ScrollView 
+                          style={styles.ingredientsScrollView}
+                          contentContainerStyle={styles.ingredientsContent}
+                          showsVerticalScrollIndicator={true}
+                          nestedScrollEnabled={true}
+                          scrollEnabled={true}
+                        >
+                          {ingredientAnalysis.length > 0 ? (
+                            ingredientAnalysis.map((analysis, index) => {
+                              const isExpanded = expandedIngredients.has(index);
+                              return (
+                                <View key={index} style={[styles.ingredientItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: Colors.retroNeonTurquoise }]}>
+                                  <TouchableOpacity 
+                                    style={styles.ingredientHeader}
+                                    onPress={() => toggleIngredientExpansion(index)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <View style={styles.ingredientIcon}>
+                                      {analysis.isGood ? (
+                                        <CheckCircle size={16} color={Colors.success} />
+                                      ) : (
+                                        <AlertTriangle size={16} color={Colors.warning} />
+                                      )}
+                                    </View>
+                                    <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{analysis.ingredient}</Text>
+                                    {isExpanded ? (
+                                      <ChevronDown size={20} color={colors.textSecondary} />
+                                    ) : (
+                                      <ChevronRight size={20} color={colors.textSecondary} />
+                                    )}
+                                  </TouchableOpacity>
+                                  
+                                  {isExpanded && (
+                                    <View style={[styles.ingredientDetails, { borderTopColor: colors.textSecondary + '20' }]}>
+                                      <Text style={[styles.ingredientDescription, {
+                                        color: analysis.isGood ? colors.textSecondary : colors.error
+                                      }]}>
+                                        {analysis.description}
+                                      </Text>
+                                      <Text style={[styles.ingredientPurpose, { color: colors.textSecondary }]}>
+                                        Purpose: {analysis.purpose}
+                                      </Text>
+                                    </View>
+                                  )}
+                                </View>
+                              );
+                            })
+                          ) : (
+                            <Text style={[styles.noIngredientsText, { color: colors.textSecondary }]}>
+                              No ingredient analysis available
                             </Text>
-                          </View>
-                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
-                            <View 
-                              style={[
-                                styles.goalRatingBar,
-                                {
-                                  width: `${categoryScores.health ?? 0}%`,
-                                  backgroundColor: getScoreColor(categoryScores.health ?? 0),
-                                }
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
-                            {profile.goals.healthGoal.replace('-', ' ').replace('_', ' ')}
-                          </Text>
-                        </View>
+                          )}
+                        </ScrollView>
                       )}
-                      
-                      {/* Diet Goal Bar */}
-                      {profile.goals.dietGoal && (
-                        <View style={styles.goalRatingItem}>
-                          <View style={styles.goalRatingHeader}>
-                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Diet Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.diet ?? 0) }]}>
-
-                              {categoryScores.diet ?? 0}
-                            </Text>
-                          </View>
-                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
-                            <View 
-                              style={[
-                                styles.goalRatingBar,
-                                {
-                                  width: `${categoryScores.diet ?? 0}%`,
-                                  backgroundColor: getScoreColor(categoryScores.diet ?? 0),
-                                }
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
-                            {profile.goals.dietGoal.replace('-', ' ')}
-                          </Text>
-                        </View>
-                      )}
-                      
-                      {/* Body Goal Bar */}
-                      {profile.goals.bodyGoal && (
-                        <View style={styles.goalRatingItem}>
-                          <View style={styles.goalRatingHeader}>
-                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Body Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.body ?? 0) }]}>
-
-                              {categoryScores.body ?? 0}
-                            </Text>
-                          </View>
-                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
-                            <View 
-                              style={[
-                                styles.goalRatingBar,
-                                {
-                                  width: `${categoryScores.body ?? 0}%`,
-                                  backgroundColor: getScoreColor(categoryScores.body ?? 0),
-                                }
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
-                            {profile.goals.bodyGoal.replace('-', ' ')}
-                          </Text>
-                        </View>
-                      )}
-                      
-                      {/* Life Goal Bar */}
-                      {profile.goals.lifeGoal && (
-                        <View style={styles.goalRatingItem}>
-                          <View style={styles.goalRatingHeader}>
-                            <Text style={[styles.goalRatingTitle, { color: colors.textPrimary }]}>Life Goal</Text>
-                            <Text style={[styles.goalRatingScore, { color: getScoreColor(categoryScores.life ?? 0) }]}>
-
-                              {categoryScores.life ?? 0}
-                            </Text>
-                          </View>
-                          <View style={[styles.goalRatingBarContainer, { backgroundColor: colors.textSecondary + '20' }]}>
-                            <View 
-                              style={[
-                                styles.goalRatingBar,
-                                {
-                                  width: `${categoryScores.life ?? 0}%`,
-                                  backgroundColor: getScoreColor(categoryScores.life ?? 0),
-                                }
-                              ]}
-                            />
-                          </View>
-                          <Text style={[styles.goalRatingSubtitle, { color: colors.textSecondary }]}>
-                            {profile.goals.lifeGoal.replace('-', ' ')}
-                          </Text>
-                        </View>
-                      )}
-                      
-                      {/* Overall Score Circle */}
-                      <View style={styles.overallScoreContainer}>
-                        <View style={styles.overallScoreCircleContainer}>
-                          <View style={[styles.overallScoreCircle, { 
-                            backgroundColor: colors.surface,
-                            shadowColor: getScoreColor(nutrition.personalScore ?? nutrition.healthScore),
-                            borderColor: getScoreColor(nutrition.personalScore ?? nutrition.healthScore) + '30'
-                          }]}>
-                            <View style={styles.overallScoreInner}>
-                              <Text style={[styles.overallScoreNumber, { 
-                                color: getScoreColor(nutrition.personalScore ?? nutrition.healthScore) 
-                              }]}>
-                                {nutrition.personalScore ?? nutrition.healthScore}
-                              </Text>
-                            </View>
-                            {/* Animated progress ring */}
-                            <View style={[
-                              styles.overallScoreRing,
-                              {
-                                borderColor: getScoreColor(nutrition.personalScore ?? nutrition.healthScore),
-                                transform: [{ rotate: '-90deg' }]
-                              }
-                            ]} />
-                          </View>
-                        </View>
-                        <Text style={[styles.overallScoreLabel, { color: colors.textPrimary }]}>Overall</Text>
-                      </View>
                     </View>
-
-
                   </View>
                 </View>
               </Animated.View>
@@ -3332,6 +3254,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
+  },
+  
+  // Ingredient Breakdown Container
+  ingredientBreakdownContainer: {
+    paddingVertical: 8,
+    minHeight: 300,
+    maxHeight: 600,
   },
   
   goalRatingItem: {
