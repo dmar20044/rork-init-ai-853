@@ -33,12 +33,12 @@ interface IngredientListModalProps {
 }
 
 const getIngredientColor = (ingredient: IngredientAnalysis): string => {
-  // Check for "Stay Away" ingredients (artificial, preservatives)
+  // Check for "Be Cautious" ingredients (artificial, preservatives)
   if (ingredient.ingredient.toLowerCase().includes('artificial') || 
       ingredient.ingredient.toLowerCase().includes('preservative') ||
       ingredient.ingredient.toLowerCase().includes('color') ||
       ingredient.ingredient.toLowerCase().includes('flavor')) {
-    return Colors.error; // Red for stay away
+    return Colors.error; // Red for be cautious
   }
   
   // Use the isGood property for Clean (green) vs Questionable (orange)
@@ -46,12 +46,12 @@ const getIngredientColor = (ingredient: IngredientAnalysis): string => {
 };
 
 const getIngredientCategory = (ingredient: IngredientAnalysis): string => {
-  // Check for "Stay Away" ingredients
+  // Check for "Be Cautious" ingredients
   if (ingredient.ingredient.toLowerCase().includes('artificial') || 
       ingredient.ingredient.toLowerCase().includes('preservative') ||
       ingredient.ingredient.toLowerCase().includes('color') ||
       ingredient.ingredient.toLowerCase().includes('flavor')) {
-    return 'Stay Away';
+    return 'Be Cautious';
   }
   
   // Use the isGood property for Clean vs Questionable
@@ -66,7 +66,7 @@ const getIngredientIcon = (ingredient: IngredientAnalysis) => {
       return <CheckCircle size={20} color={Colors.success} />;
     case 'Questionable':
       return <AlertTriangle size={20} color={Colors.warning} />;
-    case 'Stay Away':
+    case 'Be Cautious':
       return <AlertCircle size={20} color={Colors.error} />;
     default:
       return <CheckCircle size={20} color={Colors.success} />;
@@ -85,7 +85,7 @@ export default function IngredientListModal({
   const groupedIngredients = {
     clean: ingredients.filter(ing => getIngredientCategory(ing) === 'Clean'),
     questionable: ingredients.filter(ing => getIngredientCategory(ing) === 'Questionable'),
-    stayAway: ingredients.filter(ing => getIngredientCategory(ing) === 'Stay Away'),
+    beCautious: ingredients.filter(ing => getIngredientCategory(ing) === 'Be Cautious'),
   };
 
   return (
@@ -139,9 +139,9 @@ export default function IngredientListModal({
                   </View>
                   <View style={styles.summaryItem}>
                     <Text style={[styles.summaryNumber, { color: Colors.error }]}>
-                      {groupedIngredients.stayAway.length}
+                      {groupedIngredients.beCautious.length}
                     </Text>
-                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Stay Away</Text>
+                    <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>Be Cautious</Text>
                   </View>
                 </View>
               </View>
@@ -204,17 +204,17 @@ export default function IngredientListModal({
                 </View>
               )}
 
-              {/* Stay Away Ingredients */}
-              {groupedIngredients.stayAway.length > 0 && (
+              {/* Be Cautious Ingredients */}
+              {groupedIngredients.beCautious.length > 0 && (
                 <View style={[styles.categorySection, { backgroundColor: colors.surface }]}>
                   <View style={styles.categoryHeader}>
                     <AlertCircle size={20} color={Colors.error} />
-                    <Text style={[styles.categoryTitle, { color: Colors.error }]}>Stay Away Ingredients</Text>
-                    <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>({groupedIngredients.stayAway.length})</Text>
+                    <Text style={[styles.categoryTitle, { color: Colors.error }]}>Be Cautious Ingredients</Text>
+                    <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>({groupedIngredients.beCautious.length})</Text>
                   </View>
                   <View style={styles.ingredientsList}>
-                    {groupedIngredients.stayAway.map((ingredient, index) => (
-                      <View key={`stayaway-${index}`} style={[styles.ingredientItem, { borderLeftColor: Colors.error }]}>
+                    {groupedIngredients.beCautious.map((ingredient, index) => (
+                      <View key={`becautious-${index}`} style={[styles.ingredientItem, { borderLeftColor: Colors.error }]}>
                         <View style={styles.ingredientHeader}>
                           {getIngredientIcon(ingredient)}
                           <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>
