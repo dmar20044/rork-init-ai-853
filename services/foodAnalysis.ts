@@ -421,7 +421,7 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
 }
 
 // Helper function to compress image on client side
-async function compressImage(imageUri: string, maxWidth: number = 800, quality: number = 0.8): Promise<string> {
+async function compressImage(imageUri: string, maxWidth: number = 640, quality: number = 0.7): Promise<string> {
   const { Platform } = require('react-native');
   
   if (Platform.OS === 'web') {
@@ -443,9 +443,14 @@ async function compressImage(imageUri: string, maxWidth: number = 800, quality: 
         
         // Draw and compress
         ctx?.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        let compressedDataUrl = '';
+        try {
+          compressedDataUrl = canvas.toDataURL('image/webp', quality);
+        } catch {
+          compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
         
-        // Remove data:image/jpeg;base64, prefix
+        // Remove data:*/*;base64, prefix
         const base64Data = compressedDataUrl.split(',')[1];
         console.log(`Image compressed: ${img.width}x${img.height} -> ${width}x${height}`);
         resolve(base64Data);
@@ -523,18 +528,29 @@ async function convertImageToBase64(imageUri: string): Promise<string> {
   try {
     console.log('Converting and compressing image:', imageUri);
     
-    // First try to compress the image
-    const compressedBase64 = await compressImage(imageUri, 800, 0.8);
-    
-    // Check the size
-    const sizeKB = (compressedBase64.length * 3) / 4 / 1024;
-    console.log(`Final image size: ${sizeKB.toFixed(2)} KB`);
-    
-    if (sizeKB > 1000) {
-      console.warn('Image is still large after compression, trying higher compression');
-      return await compressImage(imageUri, 600, 0.6);
+    // First try to compress the image with progressively smaller targets
+    let attempt = 0;
+    const targets = [
+      { w: 640, q: 0.7 },
+      { w: 520, q: 0.62 },
+      { w: 420, q: 0.58 },
+      { w: 360, q: 0.5 }
+    ] as const;
+
+    let compressedBase64 = '';
+    for (attempt = 0; attempt < targets.length; attempt++) {
+      const t = targets[attempt];
+      compressedBase64 = await compressImage(imageUri, t.w, t.q);
+      const sizeKB = (compressedBase64.length * 3) / 4 / 1024;
+      console.log(`Compression attempt ${attempt + 1}: ${t.w}px @ q=${t.q} -> ${sizeKB.toFixed(2)} KB`);
+      if (sizeKB <= 400) break;
     }
-    
+
+    if (!compressedBase64) {
+      console.warn('Compression pipeline failed, falling back to original conversion');
+      return convertImageToBase64Original(imageUri);
+    }
+
     return compressedBase64;
   } catch (error) {
     console.error('Error in image compression, falling back to original:', error);
