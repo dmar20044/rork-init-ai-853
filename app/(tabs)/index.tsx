@@ -569,6 +569,13 @@ export default function ScannerScreen() {
         console.log('Haptics not available:', hapticError);
       }
     }
+    
+    // Show feedback to user
+    Alert.alert(
+      'Flash ' + (newMode === 'on' ? 'Enabled' : 'Disabled'),
+      `Camera flash is now ${newMode === 'on' ? 'on' : 'off'}`,
+      [{ text: 'OK' }]
+    );
   };
 
   if (!permission) {
