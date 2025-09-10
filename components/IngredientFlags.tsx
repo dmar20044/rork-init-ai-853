@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -18,7 +18,8 @@ import { NutritionInfo } from '@/services/foodAnalysis';
 interface FlagItemProps {
   name: string;
   description: string;
-  type: 'good' | 'warning' | 'bad';
+  type: 'clean' | 'questionable' | 'stayaway';
+  index: number;
 }
 
 interface IngredientFlagsProps {
@@ -28,17 +29,17 @@ interface IngredientFlagsProps {
 function FlagItem({ name, description, type }: FlagItemProps) {
   const getFlagIcon = () => {
     switch (type) {
-      case 'good': return CheckCircle;
-      case 'warning': return AlertTriangle;
-      case 'bad': return XCircle;
+      case 'clean': return CheckCircle;
+      case 'questionable': return AlertTriangle;
+      case 'stayaway': return XCircle;
     }
   };
 
   const getFlagColor = () => {
     switch (type) {
-      case 'good': return Colors.success;
-      case 'warning': return Colors.warning;
-      case 'bad': return Colors.error;
+      case 'clean': return Colors.success;
+      case 'questionable': return Colors.warning;
+      case 'stayaway': return Colors.error;
     }
   };
 
@@ -62,32 +63,32 @@ function FlagCircle({
   flags, 
   onPress 
 }: { 
-  type: 'good' | 'warning' | 'bad'; 
+  type: 'clean' | 'questionable' | 'stayaway'; 
   count: number; 
   flags: FlagItemProps[];
   onPress: () => void;
 }) {
   const getCircleColor = () => {
     switch (type) {
-      case 'good': return Colors.success;
-      case 'warning': return Colors.warning;
-      case 'bad': return Colors.error;
+      case 'clean': return Colors.success;
+      case 'questionable': return Colors.warning;
+      case 'stayaway': return Colors.error;
     }
   };
 
   const getFlagColor = () => {
     switch (type) {
-      case 'good': return Colors.success;
-      case 'warning': return Colors.warning;
-      case 'bad': return Colors.error;
+      case 'clean': return Colors.success;
+      case 'questionable': return Colors.warning;
+      case 'stayaway': return Colors.error;
     }
   };
 
   const getLabel = () => {
     switch (type) {
-      case 'good': return 'Good';
-      case 'warning': return 'Moderate';
-      case 'bad': return 'Bad';
+      case 'clean': return 'Clean';
+      case 'questionable': return 'Questionable';
+      case 'stayaway': return 'Stay Away';
     }
   };
 
@@ -111,14 +112,14 @@ function FlagCircle({
 }
 
 export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
-  const [expandedFlag, setExpandedFlag] = useState<'good' | 'warning' | 'bad' | null>(null);
+  const [expandedFlag, setExpandedFlag] = useState<'clean' | 'questionable' | 'stayaway' | null>(null);
   const [animatedHeight] = useState(new Animated.Value(0));
 
   // Categorize ingredients into flags
   const categorizeIngredients = () => {
-    const goodFlags: FlagItemProps[] = [];
-    const warningFlags: FlagItemProps[] = [];
-    const badFlags: FlagItemProps[] = [];
+    const cleanFlags: FlagItemProps[] = [];
+    const questionableFlags: FlagItemProps[] = [];
+    const stayAwayFlags: FlagItemProps[] = [];
 
     // High-risk additives (red flags)
     const highRiskAdditives = [
@@ -193,12 +194,13 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
     
     // If no ingredients are available, show a message
     if (allIngredients.length === 0) {
-      warningFlags.push({
+      questionableFlags.push({
         name: 'No ingredient list available',
         description: 'Ingredient information not found on product',
-        type: 'warning'
+        type: 'questionable',
+        index: -1,
       });
-      return { goodFlags, warningFlags, badFlags };
+      return { cleanFlags, questionableFlags, stayAwayFlags };
     }
     
     allIngredients.forEach((ingredient, index) => {
@@ -232,10 +234,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
           detailedDescription = 'Acidulant that can interfere with calcium absorption, potentially weakening bones and teeth';
         }
         
-        badFlags.push({
+        stayAwayFlags.push({
           name: ingredient,
           description: detailedDescription,
-          type: 'bad'
+          type: 'stayaway',
+          index,
         });
         categorized = true;
       }
@@ -248,10 +251,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
         );
         if (seedOilMatch) {
           if (lowerIngredient.includes('hydrogenated') || lowerIngredient.includes('trans')) {
-            badFlags.push({
+            stayAwayFlags.push({
               name: ingredient,
               description: `Trans fat that raises bad cholesterol, lowers good cholesterol, and increases inflammation and heart disease risk`,
-              type: 'bad'
+              type: 'stayaway',
+              index,
             });
           } else {
             let oilDescription = 'Highly processed oil high in omega-6 fatty acids that can promote inflammation when consumed in excess';
@@ -264,10 +268,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
               oilDescription = 'Highly refined corn oil with excessive omega-6 fatty acids that can promote inflammation and insulin resistance';
             }
             
-            warningFlags.push({
+            questionableFlags.push({
               name: ingredient,
               description: oilDescription,
-              type: 'warning'
+              type: 'questionable',
+              index,
             });
           }
           categorized = true;
@@ -299,10 +304,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
             moderateDescription = 'Emulsifier that helps mix oil and water, generally safe but may be derived from GMO sources';
           }
           
-          warningFlags.push({
+          questionableFlags.push({
             name: ingredient,
             description: moderateDescription,
-            type: 'warning'
+            type: 'questionable',
+            index,
           });
           categorized = true;
         }
@@ -340,10 +346,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
             }
           }
           
-          warningFlags.push({
+          questionableFlags.push({
             name: ingredient,
             description: sugarDescription,
-            type: 'warning'
+            type: 'questionable',
+            index,
           });
           categorized = true;
         }
@@ -397,10 +404,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
             description = 'Fermented dairy with probiotics, protein, and calcium that supports gut health and bone strength';
           }
           
-          goodFlags.push({
+          cleanFlags.push({
             name: ingredient,
             description: description,
-            type: 'good'
+            type: 'clean',
+            index,
           });
           categorized = true;
         }
@@ -410,10 +418,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
       if (!categorized && nutrition.isOrganic) {
         // If it's organic and not obviously bad, lean towards good
         if (!lowerIngredient.includes('syrup') && !lowerIngredient.includes('refined')) {
-          goodFlags.push({
+          cleanFlags.push({
             name: ingredient,
             description: `Organic ingredient grown without synthetic pesticides, herbicides, or GMOs, reducing chemical exposure`,
-            type: 'good'
+            type: 'clean',
+            index,
           });
           categorized = true;
         }
@@ -424,10 +433,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
         // If it's one of the first 3 ingredients and sounds natural, it's probably okay
         if (index < 3 && !lowerIngredient.includes('modified') && 
             !lowerIngredient.includes('artificial') && !lowerIngredient.includes('enriched')) {
-          warningFlags.push({
+          questionableFlags.push({
             name: ingredient,
             description: `Primary ingredient that makes up a significant portion of this product - evaluate based on your health goals`,
-            type: 'warning'
+            type: 'questionable',
+            index,
           });
         } else {
           let defaultDescription = 'Processed ingredient with unclear health impact';
@@ -440,21 +450,34 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
             defaultDescription = 'Highly processed ingredient where natural components have been separated and concentrated';
           }
           
-          warningFlags.push({
+          questionableFlags.push({
             name: ingredient,
             description: defaultDescription,
-            type: 'warning'
+            type: 'questionable',
+            index,
           });
         }
       }
     });
 
-    return { goodFlags, warningFlags, badFlags };
+    return { cleanFlags, questionableFlags, stayAwayFlags };
   };
 
-  const { goodFlags, warningFlags, badFlags } = categorizeIngredients();
+  const { cleanFlags, questionableFlags, stayAwayFlags } = useMemo(() => {
+    const result = categorizeIngredients();
+    const sortByIndex = (a: FlagItemProps, b: FlagItemProps) => (a.index ?? 9999) - (b.index ?? 9999);
+    result.cleanFlags.sort(sortByIndex);
+    result.questionableFlags.sort(sortByIndex);
+    result.stayAwayFlags.sort(sortByIndex);
+    console.log('[IngredientFlags] Flags computed', {
+      clean: result.cleanFlags.length,
+      questionable: result.questionableFlags.length,
+      stayAway: result.stayAwayFlags.length,
+    });
+    return result;
+  }, [nutrition]);
 
-  const handleFlagPress = (flagType: 'good' | 'warning' | 'bad') => {
+  const handleFlagPress = (flagType: 'clean' | 'questionable' | 'stayaway') => {
     if (expandedFlag === flagType) {
       // Collapse
       setExpandedFlag(null);
@@ -474,11 +497,11 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
     }
   };
 
-  const renderFlagDropdown = (flags: FlagItemProps[], type: 'good' | 'warning' | 'bad') => {
+  const renderFlagDropdown = (flags: FlagItemProps[], type: 'clean' | 'questionable' | 'stayaway') => {
     if (expandedFlag !== type || flags.length === 0) return null;
 
     return (
-      <Animated.View style={[styles.flagDropdown, { maxHeight: animatedHeight }]}>
+      <Animated.View style={[styles.flagDropdown, { maxHeight: animatedHeight }]} testID={`ingredient-flag-dropdown-${type}`}>
         <View style={styles.flagDropdownContent}>
           {flags.map((flag, index) => (
             <FlagItem key={`${type}-${index}`} {...flag} />
@@ -489,37 +512,37 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.flagCirclesContainer}>
-        {badFlags.length > 0 && (
+    <View style={styles.container} testID="ingredient-flags-container">
+      <View style={styles.flagCirclesContainer} testID="ingredient-flag-circles">
+        {stayAwayFlags.length > 0 && (
           <FlagCircle
-            type="bad"
-            count={badFlags.length}
-            flags={badFlags}
-            onPress={() => handleFlagPress('bad')}
+            type="stayaway"
+            count={stayAwayFlags.length}
+            flags={stayAwayFlags}
+            onPress={() => handleFlagPress('stayaway')}
           />
         )}
-        {warningFlags.length > 0 && (
+        {questionableFlags.length > 0 && (
           <FlagCircle
-            type="warning"
-            count={warningFlags.length}
-            flags={warningFlags}
-            onPress={() => handleFlagPress('warning')}
+            type="questionable"
+            count={questionableFlags.length}
+            flags={questionableFlags}
+            onPress={() => handleFlagPress('questionable')}
           />
         )}
-        {goodFlags.length > 0 && (
+        {cleanFlags.length > 0 && (
           <FlagCircle
-            type="good"
-            count={goodFlags.length}
-            flags={goodFlags}
-            onPress={() => handleFlagPress('good')}
+            type="clean"
+            count={cleanFlags.length}
+            flags={cleanFlags}
+            onPress={() => handleFlagPress('clean')}
           />
         )}
       </View>
       
-      {renderFlagDropdown(badFlags, 'bad')}
-      {renderFlagDropdown(warningFlags, 'warning')}
-      {renderFlagDropdown(goodFlags, 'good')}
+      {renderFlagDropdown(stayAwayFlags, 'stayaway')}
+      {renderFlagDropdown(questionableFlags, 'questionable')}
+      {renderFlagDropdown(cleanFlags, 'clean')}
     </View>
   );
 }
