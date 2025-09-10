@@ -1941,11 +1941,19 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
                                       backgroundColor: Colors.success,
-                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => {
+                                        const name = i.ingredient.toLowerCase();
+                                        if (name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor')) return false;
+                                        return i.isGood;
+                                      }).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Clean ({ingredientAnalysis.filter(i => i.isGood).length})
+                                    Clean ({ingredientAnalysis.filter(i => {
+                                      const name = i.ingredient.toLowerCase();
+                                      if (name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor')) return false;
+                                      return i.isGood;
+                                    }).length})
                                   </Text>
                                 </View>
                                 
@@ -1954,11 +1962,19 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
                                       backgroundColor: Colors.warning,
-                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => !i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => {
+                                        const name = i.ingredient.toLowerCase();
+                                        if (name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor')) return false;
+                                        return !i.isGood;
+                                      }).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Questionable ({ingredientAnalysis.filter(i => !i.isGood).length})
+                                    Questionable ({ingredientAnalysis.filter(i => {
+                                      const name = i.ingredient.toLowerCase();
+                                      if (name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor')) return false;
+                                      return !i.isGood;
+                                    }).length})
                                   </Text>
                                 </View>
                                 
@@ -1967,11 +1983,17 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
                                       backgroundColor: Colors.error,
-                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => {
+                                        const name = i.ingredient.toLowerCase();
+                                        return name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor');
+                                      }).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                    Stay Away ({ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length})
+                                    Be Cautious ({ingredientAnalysis.filter(i => {
+                                      const name = i.ingredient.toLowerCase();
+                                      return name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor');
+                                    }).length})
                                   </Text>
                                 </View>
                                 
