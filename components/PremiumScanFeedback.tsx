@@ -1823,12 +1823,101 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                             <Text style={[styles.ingredientSummaryTitle, { color: colors.textPrimary }]}>Ingredients Summary</Text>
                             
                             <View style={styles.ingredientCircleContainer}>
+                              {/* Base circle */}
                               <View style={[styles.ingredientCircle, { backgroundColor: colors.surface, borderColor: colors.textSecondary + '20' }]}>
                                 <Text style={[styles.ingredientCircleNumber, { color: colors.textPrimary }]}>
                                   {ingredientAnalysis.length}
                                 </Text>
                                 <Text style={[styles.ingredientCircleLabel, { color: colors.textSecondary }]}>Ingredients</Text>
                               </View>
+                              
+                              {/* Proportional color rings */}
+                              {ingredientAnalysis.length > 0 && (() => {
+                                const cleanCount = ingredientAnalysis.filter(i => i.isGood).length;
+                                const questionableCount = ingredientAnalysis.filter(i => !i.isGood && !i.ingredient.toLowerCase().includes('artificial') && !i.ingredient.toLowerCase().includes('preservative')).length;
+                                const stayAwayCount = ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length;
+                                const total = ingredientAnalysis.length;
+                                
+                                const cleanPercentage = (cleanCount / total) * 100;
+                                const questionablePercentage = (questionableCount / total) * 100;
+                                const stayAwayPercentage = (stayAwayCount / total) * 100;
+                                
+                                // Create segments for the ring
+                                const segments = [];
+                                let currentAngle = 0;
+                                
+                                // Clean segment (green)
+                                if (cleanCount > 0) {
+                                  const segmentAngle = (cleanPercentage / 100) * 360;
+                                  segments.push({
+                                    color: Colors.success,
+                                    startAngle: currentAngle,
+                                    endAngle: currentAngle + segmentAngle,
+                                  });
+                                  currentAngle += segmentAngle;
+                                }
+                                
+                                // Questionable segment (orange)
+                                if (questionableCount > 0) {
+                                  const segmentAngle = (questionablePercentage / 100) * 360;
+                                  segments.push({
+                                    color: Colors.warning,
+                                    startAngle: currentAngle,
+                                    endAngle: currentAngle + segmentAngle,
+                                  });
+                                  currentAngle += segmentAngle;
+                                }
+                                
+                                // Stay away segment (red)
+                                if (stayAwayCount > 0) {
+                                  const segmentAngle = (stayAwayPercentage / 100) * 360;
+                                  segments.push({
+                                    color: Colors.error,
+                                    startAngle: currentAngle,
+                                    endAngle: currentAngle + segmentAngle,
+                                  });
+                                }
+                                
+                                return (
+                                  <>
+                                    {segments.map((segment, index) => {
+                                      // Create multiple small segments to approximate the arc
+                                      const segmentElements = [];
+                                      const angleStep = 3; // degrees per segment
+                                      const numSteps = Math.ceil((segment.endAngle - segment.startAngle) / angleStep);
+                                      
+                                      for (let i = 0; i < numSteps; i++) {
+                                        const stepStartAngle = segment.startAngle + (i * angleStep);
+                                        const stepEndAngle = Math.min(segment.startAngle + ((i + 1) * angleStep), segment.endAngle);
+                                        const midAngle = (stepStartAngle + stepEndAngle) / 2;
+                                        
+                                        // Convert to radians and position the segment
+                                        const radians = (midAngle - 90) * (Math.PI / 180); // -90 to start from top
+                                        const radius = 54; // Distance from center
+                                        const x = Math.cos(radians) * radius;
+                                        const y = Math.sin(radians) * radius;
+                                        
+                                        segmentElements.push(
+                                          <View
+                                            key={`${index}-${i}`}
+                                            style={[
+                                              styles.ingredientRingSegment,
+                                              {
+                                                backgroundColor: segment.color,
+                                                left: 60 + x - 2, // 60 is half of circle width (120/2)
+                                                top: 60 + y - 2,  // 60 is half of circle height (120/2)
+                                                transform: [{ rotate: `${midAngle}deg` }],
+                                              },
+                                            ]}
+                                          />
+                                        );
+                                      }
+                                      
+                                      return segmentElements;
+                                    })}
+                                  </>
+                                );
+                              })()}
                             </View>
                           </View>
                           
@@ -3389,6 +3478,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+  },
+  
+  ingredientRing: {
+    position: 'absolute',
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderStyle: 'solid',
+  },
+  
+  ingredientRingSegment: {
+    position: 'absolute',
+    width: 4,
+    height: 8,
+    borderRadius: 2,
   },
   
   ingredientCircleNumber: {
