@@ -1833,23 +1833,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               
                               {/* Proportional color rings */}
                               {ingredientAnalysis.length > 0 && (() => {
-                                // Use the same categorization logic as the modal
-                                const getIngredientCategory = (ingredient: any): string => {
-                                  // Check for "Be Cautious" ingredients
-                                  if (ingredient.ingredient.toLowerCase().includes('artificial') || 
-                                      ingredient.ingredient.toLowerCase().includes('preservative') ||
-                                      ingredient.ingredient.toLowerCase().includes('color') ||
-                                      ingredient.ingredient.toLowerCase().includes('flavor')) {
-                                    return 'Be Cautious';
-                                  }
-                                  
-                                  // Use the isGood property for Clean vs Questionable
-                                  return ingredient.isGood ? 'Clean' : 'Questionable';
-                                };
-                                
-                                const cleanCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Clean').length;
-                                const questionableCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Questionable').length;
-                                const stayAwayCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Be Cautious').length;
+                                const cleanCount = ingredientAnalysis.filter(i => i.isGood).length;
+                                const questionableCount = ingredientAnalysis.filter(i => !i.isGood && !i.ingredient.toLowerCase().includes('artificial') && !i.ingredient.toLowerCase().includes('preservative')).length;
+                                const stayAwayCount = ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length;
                                 const total = ingredientAnalysis.length;
                                 
                                 const cleanPercentage = (cleanCount / total) * 100;
@@ -1948,81 +1934,61 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               <ChevronRight size={16} color={Colors.retroNeonTurquoise} />
                             </TouchableOpacity>
                             
-                            {ingredientAnalysis.length > 0 ? (() => {
-                              // Use the same categorization logic as the modal
-                              const getIngredientCategory = (ingredient: any): string => {
-                                // Check for "Be Cautious" ingredients
-                                if (ingredient.ingredient.toLowerCase().includes('artificial') || 
-                                    ingredient.ingredient.toLowerCase().includes('preservative') ||
-                                    ingredient.ingredient.toLowerCase().includes('color') ||
-                                    ingredient.ingredient.toLowerCase().includes('flavor')) {
-                                  return 'Be Cautious';
-                                }
-                                
-                                // Use the isGood property for Clean vs Questionable
-                                return ingredient.isGood ? 'Clean' : 'Questionable';
-                              };
-                              
-                              const cleanCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Clean').length;
-                              const questionableCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Questionable').length;
-                              const stayAwayCount = ingredientAnalysis.filter(i => getIngredientCategory(i) === 'Be Cautious').length;
-                              
-                              return (
-                                <View style={styles.ingredientCategoryList}>
-                                  {/* Clean Ingredients */}
-                                  <View style={styles.ingredientCategoryItem}>
-                                    <View style={styles.ingredientCategoryBar}>
-                                      <View style={[styles.ingredientCategoryProgress, { 
-                                        backgroundColor: Colors.success,
-                                        width: `${Math.max(10, (cleanCount / ingredientAnalysis.length) * 100)}%`
-                                      }]} />
-                                    </View>
-                                    <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                      Clean ({cleanCount})
-                                    </Text>
+                            {ingredientAnalysis.length > 0 ? (
+                              <View style={styles.ingredientCategoryList}>
+                                {/* Clean Ingredients */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: Colors.success,
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                    }]} />
                                   </View>
-                                  
-                                  {/* Questionable Ingredients */}
-                                  <View style={styles.ingredientCategoryItem}>
-                                    <View style={styles.ingredientCategoryBar}>
-                                      <View style={[styles.ingredientCategoryProgress, { 
-                                        backgroundColor: Colors.warning,
-                                        width: `${Math.max(10, (questionableCount / ingredientAnalysis.length) * 100)}%`
-                                      }]} />
-                                    </View>
-                                    <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                      Questionable ({questionableCount})
-                                    </Text>
-                                  </View>
-                                  
-                                  {/* Be Cautious Ingredients */}
-                                  <View style={styles.ingredientCategoryItem}>
-                                    <View style={styles.ingredientCategoryBar}>
-                                      <View style={[styles.ingredientCategoryProgress, { 
-                                        backgroundColor: Colors.error,
-                                        width: `${Math.max(10, (stayAwayCount / Math.max(1, ingredientAnalysis.length)) * 100)}%`
-                                      }]} />
-                                    </View>
-                                    <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                      Be Cautious ({stayAwayCount})
-                                    </Text>
-                                  </View>
-                                  
-                                  {/* Not Rated */}
-                                  <View style={styles.ingredientCategoryItem}>
-                                    <View style={styles.ingredientCategoryBar}>
-                                      <View style={[styles.ingredientCategoryProgress, { 
-                                        backgroundColor: colors.textSecondary + '40',
-                                        width: '5%'
-                                      }]} />
-                                    </View>
-                                    <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                      Not Rated (0)
-                                    </Text>
-                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Clean ({ingredientAnalysis.filter(i => i.isGood).length})
+                                  </Text>
                                 </View>
-                              );
-                            })() : (
+                                
+                                {/* Questionable Ingredients */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: Colors.warning,
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => !i.isGood).length / ingredientAnalysis.length) * 100)}%`
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Questionable ({ingredientAnalysis.filter(i => !i.isGood).length})
+                                  </Text>
+                                </View>
+                                
+                                {/* Processed Ingredients */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: Colors.error,
+                                      width: `${Math.max(10, (ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Stay Away ({ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length})
+                                  </Text>
+                                </View>
+                                
+                                {/* Not Rated */}
+                                <View style={styles.ingredientCategoryItem}>
+                                  <View style={styles.ingredientCategoryBar}>
+                                    <View style={[styles.ingredientCategoryProgress, { 
+                                      backgroundColor: colors.textSecondary + '40',
+                                      width: '5%'
+                                    }]} />
+                                  </View>
+                                  <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
+                                    Not Rated (0)
+                                  </Text>
+                                </View>
+                              </View>
+                            ) : (
                               <Text style={[styles.noIngredientsText, { color: colors.textSecondary }]}>
                                 No ingredient analysis available
                               </Text>
