@@ -92,7 +92,7 @@ export default function PremiumScanFeedback({
   const cardOpacity = useRef(new Animated.Value(0)).current;
   
   // Sliding functionality state
-  const [currentView, setCurrentView] = useState<'score' | 'ingredients'>('score');
+  const [currentView, setCurrentView] = useState<'score' | 'goals'>('score');
   const slideAnimation = useRef(new Animated.Value(0)).current;
   const { width: screenWidth } = Dimensions.get('window');
   
@@ -120,13 +120,13 @@ export default function PremiumScanFeedback({
         const velocity = gestureState.vx;
         
         // Determine target based on gesture
-        let targetView: 'score' | 'ingredients';
+        let targetView: 'score' | 'goals';
         if (Math.abs(velocity) > 0.5) {
           // Fast swipe - use velocity direction
-          targetView = velocity < 0 ? 'ingredients' : 'score';
+          targetView = velocity < 0 ? 'goals' : 'score';
         } else {
           // Slow swipe - use distance threshold
-          targetView = gestureState.dx < -threshold ? 'ingredients' : 'score';
+          targetView = gestureState.dx < -threshold ? 'goals' : 'score';
         }
         
         // Animate to target position
@@ -946,81 +946,72 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
                   </View>
                 </View>
                 
-                {/* Ingredients View */}
-                {nutrition.ingredients && nutrition.ingredients.length > 0 && (
+                {/* Goals View */}
+                {showPersonalized && profile.goals && (
                   <View style={[styles.slideView, { width: screenWidth - 32 }]}>
-                    <View style={styles.ingredientsSection}>
-                      <Text style={styles.ingredientsSectionTitle}>Ingredient Breakdown</Text>
+                    <View style={styles.goalsSection}>
+                      <Text style={styles.goalsSectionTitle}>Life Goals</Text>
                       
-                      {isAnalyzingIngredients ? (
-                        <View style={styles.loadingIngredientsSlide}>
-                          <Text style={styles.loadingIngredientsText}>Analyzing ingredients...</Text>
-                        </View>
-                      ) : (
-                        <ScrollView 
-                          style={styles.ingredientsSlideScrollView}
-                          contentContainerStyle={styles.ingredientsSlideContent}
-                          showsVerticalScrollIndicator={true}
-                          nestedScrollEnabled={true}
-                        >
-                          {ingredientAnalysis.length > 0 ? (
-                            ingredientAnalysis.slice(0, 4).map((analysis, index) => {
-                              const isExpanded = expandedIngredients.has(index);
-                              return (
-                                <View key={index} style={styles.ingredientSlideItem}>
-                                  <TouchableOpacity 
-                                    style={styles.ingredientSlideHeader}
-                                    onPress={() => toggleIngredientExpansion(index)}
-                                    activeOpacity={0.7}
-                                  >
-                                    <View style={styles.ingredientIcon}>
-                                      {analysis.isGood ? (
-                                        <CheckCircle size={16} color={Colors.success} />
-                                      ) : (
-                                        <AlertTriangle size={16} color={Colors.warning} />
-                                      )}
-                                    </View>
-                                    <Text style={styles.ingredientSlideName}>{analysis.ingredient}</Text>
-                                    {isExpanded ? (
-                                      <ChevronDown size={18} color={Colors.textSecondary} />
-                                    ) : (
-                                      <ChevronRight size={18} color={Colors.textSecondary} />
-                                    )}
-                                  </TouchableOpacity>
-                                  
-                                  {isExpanded && (
-                                    <View style={styles.ingredientSlideDetails}>
-                                      <Text style={[styles.ingredientSlideDescription, {
-                                        color: analysis.isGood ? Colors.textSecondary : Colors.error
-                                      }]}>
-                                        {analysis.description}
-                                      </Text>
-                                      <Text style={styles.ingredientSlidePurpose}>
-                                        Purpose: {analysis.purpose}
-                                      </Text>
-                                    </View>
-                                  )}
-                                </View>
-                              );
-                            })
-                          ) : (
-                            <Text style={styles.noIngredientsSlideText}>
-                              No ingredient analysis available
-                            </Text>
-                          )}
-                          
-                          {ingredientAnalysis.length > 4 && (
-                            <View style={styles.moreIngredientsIndicator}>
-                              <Text style={styles.moreIngredientsText}>
-                                +{ingredientAnalysis.length - 4} more ingredients
-                              </Text>
-                              <Text style={styles.moreIngredientsSubtext}>
-                                Scroll down to see full breakdown
-                              </Text>
+                      {/* Goal Ratings */}
+                      <View style={styles.goalRatings}>
+                        {profile.goals.dietGoal && (
+                          <View style={styles.goalRating}>
+                            <Text style={styles.goalLabel}>Diet Goal</Text>
+                            <Text style={styles.goalValue}>{profile.goals.dietGoal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                            <View style={styles.goalScoreContainer}>
+                              <View style={[styles.goalScoreRing, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                <Text style={[styles.goalScoreText, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                  {Math.round((nutrition.personalScore || nutrition.healthScore) * 0.9)}
+                                </Text>
+                              </View>
                             </View>
-                          )}
-                        </ScrollView>
-                      )}
+                          </View>
+                        )}
+                        
+                        {profile.goals.healthGoal && (
+                          <View style={styles.goalRating}>
+                            <Text style={styles.goalLabel}>Health Goal</Text>
+                            <Text style={styles.goalValue}>{profile.goals.healthGoal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                            <View style={styles.goalScoreContainer}>
+                              <View style={[styles.goalScoreRing, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                <Text style={[styles.goalScoreText, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                  {Math.round((nutrition.personalScore || nutrition.healthScore) * 0.85)}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        )}
+                        
+                        {profile.goals.bodyGoal && (
+                          <View style={styles.goalRating}>
+                            <Text style={styles.goalLabel}>Body Goal</Text>
+                            <Text style={styles.goalValue}>{profile.goals.bodyGoal.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</Text>
+                            <View style={styles.goalScoreContainer}>
+                              <View style={[styles.goalScoreRing, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                <Text style={[styles.goalScoreText, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                  {Math.round((nutrition.personalScore || nutrition.healthScore) * 0.95)}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                      
+                      {/* Overall Score Circle */}
+                      <View style={styles.overallScoreContainer}>
+                        <Text style={styles.overallScoreLabel}>Overall</Text>
+                        <View style={styles.overallScoreRingContainer}>
+                          <View style={[styles.overallScoreRing, { shadowColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                            <View style={styles.overallScoreRingInner}>
+                              <Text style={[styles.overallScoreNumber, { color: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]}>
+                                {nutrition.personalScore || nutrition.healthScore}
+                              </Text>
+                              <Text style={styles.overallScoreOutOf}>/100</Text>
+                            </View>
+                          </View>
+                          <View style={[styles.overallScoreRingProgress, { borderColor: getScoreColor(nutrition.personalScore || nutrition.healthScore) }]} />
+                        </View>
+                      </View>
                     </View>
                   </View>
                 )}
@@ -1028,23 +1019,23 @@ Explain why this product ${score >= 66 ? 'is' : 'isn\'t'} a good choice for my g
             </View>
             
             {/* Dots Indicator */}
-            {nutrition.ingredients && nutrition.ingredients.length > 0 && (
+            {showPersonalized && profile.goals && (
               <View style={styles.dotsContainer}>
                 <View style={[styles.dot, currentView === 'score' && styles.dotActive]} />
-                <View style={[styles.dot, currentView === 'ingredients' && styles.dotActive]} />
+                <View style={[styles.dot, currentView === 'goals' && styles.dotActive]} />
               </View>
             )}
             
-            {/* When on ingredients view, move macro breakdown down below hero */}
-            {currentView === 'ingredients' && (
+            {/* When on goals view, move macro breakdown down below hero */}
+            {currentView === 'goals' && (
               <Animated.View 
                 style={[
-                  styles.macroBelowWhenIngredients,
+                  styles.macroBelowWhenGoals,
                   {
                     transform: [{ translateY: 40 }],
                   },
                 ]}
-                testID="macro-breakdown-ingredients"
+                testID="macro-breakdown-goals"
               >
                 <View style={styles.card}>
                   <View style={styles.cardHeader}>
@@ -2332,111 +2323,6 @@ const styles = StyleSheet.create({
   macroBelowWhenGoals: {
     marginHorizontal: 0,
     marginTop: 8,
-  },
-  
-  macroBelowWhenIngredients: {
-    marginHorizontal: 0,
-    marginTop: 8,
-  },
-  
-  // Ingredients slide view styles
-  ingredientsSection: {
-    alignItems: 'center',
-    width: '100%',
-    paddingHorizontal: 16,
-  },
-  
-  ingredientsSectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    marginBottom: 24,
-  },
-  
-  loadingIngredientsSlide: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  
-  ingredientsSlideScrollView: {
-    maxHeight: 280,
-    width: '100%',
-  },
-  
-  ingredientsSlideContent: {
-    gap: 12,
-    paddingBottom: 8,
-  },
-  
-  ingredientSlideItem: {
-    backgroundColor: Colors.gray50,
-    borderRadius: 12,
-    padding: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-  },
-  
-  ingredientSlideHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 2,
-  },
-  
-  ingredientSlideName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    flex: 1,
-    textTransform: 'capitalize',
-  },
-  
-  ingredientSlideDetails: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: Colors.gray200,
-  },
-  
-  ingredientSlideDescription: {
-    fontSize: 12,
-    lineHeight: 16,
-    marginBottom: 4,
-  },
-  
-  ingredientSlidePurpose: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    fontStyle: 'italic',
-    lineHeight: 14,
-  },
-  
-  noIngredientsSlideText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    padding: 20,
-    fontStyle: 'italic',
-  },
-  
-  moreIngredientsIndicator: {
-    backgroundColor: Colors.primary + '10',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  
-  moreIngredientsText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    marginBottom: 2,
-  },
-  
-  moreIngredientsSubtext: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    textAlign: 'center',
   },
 
 });

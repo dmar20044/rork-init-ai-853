@@ -1791,9 +1791,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               ingredientAnalysis.map((analysis, index) => {
                                 const isExpanded = expandedIngredients.has(index);
                                 return (
-                                  <View key={index} style={[styles.ingredientDetailItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: Colors.retroNeonTurquoise }]}>
+                                  <View key={index} style={[styles.ingredientItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: Colors.retroNeonTurquoise }]}>
                                     <TouchableOpacity 
-                                      style={styles.ingredientDetailHeader}
+                                      style={styles.ingredientHeader}
                                       onPress={() => toggleIngredientExpansion(index)}
                                       activeOpacity={0.7}
                                     >
@@ -2146,138 +2146,45 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     scrollEnabled={true}
                   >
                     {ingredientAnalysis.length > 0 ? (
-                      <View style={styles.ingredientSummaryContainer}>
-                        {/* Ingredient Summary Circle */}
-                        <View style={styles.ingredientSummaryLeft}>
-                          <View style={[styles.ingredientCircle, { backgroundColor: colors.surface }]}>
-                            <View style={styles.ingredientCircleInner}>
-                              <Text style={[styles.ingredientCount, { color: colors.textPrimary }]}>
-                                {ingredientAnalysis.length}
-                              </Text>
-                              <Text style={[styles.ingredientLabel, { color: colors.textSecondary }]}>Ingredients</Text>
-                            </View>
-                            {/* Progress ring showing good vs bad ingredients */}
-                            <View style={[
-                              styles.ingredientProgressRing,
-                              {
-                                borderColor: Colors.success,
-                                transform: [{ rotate: '-90deg' }]
-                              }
-                            ]} />
-                          </View>
-                          
-                          <View style={styles.ingredientSummaryHeader}>
-                            <Text style={[styles.ingredientSummaryTitle, { color: colors.textPrimary }]}>Ingredients Summary</Text>
-                            <TouchableOpacity style={styles.ingredientListButton}>
-                              <Text style={[styles.ingredientListText, { color: Colors.success }]}>Ingredient List</Text>
-                              <ChevronRight size={16} color={Colors.success} />
+                      ingredientAnalysis.map((analysis, index) => {
+                        const isExpanded = expandedIngredients.has(index);
+                        return (
+                          <View key={index} style={[styles.ingredientItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: Colors.retroNeonTurquoise }]}>
+                            <TouchableOpacity 
+                              style={styles.ingredientHeader}
+                              onPress={() => toggleIngredientExpansion(index)}
+                              activeOpacity={0.7}
+                            >
+                              <View style={styles.ingredientIcon}>
+                                {analysis.isGood ? (
+                                  <CheckCircle size={16} color={Colors.success} />
+                                ) : (
+                                  <AlertTriangle size={16} color={Colors.warning} />
+                                )}
+                              </View>
+                              <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{analysis.ingredient}</Text>
+                              {isExpanded ? (
+                                <ChevronDown size={20} color={colors.textSecondary} />
+                              ) : (
+                                <ChevronRight size={20} color={colors.textSecondary} />
+                              )}
                             </TouchableOpacity>
-                          </View>
-                        </View>
-                        
-                        {/* Ingredient Categories */}
-                        <View style={styles.ingredientCategoriesRight}>
-                          {(() => {
-                            const goodIngredients = ingredientAnalysis.filter(ing => ing.isGood);
-                            const neutralIngredients = ingredientAnalysis.filter(ing => !ing.isGood && !ing.ingredient.toLowerCase().includes('artificial') && !ing.ingredient.toLowerCase().includes('preservative'));
-                            const badIngredients = ingredientAnalysis.filter(ing => !ing.isGood && (ing.ingredient.toLowerCase().includes('artificial') || ing.ingredient.toLowerCase().includes('preservative') || ing.ingredient.toLowerCase().includes('color') || ing.ingredient.toLowerCase().includes('flavor')));
                             
-                            const categories = [
-                              { name: 'Clean', count: goodIngredients.length, color: Colors.success, bgColor: Colors.success },
-                              { name: 'Half and Half', count: neutralIngredients.length, color: Colors.warning, bgColor: Colors.warning },
-                              { name: 'Dirty', count: badIngredients.length, color: Colors.error, bgColor: Colors.error },
-                              { name: 'Not Rated', count: 0, color: colors.textSecondary, bgColor: colors.textSecondary }
-                            ];
-                            
-                            return categories.map((category, index) => (
-                              <View key={index} style={styles.ingredientCategoryRow}>
-                                <View style={[styles.ingredientCategoryBar, { backgroundColor: colors.textSecondary + '20' }]}>
-                                  <View 
-                                    style={[
-                                      styles.ingredientCategoryProgress,
-                                      {
-                                        width: `${Math.max(5, (category.count / ingredientAnalysis.length) * 100)}%`,
-                                        backgroundColor: category.bgColor,
-                                      }
-                                    ]}
-                                  />
-                                  <View style={[styles.ingredientCategoryIndicator, { backgroundColor: category.bgColor }]} />
-                                </View>
-                                <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
-                                  {category.name} ({category.count})
+                            {isExpanded && (
+                              <View style={[styles.ingredientDetails, { borderTopColor: colors.textSecondary + '20' }]}>
+                                <Text style={[styles.ingredientDescription, {
+                                  color: analysis.isGood ? colors.textSecondary : colors.error
+                                }]}>
+                                  {analysis.description}
+                                </Text>
+                                <Text style={[styles.ingredientPurpose, { color: colors.textSecondary }]}>
+                                  Purpose: {analysis.purpose}
                                 </Text>
                               </View>
-                            ));
-                          })()} 
-                        </View>
-                        
-                        {/* Expandable Detailed List */}
-                        <View style={styles.ingredientDetailsList}>
-                          <TouchableOpacity 
-                            style={styles.expandDetailsButton}
-                            onPress={() => setExpandedIngredients(prev => 
-                              prev.size === 0 
-                                ? new Set(ingredientAnalysis.map((_, i) => i))
-                                : new Set()
                             )}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={[styles.expandDetailsText, { color: Colors.retroNeonTurquoise }]}>
-                              {expandedIngredients.size === 0 ? 'View Details' : 'Hide Details'}
-                            </Text>
-                            {expandedIngredients.size === 0 ? (
-                              <ChevronDown size={16} color={Colors.retroNeonTurquoise} />
-                            ) : (
-                              <ChevronRight size={16} color={Colors.retroNeonTurquoise} />
-                            )}
-                          </TouchableOpacity>
-                          
-                          {expandedIngredients.size > 0 && (
-                            <View style={styles.ingredientDetailsContainer}>
-                              {ingredientAnalysis.map((analysis, index) => {
-                                const isExpanded = expandedIngredients.has(index);
-                                return (
-                                  <View key={index} style={[styles.ingredientDetailItem, { backgroundColor: colors.textSecondary + '05', borderLeftColor: analysis.isGood ? Colors.success : Colors.warning }]}>
-                                    <TouchableOpacity 
-                                      style={styles.ingredientDetailHeader}
-                                      onPress={() => toggleIngredientExpansion(index)}
-                                      activeOpacity={0.7}
-                                    >
-                                      <View style={styles.ingredientIcon}>
-                                        {analysis.isGood ? (
-                                          <CheckCircle size={16} color={Colors.success} />
-                                        ) : (
-                                          <AlertTriangle size={16} color={Colors.warning} />
-                                        )}
-                                      </View>
-                                      <Text style={[styles.ingredientName, { color: colors.textPrimary }]}>{analysis.ingredient}</Text>
-                                      {isExpanded ? (
-                                        <ChevronDown size={20} color={colors.textSecondary} />
-                                      ) : (
-                                        <ChevronRight size={20} color={colors.textSecondary} />
-                                      )}
-                                    </TouchableOpacity>
-                                    
-                                    {isExpanded && (
-                                      <View style={[styles.ingredientDetails, { borderTopColor: colors.textSecondary + '20' }]}>
-                                        <Text style={[styles.ingredientDescription, {
-                                          color: analysis.isGood ? colors.textSecondary : colors.error
-                                        }]}>
-                                          {analysis.description}
-                                        </Text>
-                                        <Text style={[styles.ingredientPurpose, { color: colors.textSecondary }]}>
-                                          Purpose: {analysis.purpose}
-                                        </Text>
-                                      </View>
-                                    )}
-                                  </View>
-                                );
-                              })
-                            }
-                            </View>
-                          )}
-                        </View>
-                      </View>
+                          </View>
+                        );
+                      })
                     ) : (
                       <Text style={[styles.noIngredientsText, { color: colors.textSecondary }]}>
                         No ingredient analysis available
@@ -3079,163 +2986,19 @@ const styles = StyleSheet.create({
   },
   
   ingredientsContent: {
+    gap: 16,
     paddingBottom: 8,
   },
   
-  // New Ingredient Summary Styles
-  ingredientSummaryContainer: {
-    padding: 16,
-  },
-  
-  ingredientSummaryLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  
-  ingredientCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 20,
-    shadowColor: Colors.success,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
-    position: 'relative',
-  },
-  
-  ingredientCircleInner: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  
-  ingredientCount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  
-  ingredientLabel: {
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  
-  ingredientProgressRing: {
-    position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 6,
-    borderStyle: 'solid',
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
-  },
-  
-  ingredientSummaryHeader: {
-    flex: 1,
-  },
-  
-  ingredientSummaryTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: Colors.retroCharcoalBlack,
-  },
-  
-  ingredientListButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  
-  ingredientListText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.success,
-  },
-  
-  ingredientCategoriesRight: {
-    gap: 16,
-    marginBottom: 24,
-  },
-  
-  ingredientCategoryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  
-  ingredientCategoryBar: {
-    flex: 1,
-    height: 24,
-    borderRadius: 12,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  
-  ingredientCategoryProgress: {
-    height: '100%',
-    borderRadius: 12,
-    minWidth: 8,
-  },
-  
-  ingredientCategoryIndicator: {
-    position: 'absolute',
-    left: 8,
-    top: 4,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-  },
-  
-  ingredientCategoryLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    minWidth: 120,
-    color: Colors.retroCharcoalBlack,
-  },
-  
-  ingredientDetailsList: {
-    marginTop: 8,
-  },
-  
-  expandDetailsButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    backgroundColor: Colors.retroNeonTurquoise + '10',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: Colors.retroNeonTurquoise + '30',
-    marginBottom: 16,
-    gap: 8,
-  },
-  
-  expandDetailsText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  
-  ingredientDetailsContainer: {
-    gap: 12,
-  },
-  
-  ingredientDetailItem: {
+  ingredientItem: {
     backgroundColor: Colors.retroSoftGray + '20',
     borderRadius: 12,
     padding: 16,
     borderLeftWidth: 4,
+    borderLeftColor: Colors.retroNeonTurquoise,
   },
   
-  ingredientDetailHeader: {
+  ingredientHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 4,
