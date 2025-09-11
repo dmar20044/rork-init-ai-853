@@ -1694,6 +1694,32 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       </View>
                     </View>
 
+                    {/* Micro Breakdown Section */}
+                    <View style={styles.microInlineContainer}>
+                      <View style={styles.microInlineHeader}>
+                        <Target size={18} color={Colors.retroPink} />
+                        <Text style={[styles.microInlineTitle, { color: colors.textPrimary }]}>Micro Breakdown</Text>
+                      </View>
+                      <View style={styles.microGrid}>
+                        <View style={styles.microItem}>
+                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
+                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Vitamin C</Text>
+                        </View>
+                        <View style={styles.microItem}>
+                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
+                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Iron</Text>
+                        </View>
+                        <View style={styles.microItem}>
+                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
+                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Calcium</Text>
+                        </View>
+                        <View style={styles.microItem}>
+                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
+                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Vitamin D</Text>
+                        </View>
+                      </View>
+                    </View>
+
                   </View>
 
                   {nutrition.ingredients && nutrition.ingredients.length > 0 && (
@@ -3154,6 +3180,53 @@ const styles = StyleSheet.create({
   },
   
   macroSecondaryLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
+    color: Colors.retroSlateGray,
+  },
+  
+  // Micro Breakdown Styles
+  microInlineContainer: {
+    marginTop: 16,
+    paddingTop: 8,
+  },
+  
+  microInlineHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 8,
+    marginBottom: 8,
+  },
+  
+  microInlineTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  
+  microGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.retroPink + '10',
+    borderRadius: 12,
+    padding: 16,
+    paddingHorizontal: 8,
+  },
+  
+  microItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  
+  microValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+    color: Colors.retroPink,
+  },
+  
+  microLabel: {
     fontSize: 11,
     fontWeight: '500',
     textAlign: 'center',
