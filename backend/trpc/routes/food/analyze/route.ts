@@ -833,7 +833,16 @@ function calculateFoodScore(input: FoodScoringInput): ScoringResult {
   
   // Calculate final score and round to nearest 0.5 interval
   const rawScore = nutritionScore + additivesScore + organicScore;
-  const totalScore = Math.max(0, Math.min(100, Math.round(rawScore * 2) / 2));
+  let totalScore = Math.max(0, Math.min(100, Math.round(rawScore * 2) / 2));
+  
+  // Ensure fruits have a minimum base score of 80
+  if (isNaturalSugarSource && fruits.some(fruit => input.ingredients[0].toLowerCase().includes(fruit))) {
+    totalScore = Math.max(80, totalScore);
+    if (totalScore === 80 && rawScore < 80) {
+      reasons.push('Minimum score of 80 applied for whole fruit');
+      flags.push('fruit_minimum_score');
+    }
+  }
   
   // Determine grade
   let grade: 'poor' | 'mediocre' | 'good' | 'excellent';
