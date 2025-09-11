@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.grocery-food-scanner-app",
+      "package": "app.rork.initai",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
