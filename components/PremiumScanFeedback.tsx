@@ -2046,6 +2046,50 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       )}
                     </View>
                   </View>
+                  
+                  {/* Micro Breakdown Section */}
+                  <View style={styles.microBreakdownContainer}>
+                    <View style={styles.microBreakdownHeader}>
+                      <Target size={18} color={Colors.retroPink} />
+                      <Text style={[styles.microBreakdownTitle, { color: colors.textPrimary }]}>Micro Breakdown</Text>
+                    </View>
+                    <View style={styles.microBreakdownGrid}>
+                      <View style={styles.microBreakdownItem}>
+                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
+                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Vitamin C</Text>
+                      </View>
+                      <View style={styles.microBreakdownItem}>
+                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
+                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Iron</Text>
+                      </View>
+                      <View style={styles.microBreakdownItem}>
+                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
+                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Calcium</Text>
+                      </View>
+                      <View style={styles.microBreakdownItem}>
+                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
+                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Vitamin D</Text>
+                      </View>
+                    </View>
+                    <View style={styles.microBreakdownSecondaryGrid}>
+                      <View style={styles.microBreakdownSecondaryItem}>
+                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
+                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>B12</Text>
+                      </View>
+                      <View style={styles.microBreakdownSecondaryItem}>
+                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
+                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Folate</Text>
+                      </View>
+                      <View style={styles.microBreakdownSecondaryItem}>
+                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
+                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Magnesium</Text>
+                      </View>
+                      <View style={styles.microBreakdownSecondaryItem}>
+                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
+                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Zinc</Text>
+                      </View>
+                    </View>
+                  </View>
                 </View>
               </Animated.View>
               {/* Persistent Tab Indicators */}
@@ -3646,6 +3690,78 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: Colors.retroCharcoalBlack,
+  },
+  
+  // Micro Breakdown Styles for Tab 2
+  microBreakdownContainer: {
+    marginTop: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: Colors.retroPink + '05',
+    borderRadius: 12,
+    marginHorizontal: 16,
+  },
+  
+  microBreakdownHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  
+  microBreakdownTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  
+  microBreakdownGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  
+  microBreakdownItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  
+  microBreakdownValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  
+  microBreakdownLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  
+  microBreakdownSecondaryGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.retroPink + '10',
+    borderRadius: 8,
+    padding: 12,
+  },
+  
+  microBreakdownSecondaryItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  
+  microBreakdownSecondaryValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  
+  microBreakdownSecondaryLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
   },
 
 });
