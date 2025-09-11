@@ -294,6 +294,75 @@ export async function analyzeFoodImage(imageUri: string): Promise<FoodAnalysisRe
             additivesScore: 0,
             organicScore: 0,
             totalScore: 45
+          },
+          micronutrients: {
+            vitaminC_mg: 0,
+            iron_mg: 0,
+            calcium_mg: 0,
+            vitaminD_IU: 0,
+            vitaminB12_mcg: 0,
+            folate_mcg: 0,
+            magnesium_mg: 0,
+            zinc_mg: 0,
+            potassium_mg: 0,
+            vitaminA_IU: 0
+          }
+        };
+        
+        return {
+          success: true,
+          data: fallbackData
+        };
+      }
+      
+      // Handle backend service unavailable errors
+      if (trpcError instanceof Error && trpcError.message.includes('Backend service is not available')) {
+        console.error('Backend service is not available');
+        console.log('Providing fallback analysis due to backend unavailability');
+        
+        // Return fallback analysis instead of error
+        const fallbackData: NutritionInfo = {
+          name: 'Food Item (Service Unavailable)',
+          calories: 150,
+          protein: 3,
+          carbs: 20,
+          fat: 5,
+          saturatedFat: 2,
+          fiber: 2,
+          sugar: 8,
+          sodium: 200,
+          servingSize: '1 serving',
+          healthScore: 45,
+          ingredients: ['Unable to analyze - service unavailable'],
+          allergens: [],
+          additives: [],
+          isOrganic: false,
+          grade: 'mediocre' as const,
+          recommendations: [
+            'Analysis service is temporarily unavailable',
+            'This is a placeholder analysis',
+            'Please try again later'
+          ],
+          warnings: ['Analysis unavailable - service error'],
+          reasons: ['Service connectivity issue'],
+          flags: ['service_unavailable'],
+          scoreBreakdown: {
+            nutritionScore: 40,
+            additivesScore: 0,
+            organicScore: 0,
+            totalScore: 45
+          },
+          micronutrients: {
+            vitaminC_mg: 0,
+            iron_mg: 0,
+            calcium_mg: 0,
+            vitaminD_IU: 0,
+            vitaminB12_mcg: 0,
+            folate_mcg: 0,
+            magnesium_mg: 0,
+            zinc_mg: 0,
+            potassium_mg: 0,
+            vitaminA_IU: 0
           }
         };
         
