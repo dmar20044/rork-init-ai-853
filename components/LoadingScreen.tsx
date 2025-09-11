@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -52,7 +52,7 @@ const progressSteps = [
   { label: 'Personalizing', duration: 1000, icon: User }
 ];
 
-const LoadingScreen: React.FC<LoadingScreenProps> = memo(function LoadingScreen({ isVisible, onCancel, onComplete, onProductNotFound, progress }) {
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onComplete, onProductNotFound, progress }) => {
   const [currentMessageIndex, setCurrentMessageIndex] = useState<number>(0);
   const { isDarkMode } = useTheme();
 
@@ -917,7 +917,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = memo(function LoadingScreen(
       )}
     </View>
   );
-});
+};
 
 export default LoadingScreen;
 

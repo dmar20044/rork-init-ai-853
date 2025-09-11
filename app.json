@@ -3,8 +3,6 @@
     "name": "InIt AI",
     "slug": "grocery-food-scanner-app",
     "version": "1.0.0",
-    "description": "AI-powered food scanner that analyzes nutritional content and provides personalized health insights",
-    "privacy": "public",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -17,13 +15,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.initai",
-      "buildNumber": "1",
+      "bundleIdentifier": "app.rork.grocery-food-scanner-app",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to scan food products and analyze their nutritional content",
-        "NSMicrophoneUsageDescription": "This app uses the microphone for voice input features",
-        "NSPhotoLibraryUsageDescription": "This app accesses your photos to analyze food images for nutritional information",
-        "ITSAppUsesNonExemptEncryption": false
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos"
       }
     },
     "android": {
@@ -31,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.initai",
+      "package": "app.rork.grocery-food-scanner-app",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
@@ -56,15 +52,15 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "This app uses the camera to scan food products and analyze their nutritional content",
-          "microphonePermission": "This app uses the microphone for voice input features",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
       ],
       [
         "expo-image-picker",
         {
-          "photosPermission": "This app accesses your photos to analyze food images for nutritional information"
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
       [

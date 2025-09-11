@@ -45,64 +45,12 @@ export const trpcClient = trpc.createClient({
           if (contentType && contentType.includes('text/html')) {
             const htmlText = await response.text();
             console.error('Received HTML instead of JSON:', htmlText.substring(0, 500));
-            
-            // If we get a 404, the backend might not be properly deployed
-            // Return a mock response to prevent the app from crashing
-            if (response.status === 404) {
-              console.log('Backend not found (404), creating mock response');
-              const mockResponse = new Response(
-                JSON.stringify({
-                  id: null,
-                  result: {
-                    type: 'data',
-                    data: {
-                      success: false,
-                      error: 'Backend service is not available. Please try again later.'
-                    }
-                  }
-                }),
-                {
-                  status: 200,
-                  headers: {
-                    'Content-Type': 'application/json'
-                  }
-                }
-              );
-              return mockResponse;
-            }
-            
             throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}`);
           }
           
           return response;
         } catch (error) {
           console.error('tRPC fetch error:', error);
-          
-          // If it's a network error or the backend is completely down,
-          // return a mock error response to prevent app crashes
-          if (error instanceof TypeError && error.message.includes('fetch')) {
-            console.log('Network error detected, creating mock error response');
-            const mockResponse = new Response(
-              JSON.stringify({
-                id: null,
-                result: {
-                  type: 'data',
-                  data: {
-                    success: false,
-                    error: 'Network connection failed. Please check your internet connection and try again.'
-                  }
-                }
-              }),
-              {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json'
-                }
-              }
-            );
-            return mockResponse;
-          }
-          
           throw error;
         }
       },
