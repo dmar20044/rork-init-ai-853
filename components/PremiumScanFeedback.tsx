@@ -1694,31 +1694,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       </View>
                     </View>
 
-                    {/* Micro Breakdown Section */}
-                    <View style={styles.microInlineContainer}>
-                      <View style={styles.microInlineHeader}>
-                        <Target size={18} color={Colors.retroPink} />
-                        <Text style={[styles.microInlineTitle, { color: colors.textPrimary }]}>Micro Breakdown</Text>
-                      </View>
-                      <View style={styles.microGrid}>
-                        <View style={styles.microItem}>
-                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
-                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Vitamin C</Text>
-                        </View>
-                        <View style={styles.microItem}>
-                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
-                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Iron</Text>
-                        </View>
-                        <View style={styles.microItem}>
-                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
-                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Calcium</Text>
-                        </View>
-                        <View style={styles.microItem}>
-                          <Text style={[styles.microValue, { color: Colors.retroPink }]}>--</Text>
-                          <Text style={[styles.microLabel, { color: colors.textSecondary }]}>Vitamin D</Text>
-                        </View>
-                      </View>
-                    </View>
+
 
                   </View>
 
