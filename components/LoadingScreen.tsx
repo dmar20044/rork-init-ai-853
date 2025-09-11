@@ -77,33 +77,60 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
   const startTimeRef = useRef<number>(0);
   const progressBarValueRef = useRef<number>(0);
   
-  // Step icon morph animations
-  const stepIconScales = useRef<Animated.Value[]>(
-    Array.from({ length: progressSteps.length }, () => new Animated.Value(1))
-  );
-  const stepIconRotations = useRef<Animated.Value[]>(
-    Array.from({ length: progressSteps.length }, () => new Animated.Value(0))
-  );
+  // Step icon morph animations - initialize once with useRef
+  const stepIconScalesRef = useRef<Animated.Value[] | null>(null);
+  if (!stepIconScalesRef.current) {
+    stepIconScalesRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(1));
+  }
+  const stepIconScales = stepIconScalesRef;
+  
+  const stepIconRotationsRef = useRef<Animated.Value[] | null>(null);
+  if (!stepIconRotationsRef.current) {
+    stepIconRotationsRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(0));
+  }
+  const stepIconRotations = stepIconRotationsRef;
   
   // Initialize all animated values as refs to avoid re-creation
-  const animatedValues = useMemo(() => ({
-    loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
-    progressBarWidth: new Animated.Value(0),
-    messageOpacity: new Animated.Value(1),
-    messageTranslateY: new Animated.Value(0),
-    slideUpValue: new Animated.Value(screenHeight),
-    cardScale: new Animated.Value(0.8),
-    cardOpacity: new Animated.Value(0),
-    ripple1Scale: new Animated.Value(0),
-    ripple2Scale: new Animated.Value(0),
-    ripple3Scale: new Animated.Value(0),
-    ripple1Opacity: new Animated.Value(0.8),
-    ripple2Opacity: new Animated.Value(0.8),
-    ripple3Opacity: new Animated.Value(0.8),
-    centerPulse: new Animated.Value(1),
-    centerGlow: new Animated.Value(0.5),
-    gradientAnimation: new Animated.Value(0),
-  }), []);
+  const animatedValuesRef = useRef<{
+    loadingAnimations: Animated.Value[];
+    progressBarWidth: Animated.Value;
+    messageOpacity: Animated.Value;
+    messageTranslateY: Animated.Value;
+    slideUpValue: Animated.Value;
+    cardScale: Animated.Value;
+    cardOpacity: Animated.Value;
+    ripple1Scale: Animated.Value;
+    ripple2Scale: Animated.Value;
+    ripple3Scale: Animated.Value;
+    ripple1Opacity: Animated.Value;
+    ripple2Opacity: Animated.Value;
+    ripple3Opacity: Animated.Value;
+    centerPulse: Animated.Value;
+    centerGlow: Animated.Value;
+    gradientAnimation: Animated.Value;
+  } | null>(null);
+  
+  if (!animatedValuesRef.current) {
+    animatedValuesRef.current = {
+      loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
+      progressBarWidth: new Animated.Value(0),
+      messageOpacity: new Animated.Value(1),
+      messageTranslateY: new Animated.Value(0),
+      slideUpValue: new Animated.Value(screenHeight),
+      cardScale: new Animated.Value(0.8),
+      cardOpacity: new Animated.Value(0),
+      ripple1Scale: new Animated.Value(0),
+      ripple2Scale: new Animated.Value(0),
+      ripple3Scale: new Animated.Value(0),
+      ripple1Opacity: new Animated.Value(0.8),
+      ripple2Opacity: new Animated.Value(0.8),
+      ripple3Opacity: new Animated.Value(0.8),
+      centerPulse: new Animated.Value(1),
+      centerGlow: new Animated.Value(0.5),
+      gradientAnimation: new Animated.Value(0),
+    };
+  }
+  const animatedValues = animatedValuesRef.current;
   
   // Create ripple animation function
   const createRippleAnimation = useCallback((scale: Animated.Value, opacity: Animated.Value, delay: number) => {
@@ -451,25 +478,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       setCompletedSteps(prev => new Set([...prev, 0]));
       
       // Animate icon completion for step 0
-      Animated.sequence([
-        Animated.parallel([
+      if (stepIconScales.current && stepIconRotations.current) {
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(stepIconScales.current[0], {
+              toValue: 1.3,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(stepIconRotations.current[0], {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]),
           Animated.timing(stepIconScales.current[0], {
-            toValue: 1.3,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(stepIconRotations.current[0], {
             toValue: 1,
             duration: 200,
             useNativeDriver: true,
           }),
-        ]),
-        Animated.timing(stepIconScales.current[0], {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+        ]).start();
+      }
       
       if (Platform.OS !== 'web') {
         try {
@@ -494,25 +523,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       setCompletedSteps(prev => new Set([...prev, 1]));
       
       // Animate icon completion for step 1
-      Animated.sequence([
-        Animated.parallel([
+      if (stepIconScales.current && stepIconRotations.current) {
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(stepIconScales.current[1], {
+              toValue: 1.3,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(stepIconRotations.current[1], {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]),
           Animated.timing(stepIconScales.current[1], {
-            toValue: 1.3,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(stepIconRotations.current[1], {
             toValue: 1,
             duration: 200,
             useNativeDriver: true,
           }),
-        ]),
-        Animated.timing(stepIconScales.current[1], {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+        ]).start();
+      }
       
       if (Platform.OS !== 'web') {
         try {
@@ -536,25 +567,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       setCompletedSteps(prev => new Set([...prev, 2]));
       
       // Animate icon completion for step 2
-      Animated.sequence([
-        Animated.parallel([
+      if (stepIconScales.current && stepIconRotations.current) {
+        Animated.sequence([
+          Animated.parallel([
+            Animated.timing(stepIconScales.current[2], {
+              toValue: 1.3,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+            Animated.timing(stepIconRotations.current[2], {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]),
           Animated.timing(stepIconScales.current[2], {
-            toValue: 1.3,
-            duration: 200,
-            useNativeDriver: true,
-          }),
-          Animated.timing(stepIconRotations.current[2], {
             toValue: 1,
             duration: 200,
             useNativeDriver: true,
           }),
-        ]),
-        Animated.timing(stepIconScales.current[2], {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-      ]).start();
+        ]).start();
+      }
       
       if (Platform.OS !== 'web') {
         try {
@@ -580,7 +613,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       if (fallbackTimeout) clearTimeout(fallbackTimeout);
       if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
     };
-  }, [isVisible, animatedValues.progressBarWidth, progress, onComplete, onCancel, onProductNotFound]);
+  }, [isVisible, animatedValues.progressBarWidth, progress, onComplete, onCancel, onProductNotFound, stepIconScales, stepIconRotations]);
   
   // Separate effect to handle progress updates when progress prop changes
   useEffect(() => {
@@ -773,12 +806,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                         shadowRadius: shouldBeHighlighted ? 8 : 0,
                         elevation: shouldBeHighlighted ? 6 : 0,
                         transform: [
-                          { scale: stepIconScales.current[index] },
+                          { scale: stepIconScales.current?.[index] || 1 },
                           { 
-                            rotate: stepIconRotations.current[index].interpolate({
+                            rotate: stepIconRotations.current?.[index]?.interpolate({
                               inputRange: [0, 1],
                               outputRange: ['0deg', '360deg'],
-                            })
+                            }) || '0deg'
                           },
                         ],
                       }
@@ -788,7 +821,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                           styles.stepCheckmark,
                           {
                             transform: [
-                              { scale: stepIconScales.current[index] },
+                              { scale: stepIconScales.current?.[index] || 1 },
                             ],
                           },
                         ]} />
@@ -797,7 +830,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                           styles.stepIconContainer,
                           {
                             transform: [
-                              { scale: stepIconScales.current[index] },
+                              { scale: stepIconScales.current?.[index] || 1 },
                             ],
                           },
                         ]}>
