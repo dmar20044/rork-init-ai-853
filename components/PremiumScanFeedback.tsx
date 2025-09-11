@@ -2113,56 +2113,155 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       <Target size={18} color={Colors.retroPink} />
                       <Text style={[styles.microBreakdownTitle, { color: colors.textPrimary }]}>Micro Breakdown</Text>
                     </View>
-                    <View style={styles.microBreakdownGrid}>
-                      <View style={styles.microBreakdownItem} testID="micro-vitamin-c">
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>
-                          {nutrition.micronutrients?.vitaminC_mg != null ? `${nutrition.micronutrients.vitaminC_mg} mg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Vitamin C</Text>
+                    
+                    {/* Left Column */}
+                    <View style={styles.microBreakdownColumns}>
+                      <View style={styles.microBreakdownColumn}>
+                        {/* Fiber */}
+                        <View style={styles.microBreakdownRow} testID="micro-fiber">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Fiber</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>0%</Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[styles.microBreakdownProgress, { width: '0%', backgroundColor: colors.textSecondary + '40' }]} />
+                          </View>
+                        </View>
+                        
+                        {/* Iron */}
+                        <View style={styles.microBreakdownRow} testID="micro-iron">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Iron</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>
+                              {nutrition.micronutrients?.iron_mg != null ? 
+                                `${Math.round((nutrition.micronutrients.iron_mg / 18) * 100)}%` : '0%'}
+                            </Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[
+                              styles.microBreakdownProgress, 
+                              { 
+                                width: nutrition.micronutrients?.iron_mg != null ? 
+                                  `${Math.min(100, Math.round((nutrition.micronutrients.iron_mg / 18) * 100))}%` : '0%',
+                                backgroundColor: nutrition.micronutrients?.iron_mg != null && nutrition.micronutrients.iron_mg > 0 ? 
+                                  colors.textPrimary : colors.textSecondary + '40'
+                              }
+                            ]} />
+                          </View>
+                        </View>
+                        
+                        {/* Calcium */}
+                        <View style={styles.microBreakdownRow} testID="micro-calcium">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Calcium</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>
+                              {nutrition.micronutrients?.calcium_mg != null ? 
+                                `${Math.round((nutrition.micronutrients.calcium_mg / 1000) * 100)}%` : '0%'}
+                            </Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[
+                              styles.microBreakdownProgress, 
+                              { 
+                                width: nutrition.micronutrients?.calcium_mg != null ? 
+                                  `${Math.min(100, Math.round((nutrition.micronutrients.calcium_mg / 1000) * 100))}%` : '0%',
+                                backgroundColor: nutrition.micronutrients?.calcium_mg != null && nutrition.micronutrients.calcium_mg > 0 ? 
+                                  colors.textPrimary : colors.textSecondary + '40'
+                              }
+                            ]} />
+                          </View>
+                        </View>
+                        
+                        {/* Vitamin A */}
+                        <View style={styles.microBreakdownRow} testID="micro-vitamin-a">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Vitamin A</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>0%</Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[styles.microBreakdownProgress, { width: '0%', backgroundColor: colors.textSecondary + '40' }]} />
+                          </View>
+                        </View>
                       </View>
-                      <View style={styles.microBreakdownItem} testID="micro-iron">
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>
-                          {nutrition.micronutrients?.iron_mg != null ? `${nutrition.micronutrients.iron_mg} mg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Iron</Text>
-                      </View>
-                      <View style={styles.microBreakdownItem} testID="micro-calcium">
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>
-                          {nutrition.micronutrients?.calcium_mg != null ? `${nutrition.micronutrients.calcium_mg} mg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Calcium</Text>
-                      </View>
-                      <View style={styles.microBreakdownItem} testID="micro-vitamin-d">
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>
-                          {nutrition.micronutrients?.vitaminD_IU != null ? `${nutrition.micronutrients.vitaminD_IU} IU` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Vitamin D</Text>
-                      </View>
-                    </View>
-                    <View style={styles.microBreakdownSecondaryGrid}>
-                      <View style={styles.microBreakdownSecondaryItem} testID="micro-b12">
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>
-                          {nutrition.micronutrients?.vitaminB12_mcg != null ? `${nutrition.micronutrients.vitaminB12_mcg} µg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>B12</Text>
-                      </View>
-                      <View style={styles.microBreakdownSecondaryItem} testID="micro-folate">
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>
-                          {nutrition.micronutrients?.folate_mcg != null ? `${nutrition.micronutrients.folate_mcg} µg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Folate</Text>
-                      </View>
-                      <View style={styles.microBreakdownSecondaryItem} testID="micro-magnesium">
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>
-                          {nutrition.micronutrients?.magnesium_mg != null ? `${nutrition.micronutrients.magnesium_mg} mg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Magnesium</Text>
-                      </View>
-                      <View style={styles.microBreakdownSecondaryItem} testID="micro-zinc">
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>
-                          {nutrition.micronutrients?.zinc_mg != null ? `${nutrition.micronutrients.zinc_mg} mg` : '--'}
-                        </Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Zinc</Text>
+                      
+                      {/* Right Column */}
+                      <View style={styles.microBreakdownColumn}>
+                        {/* Vitamin C */}
+                        <View style={styles.microBreakdownRow} testID="micro-vitamin-c">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Vitamin C</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>
+                              {nutrition.micronutrients?.vitaminC_mg != null ? 
+                                `${Math.round((nutrition.micronutrients.vitaminC_mg / 90) * 100)}%` : '0%'}
+                            </Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[
+                              styles.microBreakdownProgress, 
+                              { 
+                                width: nutrition.micronutrients?.vitaminC_mg != null ? 
+                                  `${Math.min(100, Math.round((nutrition.micronutrients.vitaminC_mg / 90) * 100))}%` : '0%',
+                                backgroundColor: nutrition.micronutrients?.vitaminC_mg != null && nutrition.micronutrients.vitaminC_mg > 0 ? 
+                                  colors.textPrimary : colors.textSecondary + '40'
+                              }
+                            ]} />
+                          </View>
+                        </View>
+                        
+                        {/* B12 (Cobalamin) */}
+                        <View style={styles.microBreakdownRow} testID="micro-b12">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>B12 (Cobalamin)</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>
+                              {nutrition.micronutrients?.vitaminB12_mcg != null ? 
+                                `${Math.round((nutrition.micronutrients.vitaminB12_mcg / 2.4) * 100)}%` : '0%'}
+                            </Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[
+                              styles.microBreakdownProgress, 
+                              { 
+                                width: nutrition.micronutrients?.vitaminB12_mcg != null ? 
+                                  `${Math.min(100, Math.round((nutrition.micronutrients.vitaminB12_mcg / 2.4) * 100))}%` : '0%',
+                                backgroundColor: nutrition.micronutrients?.vitaminB12_mcg != null && nutrition.micronutrients.vitaminB12_mcg > 0 ? 
+                                  colors.textPrimary : colors.textSecondary + '40'
+                              }
+                            ]} />
+                          </View>
+                        </View>
+                        
+                        {/* Folate */}
+                        <View style={styles.microBreakdownRow} testID="micro-folate">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Folate</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>
+                              {nutrition.micronutrients?.folate_mcg != null ? 
+                                `${Math.round((nutrition.micronutrients.folate_mcg / 400) * 100)}%` : '0%'}
+                            </Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[
+                              styles.microBreakdownProgress, 
+                              { 
+                                width: nutrition.micronutrients?.folate_mcg != null ? 
+                                  `${Math.min(100, Math.round((nutrition.micronutrients.folate_mcg / 400) * 100))}%` : '0%',
+                                backgroundColor: nutrition.micronutrients?.folate_mcg != null && nutrition.micronutrients.folate_mcg > 0 ? 
+                                  colors.textPrimary : colors.textSecondary + '40'
+                              }
+                            ]} />
+                          </View>
+                        </View>
+                        
+                        {/* Potassium */}
+                        <View style={styles.microBreakdownRow} testID="micro-potassium">
+                          <View style={styles.microBreakdownRowHeader}>
+                            <Text style={[styles.microBreakdownRowLabel, { color: colors.textPrimary }]}>Potassium</Text>
+                            <Text style={[styles.microBreakdownRowPercentage, { color: colors.textPrimary }]}>0%</Text>
+                          </View>
+                          <View style={[styles.microBreakdownProgressBar, { backgroundColor: colors.textSecondary + '20' }]}>
+                            <View style={[styles.microBreakdownProgress, { width: '0%', backgroundColor: colors.textSecondary + '40' }]} />
+                          </View>
+                        </View>
                       </View>
                     </View>
                   </View>
@@ -3858,54 +3957,48 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   
-  microBreakdownGrid: {
+  microBreakdownColumns: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  
+  microBreakdownColumn: {
+    flex: 1,
+    gap: 16,
+  },
+  
+  microBreakdownRow: {
+    gap: 8,
+  },
+  
+  microBreakdownRowHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  
-  microBreakdownItem: {
     alignItems: 'center',
-    flex: 1,
   },
   
-  microBreakdownValue: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  
-  microBreakdownLabel: {
-    fontSize: 12,
+  microBreakdownRowLabel: {
+    fontSize: 16,
     fontWeight: '600',
-    textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    color: Colors.retroCharcoalBlack,
   },
   
-  microBreakdownSecondaryGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.retroPink + '10',
-    borderRadius: 8,
-    padding: 12,
-  },
-  
-  microBreakdownSecondaryItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  
-  microBreakdownSecondaryValue: {
+  microBreakdownRowPercentage: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 4,
+    color: Colors.retroCharcoalBlack,
   },
   
-  microBreakdownSecondaryLabel: {
-    fontSize: 11,
-    fontWeight: '500',
-    textAlign: 'center',
+  microBreakdownProgressBar: {
+    height: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  
+  microBreakdownProgress: {
+    height: '100%',
+    borderRadius: 4,
+    minWidth: 2,
   },
 
 });
