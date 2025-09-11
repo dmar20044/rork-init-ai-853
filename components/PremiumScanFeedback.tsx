@@ -2019,27 +2019,6 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         </View>
                       )}
                     </View>
-                    
-                    {/* Micronutrient Breakdown Tab */}
-                    <View style={styles.micronutrientTabContainer}>
-                      <TouchableOpacity 
-                        style={[styles.micronutrientTab, { backgroundColor: colors.surface, borderColor: Colors.retroPink + '30' }]}
-                        onPress={() => {
-                          // TODO: Add micronutrient breakdown modal or expand functionality
-                          console.log('Micronutrient breakdown tab pressed');
-                        }}
-                        activeOpacity={0.7}
-                      >
-                        <View style={[styles.micronutrientTabIcon, { backgroundColor: Colors.retroPink + '15' }]}>
-                          <Target size={18} color={Colors.retroPink} />
-                        </View>
-                        <View style={styles.micronutrientTabContent}>
-                          <Text style={[styles.micronutrientTabTitle, { color: colors.textPrimary }]}>Micronutrient Breakdown</Text>
-                          <Text style={[styles.micronutrientTabSubtitle, { color: colors.textSecondary }]}>Vitamins & Minerals Analysis</Text>
-                        </View>
-                        <ChevronRight size={16} color={Colors.retroPink} />
-                      </TouchableOpacity>
-                    </View>
                   </View>
                 </View>
               </Animated.View>
@@ -3594,49 +3573,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: Colors.retroCharcoalBlack,
-  },
-  
-  // Micronutrient Tab Styles
-  micronutrientTabContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  
-  micronutrientTab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    shadowColor: Colors.retroPink,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  
-  micronutrientTabIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  
-  micronutrientTabContent: {
-    flex: 1,
-  },
-  
-  micronutrientTabTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 2,
-  },
-  
-  micronutrientTabSubtitle: {
-    fontSize: 13,
-    fontWeight: '400',
   },
 
 });

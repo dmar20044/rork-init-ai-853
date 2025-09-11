@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   AlertCircle,
   List,
-  Zap,
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -26,22 +25,12 @@ interface IngredientAnalysis {
   purpose: string;
 }
 
-interface Micronutrient {
-  name: string;
-  amount: string;
-  dailyValue: string;
-  description: string;
-}
-
 interface IngredientListModalProps {
   visible: boolean;
   onClose: () => void;
   ingredients: IngredientAnalysis[];
-  micronutrients?: Micronutrient[];
   isLoading: boolean;
 }
-
-type TabType = 'ingredients' | 'micronutrients';
 
 const getIngredientColor = (ingredient: IngredientAnalysis): string => {
   // Check for "Be Cautious" ingredients (artificial, preservatives)
@@ -88,11 +77,9 @@ export default function IngredientListModal({
   visible,
   onClose,
   ingredients,
-  micronutrients = [],
   isLoading,
 }: IngredientListModalProps) {
   const { colors } = useTheme();
-  const [activeTab, setActiveTab] = useState<TabType>('ingredients');
 
   // Group ingredients by category
   const groupedIngredients = {
@@ -112,14 +99,8 @@ export default function IngredientListModal({
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.textSecondary + '20' }]}>
           <View style={styles.headerLeft}>
-            {activeTab === 'ingredients' ? (
-              <List size={24} color={Colors.retroNeonTurquoise} />
-            ) : (
-              <Zap size={24} color={Colors.retroNeonTurquoise} />
-            )}
-            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>
-              {activeTab === 'ingredients' ? 'Ingredient List' : 'Micronutrients'}
-            </Text>
+            <List size={24} color={Colors.retroNeonTurquoise} />
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Ingredient List</Text>
           </View>
           <TouchableOpacity
             style={[styles.closeButton, { backgroundColor: colors.textSecondary + '10' }]}
@@ -130,57 +111,16 @@ export default function IngredientListModal({
           </TouchableOpacity>
         </View>
 
-        {/* Tab Navigation */}
-        <View style={[styles.tabContainer, { backgroundColor: colors.surface, borderBottomColor: colors.textSecondary + '20' }]}>
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'ingredients' && styles.activeTab,
-              { borderBottomColor: activeTab === 'ingredients' ? Colors.retroNeonTurquoise : 'transparent' }
-            ]}
-            onPress={() => setActiveTab('ingredients')}
-            activeOpacity={0.7}
-          >
-            <List size={20} color={activeTab === 'ingredients' ? Colors.retroNeonTurquoise : colors.textSecondary} />
-            <Text style={[
-              styles.tabText,
-              { color: activeTab === 'ingredients' ? Colors.retroNeonTurquoise : colors.textSecondary }
-            ]}>
-              Ingredient Breakdown
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[
-              styles.tab,
-              activeTab === 'micronutrients' && styles.activeTab,
-              { borderBottomColor: activeTab === 'micronutrients' ? Colors.retroNeonTurquoise : 'transparent' }
-            ]}
-            onPress={() => setActiveTab('micronutrients')}
-            activeOpacity={0.7}
-          >
-            <Zap size={20} color={activeTab === 'micronutrients' ? Colors.retroNeonTurquoise : colors.textSecondary} />
-            <Text style={[
-              styles.tabText,
-              { color: activeTab === 'micronutrients' ? Colors.retroNeonTurquoise : colors.textSecondary }
-            ]}>
-              Micronutrient Breakdown
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Content */}
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-                {activeTab === 'ingredients' ? 'Analyzing ingredients...' : 'Analyzing micronutrients...'}
+                Analyzing ingredients...
               </Text>
             </View>
           ) : (
             <View style={styles.content}>
-              {activeTab === 'ingredients' ? (
-                <>
               {/* Summary Stats */}
               <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
                 <Text style={[styles.summaryTitle, { color: colors.textPrimary }]}>Summary</Text>
@@ -293,73 +233,13 @@ export default function IngredientListModal({
                 </View>
               )}
 
-                  {/* No ingredients message */}
-                  {ingredients.length === 0 && !isLoading && (
-                    <View style={styles.emptyContainer}>
-                      <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                        No ingredient analysis available
-                      </Text>
-                    </View>
-                  )}
-                </>
-              ) : (
-                <>
-                  {/* Micronutrients Content */}
-                  {micronutrients.length > 0 ? (
-                    <View style={styles.micronutrientsContainer}>
-                      {/* Micronutrients Summary */}
-                      <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
-                        <Text style={[styles.summaryTitle, { color: colors.textPrimary }]}>Micronutrient Profile</Text>
-                        <Text style={[styles.micronutrientSubtitle, { color: colors.textSecondary }]}>
-                          Essential vitamins and minerals found in this product
-                        </Text>
-                      </View>
-
-                      {/* Micronutrients List */}
-                      <View style={[styles.categorySection, { backgroundColor: colors.surface }]}>
-                        <View style={styles.categoryHeader}>
-                          <Zap size={20} color={Colors.retroNeonTurquoise} />
-                          <Text style={[styles.categoryTitle, { color: Colors.retroNeonTurquoise }]}>Micronutrients</Text>
-                          <Text style={[styles.categoryCount, { color: colors.textSecondary }]}>({micronutrients.length})</Text>
-                        </View>
-                        <View style={styles.micronutrientsList}>
-                          {micronutrients.map((nutrient, index) => (
-                            <View key={`micronutrient-${index}`} style={[styles.micronutrientItem, { borderLeftColor: Colors.retroNeonTurquoise }]}>
-                              <View style={styles.micronutrientHeader}>
-                                <Text style={[styles.micronutrientName, { color: colors.textPrimary }]}>
-                                  {nutrient.name}
-                                </Text>
-                                <View style={styles.micronutrientValues}>
-                                  <Text style={[styles.micronutrientAmount, { color: Colors.retroNeonTurquoise }]}>
-                                    {nutrient.amount}
-                                  </Text>
-                                  <Text style={[styles.micronutrientDV, { color: colors.textSecondary }]}>
-                                    ({nutrient.dailyValue} DV)
-                                  </Text>
-                                </View>
-                              </View>
-                              <Text style={[styles.micronutrientDescription, { color: colors.textSecondary }]}>
-                                {nutrient.description}
-                              </Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                    </View>
-                  ) : (
-                    <View style={styles.emptyContainer}>
-                      <View style={styles.emptyIcon}>
-                        <Zap size={48} color={colors.textSecondary} />
-                      </View>
-                      <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-                        No micronutrient data available for this product
-                      </Text>
-                      <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-                        Micronutrient information may not be available for all products
-                      </Text>
-                    </View>
-                  )}
-                </>
+              {/* No ingredients message */}
+              {ingredients.length === 0 && !isLoading && (
+                <View style={styles.emptyContainer}>
+                  <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                    No ingredient analysis available
+                  </Text>
+                </View>
               )}
             </View>
           )}
@@ -529,88 +409,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     color: Colors.retroSlateGray,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 8,
-    color: Colors.retroSlateGray,
-    opacity: 0.8,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: Colors.retroCreamWhite,
-    borderBottomWidth: 1,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    gap: 8,
-    borderBottomWidth: 2,
-  },
-  activeTab: {
-    backgroundColor: Colors.retroNeonTurquoise + '10',
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  micronutrientsContainer: {
-    gap: 16,
-  },
-  micronutrientSubtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 8,
-    color: Colors.retroSlateGray,
-  },
-  micronutrientsList: {
-    gap: 12,
-  },
-  micronutrientItem: {
-    backgroundColor: Colors.retroSoftGray + '10',
-    borderRadius: 12,
-    padding: 16,
-    borderLeftWidth: 4,
-  },
-  micronutrientHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  micronutrientName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    flex: 1,
-    color: Colors.retroCharcoalBlack,
-  },
-  micronutrientValues: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  micronutrientAmount: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Colors.retroNeonTurquoise,
-  },
-  micronutrientDV: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: Colors.retroSlateGray,
-  },
-  micronutrientDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: Colors.retroSlateGray,
-  },
-  emptyIcon: {
-    opacity: 0.5,
-    marginBottom: 16,
   },
 });
