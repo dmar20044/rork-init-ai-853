@@ -46,14 +46,27 @@ export default function ScannerScreen() {
   const scanBeamAnimation = useRef<Animated.Value>(new Animated.Value(0));
   const cameraRef = useRef<CameraView>(null);
   const { addToHistory } = useScanHistory();
-  const { profile, updateScanStreak } = useUser();
-  
+  const { profile, updateScanStreak, isLoading, authState } = useUser();
+  const [hasCheckedRoute, setHasCheckedRoute] = useState(false);
 
-
-  // Test API status on component mount
-  useEffect(() => {
-    testAPIs();
+  const triggerShutterFill = useCallback(() => {
+    try {
+      shutterFill.current.setValue(0);
+      Animated.sequence([
+        Animated.timing(shutterFill.current, { toValue: 1, duration: 400, useNativeDriver: true }),
+        Animated.timing(shutterFill.current, { toValue: 0, duration: 400, delay: 150, useNativeDriver: true }),
+      ]).start();
+    } catch (e) {
+      console.log('Shutter fill animation error', e);
+    }
   }, []);
+
+  // Test API status on component mount (only if user has completed quiz)
+  useEffect(() => {
+    if (profile?.hasCompletedQuiz) {
+      testAPIs();
+    }
+  }, [profile?.hasCompletedQuiz]);
 
   // Animate scan beam continuously
   useEffect(() => {
@@ -70,6 +83,38 @@ export default function ScannerScreen() {
 
     animateBeam();
   }, []);
+
+  // Check if user should be redirected to quiz on first load
+  useEffect(() => {
+    if (!isLoading && !authState.isLoading && !hasCheckedRoute) {
+      setHasCheckedRoute(true);
+      
+      // If user hasn't completed quiz, redirect to quiz
+      if (!profile?.hasCompletedQuiz) {
+        console.log('[Scanner] User has not completed quiz, redirecting to quiz');
+        router.replace('/quiz');
+        return;
+      }
+      
+      console.log('[Scanner] User has completed quiz, staying on scanner');
+    }
+  }, [isLoading, authState.isLoading, profile?.hasCompletedQuiz, hasCheckedRoute]);
+
+
+
+  // Show loading while checking route
+  if (!hasCheckedRoute || isLoading || authState.isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
+
+  // If user hasn't completed quiz, don't render the scanner
+  if (!profile?.hasCompletedQuiz) {
+    return null;
+  }
   
 
 
@@ -243,17 +288,7 @@ export default function ScannerScreen() {
     }
   };
 
-  const triggerShutterFill = useCallback(() => {
-    try {
-      shutterFill.current.setValue(0);
-      Animated.sequence([
-        Animated.timing(shutterFill.current, { toValue: 1, duration: 400, useNativeDriver: true }),
-        Animated.timing(shutterFill.current, { toValue: 0, duration: 400, delay: 150, useNativeDriver: true }),
-      ]).start();
-    } catch (e) {
-      console.log('Shutter fill animation error', e);
-    }
-  }, []);
+
 
   const handleTakePicture = async () => {
     if (!cameraRef.current) return;

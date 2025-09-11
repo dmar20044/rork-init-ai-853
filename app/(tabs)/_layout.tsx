@@ -365,7 +365,11 @@ function TabLayout() {
   // Handle tab press with haptic feedback
   const handleTabPress = useCallback(() => {
     if (Platform.OS !== 'web') {
-      Haptics.selectionAsync();
+      try {
+        Haptics.selectionAsync();
+      } catch (error) {
+        console.log('Haptics not available:', error);
+      }
     }
   }, []);
   
@@ -381,7 +385,11 @@ function TabLayout() {
 
           const onPress = () => {
             if (Platform.OS !== 'web') {
-              Haptics.selectionAsync();
+              try {
+                Haptics.selectionAsync();
+              } catch (error) {
+                console.log('Haptics not available:', error);
+              }
             }
             
             const event = navigation.emit({
@@ -495,6 +503,7 @@ function TabLayout() {
       screenListeners={{
         tabPress: handleTabPress,
       }}
+      initialRouteName="index"
     >
       <Tabs.Screen name="grocery-list" options={groceryListOptions} />
       <Tabs.Screen name="discover" options={discoverOptions} />

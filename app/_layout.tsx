@@ -4,7 +4,7 @@ import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, Component, ReactNode, useState, memo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
+import { View, ActivityIndicator, Text, TouchableOpacity, Platform } from "react-native";
 import { ScanHistoryProvider } from "@/contexts/ScanHistoryContext";
 import { UserProvider, useUser } from "@/contexts/UserContext";
 import { GroceryListProvider, useGroceryList } from "@/contexts/GroceryListContext";
@@ -74,61 +74,29 @@ const queryClient = new QueryClient({
 const RootLayoutNav = memo(function RootLayoutNav() {
   const { profile, isLoading, authState } = useUser();
   const { showToast, toastMessage } = useGroceryList();
-  const [hasNavigated, setHasNavigated] = useState(false);
 
-  // Memoize stack screen options for better performance (moved before conditional returns)
-  const stackScreenOptions = React.useMemo(() => ({ 
-    headerBackTitle: "Back",
-    animation: 'slide_from_right' as const,
-    animationDuration: 200, // Faster animations
-  }), []);
-
-  const quizScreenOptions = React.useMemo(() => ({ headerShown: false }), []);
-  const tabsScreenOptions = React.useMemo(() => ({ headerShown: false }), []);
-  const nutritionResultsScreenOptions = React.useMemo(() => ({ headerShown: false }), []);
-
-  useEffect(() => {
-    // Wait for both profile and auth state to be loaded
-    if (!isLoading && !authState.isLoading && !hasNavigated) {
-      try {
-        console.log('[Navigation] Profile and auth loaded:', { 
-          hasCompletedQuiz: profile?.hasCompletedQuiz, 
-          name: profile?.name,
-          isAuthenticated: authState.isAuthenticated,
-          userEmail: authState.user?.email
-        });
-        
-        if (profile?.hasCompletedQuiz) {
-          console.log('[Navigation] Navigating to tabs');
-          router.replace('/(tabs)');
-        } else {
-          console.log('[Navigation] Navigating to quiz');
-          router.replace('/quiz');
-        }
-        setHasNavigated(true);
-      } catch (error) {
-        console.error('Navigation error:', error);
-        // Fallback to quiz if navigation fails
-        router.replace('/quiz');
-        setHasNavigated(true);
-      }
-    }
-  }, [isLoading, authState.isLoading, profile?.hasCompletedQuiz, authState.isAuthenticated, hasNavigated, profile?.name, authState.user?.email]);
-
-  if (isLoading || authState.isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.background }}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
-    );
-  }
+  // Don't do any automatic navigation - let Expo Router handle initial routing
+  // The user will start at the index route and we'll handle navigation from there
 
   return (
     <>
-      <Stack screenOptions={stackScreenOptions}>
-        <Stack.Screen name="quiz" options={quizScreenOptions} />
-        <Stack.Screen name="(tabs)" options={tabsScreenOptions} />
-        <Stack.Screen name="nutrition-results" options={nutritionResultsScreenOptions} />
+      <Stack
+        screenOptions={{
+          headerBackTitle: "Back",
+          animation: Platform.OS === 'web' ? 'none' : 'slide_from_right',
+          animationDuration: Platform.OS === 'web' ? 0 : 200,
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="quiz" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="nutrition-results" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding-scan" options={{ headerShown: false }} />
+        <Stack.Screen name="insights" options={{ headerShown: false }} />
+        <Stack.Screen name="subscription" options={{ headerShown: false }} />
+        <Stack.Screen name="backend-test" options={{ headerShown: false }} />
+        <Stack.Screen name="debug" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
       </Stack>
       <ToastNotification visible={showToast} message={toastMessage} />
     </>
@@ -137,38 +105,44 @@ const RootLayoutNav = memo(function RootLayoutNav() {
 
 export default function RootLayout() {
   useEffect(() => {
-    const hideSplash = async () => {
+    const prepare = async () => {
       try {
+        console.log('App initialization started');
+        
+        // Wait a bit for everything to initialize
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Hide splash screen
         await SplashScreen.hideAsync();
+        
+        console.log('App initialization completed');
       } catch (error) {
-        console.error('Error hiding splash screen:', error);
+        console.error('Error during app initialization:', error);
       }
     };
-    
-    // Add a small delay to ensure everything is loaded
-    const timer = setTimeout(hideSplash, 100);
-    return () => clearTimeout(timer);
+
+    prepare();
   }, []);
 
   return (
     <ErrorBoundary>
-      <trpc.Provider client={trpcClient} queryClient={queryClient}>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider>
-          <UserProvider>
-            <SubscriptionProvider>
-              <ScanHistoryProvider>
-                <GroceryListProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <RootLayoutNav />
-                  </GestureHandlerRootView>
-                </GroceryListProvider>
-              </ScanHistoryProvider>
-            </SubscriptionProvider>
-          </UserProvider>
-          </ThemeProvider>
-        </QueryClientProvider>
-      </trpc.Provider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <trpc.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <UserProvider>
+                <SubscriptionProvider>
+                  <ScanHistoryProvider>
+                    <GroceryListProvider>
+                      <RootLayoutNav />
+                    </GroceryListProvider>
+                  </ScanHistoryProvider>
+                </SubscriptionProvider>
+              </UserProvider>
+            </ThemeProvider>
+          </QueryClientProvider>
+        </trpc.Provider>
+      </GestureHandlerRootView>
     </ErrorBoundary>
   );
 }
