@@ -609,14 +609,24 @@ function calculateFoodScore(input: FoodScoringInput): ScoringResult {
     );
   
   // Detect if this is a fruit or vegetable (natural sugar source)
-  const fruits = ['apple', 'banana', 'orange', 'grape', 'berry', 'strawberry', 'blueberry', 'kiwi', 'mango', 'pineapple', 'peach', 'pear', 'cherry', 'plum', 'melon', 'watermelon'];
-  const vegetables = ['carrot', 'beet', 'sweet potato', 'corn', 'pea', 'tomato', 'pepper', 'onion'];
+  const fruits = ['apple', 'banana', 'orange', 'grape', 'berry', 'strawberry', 'blueberry', 'kiwi', 'mango', 'pineapple', 'peach', 'pear', 'cherry', 'plum', 'melon', 'watermelon', 'avocado', 'coconut', 'lemon', 'lime', 'grapefruit', 'papaya', 'guava', 'passion fruit', 'dragon fruit', 'star fruit', 'pomegranate', 'cranberry', 'blackberry', 'raspberry'];
+  const vegetables = ['carrot', 'beet', 'sweet potato', 'corn', 'pea', 'tomato', 'pepper', 'onion', 'cucumber', 'celery', 'lettuce', 'spinach', 'kale', 'broccoli', 'cauliflower', 'cabbage', 'zucchini', 'squash', 'eggplant', 'mushroom'];
   const isNaturalSugarSource = input.ingredients.length === 1 && 
     (fruits.some(fruit => input.ingredients[0].toLowerCase().includes(fruit)) ||
      vegetables.some(veg => input.ingredients[0].toLowerCase().includes(veg)));
   
-  // Start with higher base score for whole foods
-  let nutritionScore = isWholeFoodProduct ? 85 : 60;
+  // Start with much higher base score for whole foods, especially fruits
+  let nutritionScore;
+  if (isNaturalSugarSource && fruits.some(fruit => input.ingredients[0].toLowerCase().includes(fruit))) {
+    // Fruits get the highest base score
+    nutritionScore = 92;
+  } else if (isWholeFoodProduct) {
+    // Other whole foods get high base score
+    nutritionScore = 88;
+  } else {
+    // Processed foods start lower
+    nutritionScore = 60;
+  }
   let additivesScore = 0;
   let organicScore = 0;
   const reasons: string[] = [];
@@ -627,22 +637,24 @@ function calculateFoodScore(input: FoodScoringInput): ScoringResult {
   
   // Sugar scoring - different rules for natural vs added sugars
   if (isNaturalSugarSource) {
-    // For fruits and vegetables, natural sugar is not penalized as heavily
-    if (input.nutrition.sugar > 25) {
-      // Only penalize extremely high natural sugar (like dried fruits)
-      const penalty = Math.min(10, (input.nutrition.sugar - 25) * 1);
+    // For fruits and vegetables, natural sugar is barely penalized
+    if (input.nutrition.sugar > 35) {
+      // Only penalize extremely high natural sugar (like dried fruits or very large servings)
+      const penalty = Math.min(8, (input.nutrition.sugar - 35) * 0.5);
       nutritionScore -= penalty;
-      reasons.push(`Very high natural sugar content (${input.nutrition.sugar}g per serving)`);
+      reasons.push(`Very high natural sugar content (${input.nutrition.sugar}g per serving) - likely dried fruit or large serving`);
       flags.push('high_natural_sugar');
-    } else if (input.nutrition.sugar > 15) {
-      // Moderate natural sugar - small penalty
-      const penalty = Math.min(5, (input.nutrition.sugar - 15) * 0.5);
+    } else if (input.nutrition.sugar > 25) {
+      // Moderate natural sugar - very small penalty
+      const penalty = Math.min(3, (input.nutrition.sugar - 25) * 0.3);
       nutritionScore -= penalty;
-      reasons.push(`Moderate natural sugar content (${input.nutrition.sugar}g per serving)`);
+      reasons.push(`High natural sugar content (${input.nutrition.sugar}g per serving) from whole food`);
       flags.push('moderate_natural_sugar');
     } else {
-      // Natural sugar under 15g is fine
-      reasons.push(`Natural sugar content (${input.nutrition.sugar}g per serving) from whole food`);
+      // Natural sugar under 25g gets a bonus for being a whole food
+      const bonus = Math.min(5, (25 - input.nutrition.sugar) * 0.2);
+      nutritionScore += bonus;
+      reasons.push(`Natural sugar content (${input.nutrition.sugar}g per serving) from whole food - excellent choice`);
       flags.push('natural_sugar');
     }
   } else {
@@ -724,9 +736,16 @@ function calculateFoodScore(input: FoodScoringInput): ScoringResult {
     if (isWholeFood) {
       if (isWholeFoodProduct) {
         // Single ingredient whole food gets major bonus
-        nutritionScore += 10;
-        reasons.push('Pure whole food with single ingredient');
-        flags.push('pure_whole_food');
+        if (isNaturalSugarSource && fruits.some(fruit => firstIngredient.includes(fruit))) {
+          // Fruits get extra bonus
+          nutritionScore += 15;
+          reasons.push('Pure whole fruit - nature\'s perfect food');
+          flags.push('pure_whole_fruit');
+        } else {
+          nutritionScore += 12;
+          reasons.push('Pure whole food with single ingredient');
+          flags.push('pure_whole_food');
+        }
       } else {
         // First ingredient is whole food
         nutritionScore += 6;
