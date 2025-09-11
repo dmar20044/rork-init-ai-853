@@ -2019,7 +2019,95 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                     </View>
                   </View>
                   
-                  {/* Micro Breakdown Section */}
+                  {/* Tab Indicators between Ingredient Summary and Micro Breakdown */}
+                  <View style={styles.tabIndicatorBetweenSections}>
+                    <View style={styles.tabIndicatorsWithArrows}>
+                      <TouchableOpacity
+                        style={styles.tabArrow}
+                        onPress={() => {
+                          if (activeTab !== 0) {
+                            setActiveTab(0);
+                            Animated.spring(tabTranslateX, {
+                              toValue: 0,
+                              tension: 90,
+                              friction: 10,
+                              useNativeDriver: true,
+                            }).start();
+                          }
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={[styles.tabArrowText, { color: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary }]}>‹</Text>
+                      </TouchableOpacity>
+                      
+                      <View style={styles.tabIndicators}>
+                        <TouchableOpacity
+                          testID="tab-dot-ingredient-summary"
+                          style={[
+                            styles.tabIndicatorSmall,
+                            {
+                              backgroundColor: activeTab === 0 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                            },
+                          ]}
+                          onPress={() => {
+                            if (activeTab !== 0) {
+                              setActiveTab(0);
+                              Animated.spring(tabTranslateX, {
+                                toValue: 0,
+                                tension: 90,
+                                friction: 10,
+                                useNativeDriver: true,
+                              }).start();
+                            }
+                          }}
+                          activeOpacity={0.7}
+                        />
+                        <TouchableOpacity
+                          testID="tab-dot-micro-breakdown"
+                          style={[
+                            styles.tabIndicatorSmall,
+                            {
+                              backgroundColor: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary + '30',
+                            },
+                          ]}
+                          onPress={() => {
+                            if (activeTab !== 1) {
+                              setActiveTab(1);
+                              const screenWidth = Dimensions.get('window').width;
+                              Animated.spring(tabTranslateX, {
+                                toValue: -screenWidth,
+                                tension: 90,
+                                friction: 10,
+                                useNativeDriver: true,
+                              }).start();
+                            }
+                          }}
+                          activeOpacity={0.7}
+                        />
+                      </View>
+                      
+                      <TouchableOpacity
+                        style={styles.tabArrow}
+                        onPress={() => {
+                          if (activeTab !== 1) {
+                            setActiveTab(1);
+                            const screenWidth = Dimensions.get('window').width;
+                            Animated.spring(tabTranslateX, {
+                              toValue: -screenWidth,
+                              tension: 90,
+                              friction: 10,
+                              useNativeDriver: true,
+                            }).start();
+                          }
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={[styles.tabArrowText, { color: activeTab === 1 ? Colors.retroNeonTurquoise : colors.textSecondary }]}>›</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  
+                  {/* Micro Breakdown Section */
                   <View style={styles.microBreakdownContainer}>
                     <View style={styles.microBreakdownHeader}>
                       <Target size={18} color={Colors.retroPink} />
