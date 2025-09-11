@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "InIt AI",
-    "slug": "grocery-food-scanner-app",
+    "slug": "initai-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.initai",
+      "bundleIdentifier": "app.rork.initai-app",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.initai",
+      "package": "app.rork.initai-app",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
