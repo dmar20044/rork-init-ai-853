@@ -2,6 +2,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserGoals } from '@/contexts/UserContext';
 import { trpcClient } from '@/lib/trpc';
 
+export interface Micronutrients {
+  vitaminC_mg?: number;
+  iron_mg?: number;
+  calcium_mg?: number;
+  vitaminD_IU?: number;
+  vitaminB12_mcg?: number;
+  folate_mcg?: number;
+  magnesium_mg?: number;
+  zinc_mg?: number;
+  potassium_mg?: number;
+  vitaminA_IU?: number;
+}
+
 export interface NutritionInfo {
   name: string;
   calories: number;
@@ -29,6 +42,7 @@ export interface NutritionInfo {
   reasons?: string[];
   flags?: string[];
   imageUrl?: string;
+  micronutrients?: Micronutrients;
 }
 
 export interface ScoreBreakdown {

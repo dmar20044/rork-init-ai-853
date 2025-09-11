@@ -99,10 +99,22 @@ JSON FORMAT:
   "additives": [],
   "isOrganic": false,
   "recommendations": [],
-  "warnings": []
+  "warnings": [],
+  "micronutrients": {
+    "vitaminC_mg": 0,
+    "iron_mg": 0,
+    "calcium_mg": 0,
+    "vitaminD_IU": 0,
+    "vitaminB12_mcg": 0,
+    "folate_mcg": 0,
+    "magnesium_mg": 0,
+    "zinc_mg": 0,
+    "potassium_mg": 0,
+    "vitaminA_IU": 0
+  }
 }
 
-Respond with ONLY the JSON object above. No other text.`;
+If a value is unknown, set it to 0. Respond with ONLY the JSON object above. No other text.`;
 
       const userMessage = 'Analyze this food image. Return ONLY valid JSON with nutrition facts and ingredients. No explanations or extra text.';
 
@@ -436,6 +448,28 @@ Respond with ONLY the JSON object above. No other text.`;
       
       // Ensure boolean fields
       nutritionData.isOrganic = nutritionData.isOrganic || false;
+
+      // Ensure micronutrients structure exists and coerce numbers
+      const microDefaults = {
+        vitaminC_mg: 0,
+        iron_mg: 0,
+        calcium_mg: 0,
+        vitaminD_IU: 0,
+        vitaminB12_mcg: 0,
+        folate_mcg: 0,
+        magnesium_mg: 0,
+        zinc_mg: 0,
+        potassium_mg: 0,
+        vitaminA_IU: 0,
+      } as const;
+      const microIn = (nutritionData.micronutrients ?? {}) as Record<string, unknown>;
+      const micronutrients: Record<string, number> = {};
+      (Object.keys(microDefaults) as Array<keyof typeof microDefaults>).forEach((k) => {
+        const v = microIn[k as string];
+        const n = typeof v === 'number' ? v : typeof v === 'string' ? Number(v) : 0;
+        micronutrients[k] = Number.isFinite(n) ? n : 0;
+      });
+      nutritionData.micronutrients = micronutrients;
       
       // Ensure serving size is present
       nutritionData.servingSize = nutritionData.servingSize || '1 serving';
