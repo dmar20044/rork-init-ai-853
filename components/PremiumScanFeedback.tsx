@@ -3383,9 +3383,9 @@ const styles = StyleSheet.create({
   },
   
   tabIndicatorSmall: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   
   // Tab Content Styles
