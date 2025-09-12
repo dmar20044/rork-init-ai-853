@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
 import {
   View,
   Text,
@@ -79,15 +79,19 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
   
   // Step icon morph animations - initialize once with useRef
   const stepIconScalesRef = useRef<Animated.Value[] | null>(null);
-  if (!stepIconScalesRef.current) {
-    stepIconScalesRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(1));
-  }
-  const stepIconScales = stepIconScalesRef;
-  
   const stepIconRotationsRef = useRef<Animated.Value[] | null>(null);
-  if (!stepIconRotationsRef.current) {
-    stepIconRotationsRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(0));
-  }
+  
+  // Use useLayoutEffect to initialize step animations
+  useLayoutEffect(() => {
+    if (!stepIconScalesRef.current) {
+      stepIconScalesRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(1));
+    }
+    if (!stepIconRotationsRef.current) {
+      stepIconRotationsRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(0));
+    }
+  }, []);
+  
+  const stepIconScales = stepIconScalesRef;
   const stepIconRotations = stepIconRotationsRef;
   
   // Initialize all animated values as refs to avoid re-creation
@@ -110,26 +114,30 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
     gradientAnimation: Animated.Value;
   } | null>(null);
   
-  if (!animatedValuesRef.current) {
-    animatedValuesRef.current = {
-      loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
-      progressBarWidth: new Animated.Value(0),
-      messageOpacity: new Animated.Value(1),
-      messageTranslateY: new Animated.Value(0),
-      slideUpValue: new Animated.Value(screenHeight),
-      cardScale: new Animated.Value(0.8),
-      cardOpacity: new Animated.Value(0),
-      ripple1Scale: new Animated.Value(0),
-      ripple2Scale: new Animated.Value(0),
-      ripple3Scale: new Animated.Value(0),
-      ripple1Opacity: new Animated.Value(0.8),
-      ripple2Opacity: new Animated.Value(0.8),
-      ripple3Opacity: new Animated.Value(0.8),
-      centerPulse: new Animated.Value(1),
-      centerGlow: new Animated.Value(0.5),
-      gradientAnimation: new Animated.Value(0),
-    };
-  }
+  // Use useLayoutEffect to initialize animated values before render
+  useLayoutEffect(() => {
+    if (!animatedValuesRef.current) {
+      animatedValuesRef.current = {
+        loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
+        progressBarWidth: new Animated.Value(0),
+        messageOpacity: new Animated.Value(1),
+        messageTranslateY: new Animated.Value(0),
+        slideUpValue: new Animated.Value(screenHeight),
+        cardScale: new Animated.Value(0.8),
+        cardOpacity: new Animated.Value(0),
+        ripple1Scale: new Animated.Value(0),
+        ripple2Scale: new Animated.Value(0),
+        ripple3Scale: new Animated.Value(0),
+        ripple1Opacity: new Animated.Value(0.8),
+        ripple2Opacity: new Animated.Value(0.8),
+        ripple3Opacity: new Animated.Value(0.8),
+        centerPulse: new Animated.Value(1),
+        centerGlow: new Animated.Value(0.5),
+        gradientAnimation: new Animated.Value(0),
+      };
+    }
+  }, []);
+  
   const animatedValues = animatedValuesRef.current;
   
   // Create ripple animation function
@@ -167,7 +175,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
 
   // Initialize animations once when component mounts
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !animatedValues) return;
     
     const animations: Animated.CompositeAnimation[] = [];
     
@@ -295,7 +303,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
 
   // Handle message rotation with random order
   useEffect(() => {
-    if (!isVisible) return;
+    if (!isVisible || !animatedValues) return;
     
     const messageInterval = setInterval(() => {
       // Fade out current message
@@ -349,9 +357,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       setShowProductNotFound(false);
       setCurrentProgress(0);
       progressBarValueRef.current = 0;
-      animatedValues.progressBarWidth.setValue(0);
+      if (animatedValues) {
+        animatedValues.progressBarWidth.setValue(0);
+      }
       return;
     }
+    
+    if (!animatedValues) return;
     
     // Record start time for minimum display duration
     startTimeRef.current = Date.now();
@@ -613,11 +625,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       if (fallbackTimeout) clearTimeout(fallbackTimeout);
       if (productNotFoundTimeout) clearTimeout(productNotFoundTimeout);
     };
-  }, [isVisible, animatedValues.progressBarWidth, progress, onComplete, onCancel, onProductNotFound, stepIconScales, stepIconRotations]);
+  }, [isVisible, animatedValues?.progressBarWidth, progress, onComplete, onCancel, onProductNotFound, stepIconScales, stepIconRotations]);
   
   // Separate effect to handle progress updates when progress prop changes
   useEffect(() => {
-    if (!isVisible || typeof progress !== 'number') return;
+    if (!isVisible || typeof progress !== 'number' || !animatedValues) return;
     
     console.log('LoadingScreen: Progress prop changed to:', progress);
     const clampedProgress = Math.max(0, Math.min(100, progress));
@@ -647,7 +659,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
     } else {
       console.log('LoadingScreen: Ignoring progress update as it would decrease from', progressBarValueRef.current, 'to', clampedProgress);
     }
-  }, [progress, isVisible, animatedValues.progressBarWidth]);
+  }, [progress, isVisible, animatedValues?.progressBarWidth]);
   
   if (!isVisible) {
     return null;
@@ -658,37 +670,40 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
   return (
     <View style={[styles.loadingContainer, { backgroundColor: themeColors.background }]}>
       {/* Dynamic Gradient Background */}
-      <Animated.View style={[
-        styles.gradientBackground,
-        {
-          backgroundColor: themeColors.gradientBg,
-          opacity: animatedValues.gradientAnimation.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0.3, 0.7],
-          }),
-          transform: [{
-            translateX: animatedValues.gradientAnimation.interpolate({
+      {animatedValues && (
+        <Animated.View style={[
+          styles.gradientBackground,
+          {
+            backgroundColor: themeColors.gradientBg,
+            opacity: animatedValues.gradientAnimation.interpolate({
               inputRange: [0, 1],
-              outputRange: [-100, 100],
+              outputRange: [0.3, 0.7],
             }),
-          }],
-        },
-      ]} />
+            transform: [{
+              translateX: animatedValues.gradientAnimation.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-100, 100],
+              }),
+            }],
+          },
+        ]} />
+      )}
 
       
       {/* Main Loading Card */}
-      <Animated.View style={[
-        styles.shimmerCard,
-        {
-          backgroundColor: themeColors.surface,
-          borderColor: themeColors.textTertiary,
-          transform: [
-            { translateY: animatedValues.slideUpValue },
-            { scale: animatedValues.cardScale },
-          ],
-          opacity: animatedValues.cardOpacity,
-        },
-      ]}>
+      {animatedValues && (
+        <Animated.View style={[
+          styles.shimmerCard,
+          {
+            backgroundColor: themeColors.surface,
+            borderColor: themeColors.textTertiary,
+            transform: [
+              { translateY: animatedValues.slideUpValue },
+              { scale: animatedValues.cardScale },
+            ],
+            opacity: animatedValues.cardOpacity,
+          },
+        ]}>
         {/* Minimal Branding - Init AI Logo */}
         <View style={styles.brandingContainer}>
           <Text style={[styles.brandingText, { color: themeColors.primary }]}>InIt AI</Text>
@@ -895,7 +910,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
             </Text>
           </View>
         </View>
-      </Animated.View>
+        </Animated.View>
+      )}
       
       {/* Cancel Scan Button - Fixed at bottom */}
       {onCancel && (
