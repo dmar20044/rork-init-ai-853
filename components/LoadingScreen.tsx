@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -81,15 +81,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
   const stepIconScalesRef = useRef<Animated.Value[] | null>(null);
   const stepIconRotationsRef = useRef<Animated.Value[] | null>(null);
   
-  // Use useLayoutEffect to initialize step animations
-  useLayoutEffect(() => {
-    if (!stepIconScalesRef.current) {
-      stepIconScalesRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(1));
-    }
-    if (!stepIconRotationsRef.current) {
-      stepIconRotationsRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(0));
-    }
-  }, []);
+  // Initialize step animations on first render
+  if (!stepIconScalesRef.current) {
+    stepIconScalesRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(1));
+  }
+  if (!stepIconRotationsRef.current) {
+    stepIconRotationsRef.current = Array.from({ length: progressSteps.length }, () => new Animated.Value(0));
+  }
   
   const stepIconScales = stepIconScalesRef;
   const stepIconRotations = stepIconRotationsRef;
@@ -114,29 +112,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
     gradientAnimation: Animated.Value;
   } | null>(null);
   
-  // Use useLayoutEffect to initialize animated values before render
-  useLayoutEffect(() => {
-    if (!animatedValuesRef.current) {
-      animatedValuesRef.current = {
-        loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
-        progressBarWidth: new Animated.Value(0),
-        messageOpacity: new Animated.Value(1),
-        messageTranslateY: new Animated.Value(0),
-        slideUpValue: new Animated.Value(screenHeight),
-        cardScale: new Animated.Value(0.8),
-        cardOpacity: new Animated.Value(0),
-        ripple1Scale: new Animated.Value(0),
-        ripple2Scale: new Animated.Value(0),
-        ripple3Scale: new Animated.Value(0),
-        ripple1Opacity: new Animated.Value(0.8),
-        ripple2Opacity: new Animated.Value(0.8),
-        ripple3Opacity: new Animated.Value(0.8),
-        centerPulse: new Animated.Value(1),
-        centerGlow: new Animated.Value(0.5),
-        gradientAnimation: new Animated.Value(0),
-      };
-    }
-  }, []);
+  // Initialize animated values on first render
+  if (!animatedValuesRef.current) {
+    animatedValuesRef.current = {
+      loadingAnimations: Array.from({ length: 8 }, () => new Animated.Value(0)),
+      progressBarWidth: new Animated.Value(0),
+      messageOpacity: new Animated.Value(1),
+      messageTranslateY: new Animated.Value(0),
+      slideUpValue: new Animated.Value(screenHeight),
+      cardScale: new Animated.Value(0.8),
+      cardOpacity: new Animated.Value(0),
+      ripple1Scale: new Animated.Value(0),
+      ripple2Scale: new Animated.Value(0),
+      ripple3Scale: new Animated.Value(0),
+      ripple1Opacity: new Animated.Value(0.8),
+      ripple2Opacity: new Animated.Value(0.8),
+      ripple3Opacity: new Animated.Value(0.8),
+      centerPulse: new Animated.Value(1),
+      centerGlow: new Animated.Value(0.5),
+      gradientAnimation: new Animated.Value(0),
+    };
+  }
   
   const animatedValues = animatedValuesRef.current;
   
