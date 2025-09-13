@@ -1,13 +1,20 @@
 import { Tabs } from "expo-router";
-import React, { memo, useCallback, useRef } from "react";
+import React, { memo, useCallback, useState, useRef } from "react";
 import { Platform, View, TouchableOpacity, StyleSheet, Animated } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import Svg, { Path } from "react-native-svg";
 
+// Checkmark icon component
+const CheckmarkIcon = memo(function CheckmarkIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <Path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
+    </Svg>
+  );
+});
 
-
-// Simplified camera icon without complex animations to avoid useInsertionEffect errors
+// Animated camera icon that transforms to checkmark
 const AnimatedCameraIcon = memo(function AnimatedCameraIcon({ 
   color, 
   size, 
@@ -19,37 +26,214 @@ const AnimatedCameraIcon = memo(function AnimatedCameraIcon({
   focused?: boolean;
   onPress?: () => void;
 }) {
+  const [isAnimating, setIsAnimating] = useState<boolean>(false);
+  const [showCheckmark, setShowCheckmark] = useState<boolean>(false);
+  const spinValue = useRef(new Animated.Value(0)).current;
   const scaleValue = useRef(new Animated.Value(1)).current;
+  const opacityValue = useRef(new Animated.Value(1)).current;
+  const morphValue = useRef(new Animated.Value(0)).current;
+  
+  // Effect to handle focused state changes
+  React.useEffect(() => {
+    if (focused && !showCheckmark) {
+      // Animate to checkmark when tab becomes focused
+      setIsAnimating(true);
+      
+      Animated.sequence([
+        // Spin and scale down simultaneously
+        Animated.parallel([
+          Animated.timing(spinValue, {
+            toValue: 1,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleValue, {
+            toValue: 0.3,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Brief pause to switch icons
+        Animated.delay(50),
+      ]).start(() => {
+        // Switch to checkmark
+        setShowCheckmark(true);
+        
+        // Scale up and fade in checkmark
+        Animated.parallel([
+          Animated.timing(scaleValue, {
+            toValue: 1.1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(morphValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          // Scale back to normal
+          Animated.timing(scaleValue, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }).start(() => {
+            setIsAnimating(false);
+          });
+        });
+      });
+    } else if (!focused && showCheckmark) {
+      // Animate back to camera when tab loses focus
+      setIsAnimating(true);
+      
+      Animated.sequence([
+        // Scale down and fade out checkmark
+        Animated.parallel([
+          Animated.timing(scaleValue, {
+            toValue: 0.3,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(morphValue, {
+            toValue: 0,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]),
+        // Brief pause to switch icons
+        Animated.delay(50),
+      ]).start(() => {
+        // Switch back to camera
+        setShowCheckmark(false);
+        spinValue.setValue(0);
+        
+        // Scale up and fade in camera
+        Animated.parallel([
+          Animated.timing(scaleValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacityValue, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setIsAnimating(false);
+        });
+      });
+    }
+  }, [focused, showCheckmark, spinValue, scaleValue, opacityValue, morphValue]);
   
   const startAnimation = useCallback(() => {
-    // Simple scale animation on press
+    if (isAnimating || focused) return; // Don't animate if already focused or animating
+    
+    setIsAnimating(true);
+    
+    // Create sequence: spin -> scale down -> switch icon -> scale up -> reset
     Animated.sequence([
-      Animated.timing(scaleValue, {
-        toValue: 0.9,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleValue, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
+      // Spin and scale down simultaneously
+      Animated.parallel([
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleValue, {
+          toValue: 0.3,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityValue, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]),
+      // Brief pause to switch icons
+      Animated.delay(50),
+    ]).start(() => {
+      // Switch to checkmark
+      setShowCheckmark(true);
+      
+      // Scale up and fade in checkmark
+      Animated.parallel([
+        Animated.timing(scaleValue, {
+          toValue: 1.2,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityValue, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        // Scale back to normal
+        Animated.timing(scaleValue, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          // Reset after delay only if not focused
+          if (!focused) {
+            setTimeout(() => {
+              setShowCheckmark(false);
+              setIsAnimating(false);
+              spinValue.setValue(0);
+              scaleValue.setValue(1);
+              opacityValue.setValue(1);
+            }, 1000);
+          } else {
+            setIsAnimating(false);
+          }
+        });
+      });
+    });
     
     // Call the original onPress
     if (onPress) {
       onPress();
     }
-  }, [onPress, scaleValue]);
+  }, [isAnimating, focused, onPress, spinValue, scaleValue, opacityValue]);
+  
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
   
   const animatedStyle = {
-    transform: [{ scale: scaleValue }],
+    transform: [
+      { rotate: spin },
+      { scale: scaleValue },
+    ],
+    opacity: opacityValue,
   };
   
   return (
     <TouchableOpacity onPress={startAnimation} activeOpacity={0.8}>
       <Animated.View style={animatedStyle}>
-        <CameraIcon color={color} size={size} focused={focused} />
+        {showCheckmark ? (
+          <CheckmarkIcon color="white" size={size} />
+        ) : (
+          <CameraIcon color={color} size={size} focused={focused} />
+        )}
       </Animated.View>
     </TouchableOpacity>
   );

@@ -27,46 +27,56 @@ app.get("/", (c) => {
 
 // Debug endpoint to check environment variables
 app.get("/debug", (c) => {
+  const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+  const keyLength = process.env.ANTHROPIC_API_KEY?.length || 0;
+  const keyPrefix = process.env.ANTHROPIC_API_KEY?.substring(0, 10) || 'none';
+  
   return c.json({
     status: "debug",
     environment: {
-      usingRorkAPI: true,
-      rorkAPIEndpoint: 'https://toolkit.rork.com/text/llm/',
+      hasAnthropicKey,
+      keyLength,
+      keyPrefix: keyPrefix === 'none' ? 'none' : keyPrefix + '...',
       nodeEnv: process.env.NODE_ENV,
-      vercelEnv: process.env.VERCEL_ENV,
-      platform: 'vercel'
+      vercelEnv: process.env.VERCEL_ENV
     },
     timestamp: new Date().toISOString()
   });
 });
 
-// Test Rork AI API endpoint
-app.post("/test-rork-ai", async (c) => {
+// Test Anthropic API endpoint
+app.post("/test-anthropic", async (c) => {
   try {
     const { message } = await c.req.json();
     
-    console.log('Testing Rork AI API with message:', message);
+    console.log('Testing Anthropic API with message:', message);
+    console.log('API Key available:', !!process.env.ANTHROPIC_API_KEY);
+    console.log('API Key length:', process.env.ANTHROPIC_API_KEY?.length || 0);
     
-    const response = await fetch('https://toolkit.rork.com/text/llm/', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
+        model: 'claude-3-sonnet-20240229',
+        max_tokens: 100,
         messages: [
           {
             role: 'user',
-            content: message || 'Hello, this is a test message from backend'
+            content: message || 'Hello, this is a test message'
           }
         ]
       }),
     });
     
-    console.log('Rork AI API response status:', response.status);
+    console.log('Anthropic API response status:', response.status);
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Rork AI API error:', errorText);
+      console.error('Anthropic API error:', errorText);
       return c.json({ 
         success: false, 
         error: `API request failed: ${response.status}`,
@@ -75,20 +85,20 @@ app.post("/test-rork-ai", async (c) => {
     }
     
     const result = await response.json();
-    console.log('Rork AI API success');
+    console.log('Anthropic API success');
     
     return c.json({ 
       success: true, 
       data: result,
-      usingRorkAPI: true
+      apiKeyPresent: !!process.env.ANTHROPIC_API_KEY
     });
     
   } catch (error) {
-    console.error('Test Rork AI API error:', error);
+    console.error('Test Anthropic API error:', error);
     return c.json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error',
-      usingRorkAPI: true
+      apiKeyPresent: !!process.env.ANTHROPIC_API_KEY
     }, 500);
   }
 });

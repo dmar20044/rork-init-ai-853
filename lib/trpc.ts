@@ -7,9 +7,7 @@ export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseUrl = () => {
   if (process.env.EXPO_PUBLIC_RORK_API_BASE_URL) {
-    const url = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-    console.log('Using backend URL:', url);
-    return url;
+    return process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   }
 
   throw new Error(
@@ -23,9 +21,8 @@ export const trpcClient = trpc.createClient({
       url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
       fetch: async (url, options) => {
-        const timestamp = new Date().toISOString();
-        console.log(`[${timestamp}] tRPC request to:`, url);
-        console.log(`[${timestamp}] tRPC request options:`, {
+        console.log('tRPC request to:', url);
+        console.log('tRPC request options:', {
           method: options?.method,
           headers: options?.headers,
           bodyLength: options?.body ? String(options.body).length : 0
@@ -40,32 +37,20 @@ export const trpcClient = trpc.createClient({
             },
           });
           
-          console.log(`[${timestamp}] tRPC response status:`, response.status);
-          console.log(`[${timestamp}] tRPC response headers:`, Object.fromEntries(response.headers.entries()));
+          console.log('tRPC response status:', response.status);
+          console.log('tRPC response headers:', Object.fromEntries(response.headers.entries()));
           
           // Check if response is HTML (error page)
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('text/html')) {
             const htmlText = await response.text();
-            console.error(`[${timestamp}] Received HTML instead of JSON:`, htmlText.substring(0, 500));
+            console.error('Received HTML instead of JSON:', htmlText.substring(0, 500));
             throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}`);
-          }
-          
-          // Log successful responses for debugging
-          if (response.ok) {
-            console.log(`[${timestamp}] tRPC request successful`);
-          } else {
-            console.error(`[${timestamp}] tRPC request failed with status:`, response.status);
           }
           
           return response;
         } catch (error) {
-          console.error(`[${timestamp}] tRPC fetch error:`, {
-            message: error instanceof Error ? error.message : 'Unknown error',
-            url,
-            method: options?.method,
-            error
-          });
+          console.error('tRPC fetch error:', error);
           throw error;
         }
       },

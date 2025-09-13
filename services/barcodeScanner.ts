@@ -193,7 +193,6 @@ export async function lookupProductByBarcode(barcode: string): Promise<BarcodeRe
     }
     
     console.log('Making request to OpenFoodFacts API for barcode:', cleanBarcode);
-    console.log('Testing barcode format and length:', { barcode: cleanBarcode, length: cleanBarcode.length, isNumeric: /^\d+$/.test(cleanBarcode) });
     
     // Try multiple endpoints with retry logic, prioritizing English-language endpoints
     const endpoints = [
@@ -235,8 +234,6 @@ export async function lookupProductByBarcode(barcode: string): Promise<BarcodeRe
           clearTimeout(timeoutId);
           
           console.log(`Response status for endpoint ${endpointIndex + 1}, attempt ${attempt}:`, response.status);
-          console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-          console.log('Response URL:', response.url);
           
           if (response.ok) {
             // Success! Process the response
@@ -338,16 +335,12 @@ async function processOpenFoodFactsResponse(response: Response, cleanBarcode: st
     
     const data = await response.json();
     console.log('OpenFoodFacts API response data status:', data.status);
-    console.log('Full OpenFoodFacts response:', JSON.stringify(data, null, 2).substring(0, 1000));
       
     if (data.status === 1 && data.product) {
       const product = data.product;
       console.log('Product found:', product.product_name || 'Unnamed product');
       console.log('Product brands:', product.brands);
       console.log('Product nutriments available:', !!product.nutriments);
-      console.log('Product categories:', product.categories_tags?.slice(0, 5));
-      console.log('Product ingredients text:', product.ingredients_text?.substring(0, 200));
-      console.log('Product image URLs:', { front: product.image_front_small_url, small: product.image_small_url });
       
       // Extract serving size and calculate conversion factor
       const servingSize = product.serving_size || '100g';
@@ -691,39 +684,6 @@ export async function searchProducts(
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to search products'
-    };
-  }
-}
-
-// Test function with specific barcode for debugging
-export async function testSpecificBarcode(barcode: string): Promise<{ success: boolean; message: string; data?: any }> {
-  try {
-    console.log('Testing specific barcode:', barcode);
-    
-    const result = await lookupProductByBarcode(barcode);
-    
-    if (result.success) {
-      console.log('Barcode test successful:', result.data?.productName);
-      return {
-        success: true,
-        message: `Product found: ${result.data?.productName}`,
-        data: result.data
-      };
-    } else {
-      console.log('Barcode test failed:', result.error);
-      return {
-        success: false,
-        message: result.error || 'Barcode test failed',
-        data: null
-      };
-    }
-    
-  } catch (error) {
-    console.error('Barcode test error:', error);
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : 'Barcode test failed with unknown error',
-      data: null
     };
   }
 }

@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { trpcClient } from '@/lib/trpc';
 import { Stack } from 'expo-router';
-import { testOpenFoodFactsAPI, testSpecificBarcode, lookupProductByBarcode } from '@/services/barcodeScanner';
 
 export default function DebugScreen() {
   const [testResults, setTestResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [barcodeInput, setBarcodeInput] = useState<string>('3017620422003'); // Default to Nutella barcode
-  const [barcodeTestResult, setBarcodeTestResult] = useState<string>('');
-  const [barcodeTestData, setBarcodeTestData] = useState<any>(null);
 
   const addResult = (test: string, result: any, error?: any) => {
     setTestResults(prev => [...prev, {
@@ -25,36 +21,21 @@ export default function DebugScreen() {
     setIsLoading(true);
     try {
       const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-      addResult('Environment Variable', { 
-        baseUrl,
-        timestamp: new Date().toISOString(),
-        platform: Platform.OS
-      });
+      addResult('Environment Variable', { baseUrl });
 
       // Test basic connectivity first
       try {
-        console.log('Testing basic connectivity to:', baseUrl);
-        const connectivityResponse = await fetch(`${baseUrl}`, {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'RorkMobileApp/1.0'
-          }
-        });
+        const connectivityResponse = await fetch(`${baseUrl}`);
         const connectivityData = await connectivityResponse.text();
         addResult('Basic Connectivity Test', { 
           status: connectivityResponse.status, 
-          statusText: connectivityResponse.statusText,
           headers: Object.fromEntries(connectivityResponse.headers.entries()),
-          bodyPreview: connectivityData.substring(0, 200) + (connectivityData.length > 200 ? '...' : ''),
-          url: baseUrl
+          bodyPreview: connectivityData.substring(0, 200) + (connectivityData.length > 200 ? '...' : '')
         });
       } catch (error) {
-        console.error('Basic connectivity test failed:', error);
         addResult('Basic Connectivity Test', null, { 
           message: error instanceof Error ? error.message : 'Unknown error',
-          type: error instanceof TypeError ? 'Network Error' : 'Other Error',
-          stack: error instanceof Error ? error.stack : undefined
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
         });
       }
 
@@ -93,35 +74,6 @@ export default function DebugScreen() {
         });
       }
 
-      // Test backend Rork AI endpoint
-      try {
-        const rorkTestResponse = await fetch(`${baseUrl}/api/test-rork-ai`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: 'Hello from debug test'
-          })
-        });
-        
-        if (rorkTestResponse.ok) {
-          const rorkTestData = await rorkTestResponse.json();
-          addResult('Backend Rork AI Test', { status: rorkTestResponse.status, data: rorkTestData });
-        } else {
-          const errorText = await rorkTestResponse.text();
-          addResult('Backend Rork AI Test', null, {
-            status: rorkTestResponse.status,
-            error: errorText
-          });
-        }
-      } catch (error) {
-        addResult('Backend Rork AI Test', null, { 
-          message: error instanceof Error ? error.message : 'Unknown error',
-          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
-        });
-      }
-
       // Test tRPC food analysis endpoint
       try {
         // Simple 1x1 pixel red image in base64
@@ -145,68 +97,36 @@ export default function DebugScreen() {
     }
   };
 
-  const testRorkAPI = async () => {
+  const testAnthropicAPI = async () => {
     setIsLoading(true);
     try {
-      // Test direct Rork AI API call (no API key needed!)
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+      const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+      
+      // Test direct Anthropic API call through our backend
+      const response = await fetch(`${baseUrl}/api/test-anthropic`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: 'Hello, this is a test message. Please respond with "Rork API test successful".'
-            }
-          ]
+          message: 'Hello, this is a test message'
         })
       });
       
       if (!response.ok) {
         const errorText = await response.text();
-        addResult('Direct Rork AI API Test', null, {
+        addResult('Direct Anthropic API Test', null, {
           status: response.status,
           error: errorText,
           headers: Object.fromEntries(response.headers.entries())
         });
       } else {
         const result = await response.json();
-        addResult('Direct Rork AI API Test', { status: response.status, result });
+        addResult('Direct Anthropic API Test', { status: response.status, result });
       }
       
     } catch (error) {
-      addResult('Direct Rork AI API Test', null, { 
-        message: error instanceof Error ? error.message : 'Unknown error',
-        type: error instanceof TypeError ? 'Network Error' : 'Other Error'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const testNetworkConnectivity = async () => {
-    setIsLoading(true);
-    try {
-      // Test basic internet connectivity
-      const googleResponse = await fetch('https://www.google.com', { method: 'HEAD' });
-      addResult('Internet Connectivity', { 
-        status: googleResponse.status, 
-        success: googleResponse.ok 
-      });
-      
-      // Test HTTPS connectivity
-      const httpsResponse = await fetch('https://httpbin.org/get');
-      const httpsData = httpsResponse.ok ? await httpsResponse.json() : null;
-      addResult('HTTPS Connectivity', { 
-        status: httpsResponse.status, 
-        success: httpsResponse.ok,
-        data: httpsData
-      });
-      
-    } catch (error) {
-      addResult('Network Connectivity Test', null, { 
+      addResult('Direct Anthropic API Test', null, { 
         message: error instanceof Error ? error.message : 'Unknown error',
         type: error instanceof TypeError ? 'Network Error' : 'Other Error'
       });
@@ -217,54 +137,6 @@ export default function DebugScreen() {
 
   const clearResults = () => {
     setTestResults([]);
-  };
-
-  const testBarcode = async () => {
-    if (!barcodeInput.trim()) {
-      setBarcodeTestResult('❌ Please enter a barcode');
-      return;
-    }
-
-    setBarcodeTestResult('Testing barcode...');
-    setBarcodeTestData(null);
-    setIsLoading(true);
-    
-    try {
-      const result = await testSpecificBarcode(barcodeInput.trim());
-      setBarcodeTestResult(`${result.success ? '✅' : '❌'} ${result.message}`);
-      if (result.success && result.data) {
-        setBarcodeTestData(result.data);
-      }
-      
-      // Also add to main results
-      addResult(`Barcode Test: ${barcodeInput.trim()}`, result.data, result.success ? null : result.message);
-    } catch (error) {
-      const errorMsg = `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      setBarcodeTestResult(errorMsg);
-      addResult(`Barcode Test: ${barcodeInput.trim()}`, null, error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const testOpenFoodFacts = async () => {
-    setBarcodeTestResult('Testing OpenFoodFacts API...');
-    setBarcodeTestData(null);
-    setIsLoading(true);
-    
-    try {
-      const result = await testOpenFoodFactsAPI();
-      setBarcodeTestResult(`${result.success ? '✅' : '❌'} ${result.message}`);
-      
-      // Also add to main results
-      addResult('OpenFoodFacts API Test', { success: result.success, message: result.message }, result.success ? null : result.message);
-    } catch (error) {
-      const errorMsg = `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      setBarcodeTestResult(errorMsg);
-      addResult('OpenFoodFacts API Test', null, error);
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -297,73 +169,14 @@ export default function DebugScreen() {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
-          style={[styles.button, styles.rorkButton]} 
-          onPress={testRorkAPI}
+          style={[styles.button, styles.anthropicButton]} 
+          onPress={testAnthropicAPI}
           disabled={isLoading}
         >
           <Text style={styles.buttonText}>
-            {isLoading ? 'Testing...' : 'Test Rork AI API'}
+            {isLoading ? 'Testing...' : 'Test Anthropic API'}
           </Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.button, styles.networkButton]} 
-          onPress={testNetworkConnectivity}
-          disabled={isLoading}
-        >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Testing...' : 'Test Network'}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Barcode Testing Section */}
-      <View style={styles.barcodeSection}>
-        <Text style={styles.sectionTitle}>Test Barcode Lookup</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter barcode (e.g., 3017620422003)"
-          value={barcodeInput}
-          onChangeText={setBarcodeInput}
-          keyboardType="numeric"
-        />
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={[styles.button, styles.barcodeButton]} 
-            onPress={testBarcode}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Testing...' : 'Test Barcode'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.button, styles.offButton]} 
-            onPress={testOpenFoodFacts}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Testing...' : 'Test OpenFoodFacts'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
-        {barcodeTestResult && (
-          <View style={styles.barcodeResult}>
-            <Text style={styles.resultLabel}>Barcode Test Result:</Text>
-            <Text style={styles.resultText}>{barcodeTestResult}</Text>
-          </View>
-        )}
-        
-        {barcodeTestData && (
-          <View style={styles.dataContainer}>
-            <Text style={styles.dataTitle}>Product Data:</Text>
-            <ScrollView style={styles.dataScroll}>
-              <Text style={styles.dataText}>{JSON.stringify(barcodeTestData, null, 2)}</Text>
-            </ScrollView>
-          </View>
-        )}
       </View>
 
       <ScrollView style={styles.resultsContainer}>
@@ -428,73 +241,8 @@ const styles = StyleSheet.create({
   clearButton: {
     backgroundColor: '#FF3B30',
   },
-  rorkButton: {
+  anthropicButton: {
     backgroundColor: '#34C759',
-  },
-  networkButton: {
-    backgroundColor: '#FF9500',
-  },
-  barcodeButton: {
-    backgroundColor: '#5856D6',
-  },
-  offButton: {
-    backgroundColor: '#AF52DE',
-  },
-  barcodeSection: {
-    backgroundColor: '#fff',
-    margin: 20,
-    padding: 20,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 15,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    fontSize: 16,
-    backgroundColor: '#f9f9f9',
-  },
-  barcodeResult: {
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 10,
-  },
-  resultLabel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 5,
-  },
-  dataContainer: {
-    backgroundColor: '#f5f5f5',
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 12,
-    maxHeight: 300,
-  },
-  dataTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
-  },
-  dataScroll: {
-    maxHeight: 250,
-  },
-  dataText: {
-    fontSize: 12,
-    fontFamily: 'monospace',
-    color: '#666',
   },
   buttonText: {
     color: '#fff',
