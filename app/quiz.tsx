@@ -16,7 +16,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
-import * as Notifications from 'expo-notifications';
+
 import { router } from 'expo-router';
 import { 
   ChevronRight, 
@@ -739,76 +739,7 @@ function QuizScreen() {
     }
   };
 
-  const handleNotificationPermission = async (allow: boolean) => {
-    try {
-      console.log('[Quiz] Handling notification permission:', allow);
-      
-      if (allow && Platform.OS !== 'web') {
-        // Request notification permissions
-        const { status: existingStatus } = await Notifications.getPermissionsAsync();
-        let finalStatus = existingStatus;
-        
-        if (existingStatus !== 'granted') {
-          const { status } = await Notifications.requestPermissionsAsync();
-          finalStatus = status;
-        }
-        
-        if (finalStatus === 'granted') {
-          console.log('[Quiz] Notification permissions granted');
-          
-          // Configure notification behavior
-          await Notifications.setNotificationHandler({
-            handleNotification: async () => ({
-              shouldShowAlert: true,
-              shouldPlaySound: true,
-              shouldSetBadge: false,
-              shouldShowBanner: true,
-              shouldShowList: true,
-            }),
-          });
-          
-          Alert.alert(
-            'Notifications Enabled!',
-            'You\'ll receive helpful reminders and updates to stay on track with your nutrition goals.',
-            [{ text: 'Great!', style: 'default' }]
-          );
-        } else {
-          console.log('[Quiz] Notification permissions denied');
-          Alert.alert(
-            'Notifications Disabled',
-            'You can enable notifications later in your device settings if you change your mind.',
-            [{ text: 'OK', style: 'default' }]
-          );
-        }
-      } else if (allow && Platform.OS === 'web') {
-        // Web notification handling
-        if ('Notification' in window) {
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            console.log('[Quiz] Web notification permissions granted');
-            Alert.alert(
-              'Notifications Enabled!',
-              'You\'ll receive helpful reminders in your browser.',
-              [{ text: 'Great!', style: 'default' }]
-            );
-          } else {
-            console.log('[Quiz] Web notification permissions denied');
-          }
-        }
-      } else {
-        console.log('[Quiz] User declined notifications');
-      }
-      
-      // Continue to next step
-      setTimeout(() => {
-        handleNext();
-      }, allow ? 2000 : 500);
-    } catch (error) {
-      console.error('[Quiz] Error handling notification permission:', error);
-      // Continue anyway
-      handleNext();
-    }
-  };
+
 
   const handleStartFreeTrial = async () => {
     try {
