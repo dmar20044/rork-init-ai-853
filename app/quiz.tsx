@@ -30,22 +30,20 @@ import {
   X,
   Star,
   Users,
-  Bell,
-  Gift,
   CreditCard
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useUser, UserGoals } from '@/contexts/UserContext';
 import { supabase, updateUserProfile } from '@/lib/supabase';
 import * as StoreReview from 'expo-store-review';
-import * as Notifications from 'expo-notifications';
+
 
 interface QuizStep {
   id: string;
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'notifications' | 'referral-code' | 'free-trial' | 'subscription-selection' | 'tags-input' | 'ingredient-confusion' | 'biometrics';
+  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'free-trial' | 'subscription-selection' | 'tags-input' | 'ingredient-confusion' | 'biometrics';
   options?: {
     id: string;
     label: string;
@@ -175,20 +173,7 @@ const quizSteps: QuizStep[] = [
     icon: <Sparkles size={48} color={Colors.primary} />,
     type: 'rating-request',
   },
-  {
-    id: 'notifications',
-    title: 'Reach your goals with notifications',
-    subtitle: 'Stay on track with personalized reminders',
-    icon: <Bell size={48} color={Colors.primary} />,
-    type: 'notifications',
-  },
-  {
-    id: 'referral-code',
-    title: 'Enter referral code (optional)',
-    subtitle: 'You can skip this step',
-    icon: <Gift size={48} color={Colors.primary} />,
-    type: 'referral-code',
-  },
+
   {
     id: 'save-progress',
     title: 'Save Your Progress',
@@ -901,10 +886,7 @@ function QuizScreen() {
         return true;
       case 'rating-request':
         return true;
-      case 'notifications':
-        return true;
-      case 'referral-code':
-        return true;
+
       case 'lifeGoal':
         return answers.lifeGoal !== null && answers.lifeStrictness !== null;
       case 'generating-questions':
@@ -1411,83 +1393,7 @@ function QuizScreen() {
           </View>
         );
 
-      case 'notifications':
-        return (
-          <View style={styles.notificationsContent}>
-            <View style={styles.iconContainer}>
-              {currentStepData.icon}
-            </View>
-            <Text style={styles.title}>{currentStepData.title}</Text>
-            <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
-            
-            <View style={styles.notificationCard}>
-              <View style={styles.notificationMockup}>
-                <View style={styles.notificationHeader}>
-                  <Text style={styles.notificationAppName}>InIt AI would like to send you</Text>
-                  <Text style={styles.notificationTitle}>Notifications</Text>
-                </View>
-                <View style={styles.notificationButtons}>
-                  <TouchableOpacity 
-                    style={styles.notificationDenyButton}
-                    onPress={() => handleNotificationPermission(false)}
-                  >
-                    <Text style={styles.notificationDenyText}>Don&apos;t Allow</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.notificationAllowButton}
-                    onPress={() => handleNotificationPermission(true)}
-                  >
-                    <Text style={styles.notificationAllowText}>Allow</Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.pointingHand}>
-                  <Text style={styles.pointingHandEmoji}>👆</Text>
-                </View>
-              </View>
-            </View>
-            
-            <View style={styles.notificationBenefits}>
-              <View style={styles.notificationBenefit}>
-                <Bell size={20} color={Colors.primary} />
-                <Text style={styles.notificationBenefitText}>Daily nutrition reminders</Text>
-              </View>
-              <View style={styles.notificationBenefit}>
-                <TrendingUp size={20} color={Colors.primary} />
-                <Text style={styles.notificationBenefitText}>Weekly progress updates</Text>
-              </View>
-              <View style={styles.notificationBenefit}>
-                <Sparkles size={20} color={Colors.primary} />
-                <Text style={styles.notificationBenefitText}>Personalized tips & insights</Text>
-              </View>
-            </View>
-          </View>
-        );
 
-      case 'referral-code':
-        return (
-          <View style={styles.referralContent}>
-            <View style={styles.iconContainer}>
-              {currentStepData.icon}
-            </View>
-            <Text style={styles.title}>{currentStepData.title}</Text>
-            <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
-            
-            <View style={styles.referralInputContainer}>
-              <TextInput
-                style={styles.referralInput}
-                value={answers.referralCode}
-                onChangeText={(text) => setAnswers(prev => ({ ...prev, referralCode: text }))}
-                placeholder="Referral Code"
-                placeholderTextColor={Colors.gray500}
-                autoCapitalize="characters"
-                autoCorrect={false}
-              />
-              <TouchableOpacity style={styles.referralSubmitButton}>
-                <Text style={styles.referralSubmitText}>Submit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        );
 
       case 'free-trial':
         return (
