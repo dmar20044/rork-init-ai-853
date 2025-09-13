@@ -89,6 +89,35 @@ export default function DebugScreen() {
         });
       }
 
+      // Test backend Rork AI endpoint
+      try {
+        const rorkTestResponse = await fetch(`${baseUrl}/api/test-rork-ai`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: 'Hello from debug test'
+          })
+        });
+        
+        if (rorkTestResponse.ok) {
+          const rorkTestData = await rorkTestResponse.json();
+          addResult('Backend Rork AI Test', { status: rorkTestResponse.status, data: rorkTestData });
+        } else {
+          const errorText = await rorkTestResponse.text();
+          addResult('Backend Rork AI Test', null, {
+            status: rorkTestResponse.status,
+            error: errorText
+          });
+        }
+      } catch (error) {
+        addResult('Backend Rork AI Test', null, { 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+        });
+      }
+
       // Test tRPC food analysis endpoint
       try {
         // Simple 1x1 pixel red image in base64
@@ -112,36 +141,68 @@ export default function DebugScreen() {
     }
   };
 
-  const testAnthropicAPI = async () => {
+  const testRorkAPI = async () => {
     setIsLoading(true);
     try {
-      const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-      
-      // Test direct Anthropic API call through our backend
-      const response = await fetch(`${baseUrl}/api/test-anthropic`, {
+      // Test direct Rork AI API call (no API key needed!)
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: 'Hello, this is a test message'
+          messages: [
+            {
+              role: 'user',
+              content: 'Hello, this is a test message. Please respond with "Rork API test successful".'
+            }
+          ]
         })
       });
       
       if (!response.ok) {
         const errorText = await response.text();
-        addResult('Direct Anthropic API Test', null, {
+        addResult('Direct Rork AI API Test', null, {
           status: response.status,
           error: errorText,
           headers: Object.fromEntries(response.headers.entries())
         });
       } else {
         const result = await response.json();
-        addResult('Direct Anthropic API Test', { status: response.status, result });
+        addResult('Direct Rork AI API Test', { status: response.status, result });
       }
       
     } catch (error) {
-      addResult('Direct Anthropic API Test', null, { 
+      addResult('Direct Rork AI API Test', null, { 
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const testNetworkConnectivity = async () => {
+    setIsLoading(true);
+    try {
+      // Test basic internet connectivity
+      const googleResponse = await fetch('https://www.google.com', { method: 'HEAD' });
+      addResult('Internet Connectivity', { 
+        status: googleResponse.status, 
+        success: googleResponse.ok 
+      });
+      
+      // Test HTTPS connectivity
+      const httpsResponse = await fetch('https://httpbin.org/get');
+      const httpsData = httpsResponse.ok ? await httpsResponse.json() : null;
+      addResult('HTTPS Connectivity', { 
+        status: httpsResponse.status, 
+        success: httpsResponse.ok,
+        data: httpsData
+      });
+      
+    } catch (error) {
+      addResult('Network Connectivity Test', null, { 
         message: error instanceof Error ? error.message : 'Unknown error',
         type: error instanceof TypeError ? 'Network Error' : 'Other Error'
       });
@@ -184,12 +245,22 @@ export default function DebugScreen() {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
-          style={[styles.button, styles.anthropicButton]} 
-          onPress={testAnthropicAPI}
+          style={[styles.button, styles.rorkButton]} 
+          onPress={testRorkAPI}
           disabled={isLoading}
         >
           <Text style={styles.buttonText}>
-            {isLoading ? 'Testing...' : 'Test Anthropic API'}
+            {isLoading ? 'Testing...' : 'Test Rork AI API'}
+          </Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={[styles.button, styles.networkButton]} 
+          onPress={testNetworkConnectivity}
+          disabled={isLoading}
+        >
+          <Text style={styles.buttonText}>
+            {isLoading ? 'Testing...' : 'Test Network'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -256,8 +327,11 @@ const styles = StyleSheet.create({
   clearButton: {
     backgroundColor: '#FF3B30',
   },
-  anthropicButton: {
+  rorkButton: {
     backgroundColor: '#34C759',
+  },
+  networkButton: {
+    backgroundColor: '#FF9500',
   },
   buttonText: {
     color: '#fff',
