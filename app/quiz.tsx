@@ -16,6 +16,7 @@ import {
   Dimensions,
   Platform,
 } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
 import { 
   ChevronRight, 
