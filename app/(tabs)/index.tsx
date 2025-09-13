@@ -35,7 +35,7 @@ export default function ScannerScreen() {
   const [showCamera, setShowCamera] = useState(true);
   const [nutritionData, setNutritionData] = useState<NutritionInfo | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [flashMode, setFlashMode] = useState<'off' | 'on'>('off');
+  const [torchEnabled, setTorchEnabled] = useState<boolean>(false);
   const shutterFill = useRef<Animated.Value>(new Animated.Value(0));
   const [isBarcodeMode, setIsBarcodeMode] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
@@ -558,9 +558,9 @@ export default function ScannerScreen() {
   };
 
   const toggleFlash = () => {
-    const newMode = flashMode === 'off' ? 'on' : 'off';
-    setFlashMode(newMode);
-    console.log('Flash toggled from', flashMode, 'to', newMode);
+    const newEnabled = !torchEnabled;
+    setTorchEnabled(newEnabled);
+    console.log('Torch toggled to', newEnabled);
     
     if (Platform.OS !== 'web') {
       try {
@@ -570,10 +570,9 @@ export default function ScannerScreen() {
       }
     }
     
-    // Show feedback to user
     Alert.alert(
-      'Flash ' + (newMode === 'on' ? 'Enabled' : 'Disabled'),
-      `Camera flash is now ${newMode === 'on' ? 'on' : 'off'}`,
+      newEnabled ? 'Torch Enabled' : 'Torch Disabled',
+      `Camera torch is now ${newEnabled ? 'on' : 'off'}`,
       [{ text: 'OK' }]
     );
   };
@@ -644,7 +643,7 @@ export default function ScannerScreen() {
           ref={cameraRef}
           style={styles.camera} 
           facing={facing}
-          flash={flashMode}
+          enableTorch={torchEnabled}
           barcodeScannerSettings={isBarcodeMode ? {
             barcodeTypes: ['qr', 'pdf417', 'aztec', 'ean13', 'ean8', 'upc_e', 'datamatrix', 'code128', 'code39', 'code93', 'codabar', 'itf14', 'upc_a'],
           } : undefined}
@@ -750,10 +749,10 @@ export default function ScannerScreen() {
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
-                  style={[styles.flashButton, flashMode === 'on' && styles.flashButtonActive]} 
+                  style={[styles.flashButton, torchEnabled && styles.flashButtonActive]} 
                   onPress={toggleFlash}
                 >
-                  {flashMode === 'on' ? (
+                  {torchEnabled ? (
                     <Zap size={24} color={Colors.primary} />
                   ) : (
                     <ZapOff size={24} color={Colors.white} />
