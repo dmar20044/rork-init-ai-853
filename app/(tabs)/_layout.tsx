@@ -5,8 +5,12 @@ import * as Haptics from "expo-haptics";
 import { useTheme } from "@/contexts/ThemeContext";
 import Svg, { Path } from "react-native-svg";
 
+interface IconProps { color: string; size: number; focused?: boolean }
+interface AnimatedIconProps extends IconProps { onPress?: () => void }
+
 // Checkmark icon component
-const CheckmarkIcon = memo(function CheckmarkIcon({ color, size }: { color: string; size: number }) {
+const CheckmarkIcon = memo(function CheckmarkIcon(props: { color: string; size: number }) {
+  const { color, size } = props;
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
       <Path fillRule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clipRule="evenodd" />
@@ -15,17 +19,8 @@ const CheckmarkIcon = memo(function CheckmarkIcon({ color, size }: { color: stri
 });
 
 // Animated camera icon that transforms to checkmark
-const AnimatedCameraIcon = memo(function AnimatedCameraIcon({ 
-  color, 
-  size, 
-  focused, 
-  onPress 
-}: { 
-  color: string; 
-  size: number; 
-  focused?: boolean;
-  onPress?: () => void;
-}) {
+const AnimatedCameraIcon = memo(function AnimatedCameraIcon(props: AnimatedIconProps) {
+  const { color, size, focused, onPress } = props;
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [showCheckmark, setShowCheckmark] = useState<boolean>(false);
   const spinValue = useRef(new Animated.Value(0)).current;
@@ -240,7 +235,8 @@ const AnimatedCameraIcon = memo(function AnimatedCameraIcon({
 });
 
 // Memoized icon components for better performance
-const CameraIcon = memo(function CameraIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
+const CameraIcon = memo(function CameraIcon(props: IconProps) {
+  const { color, size, focused } = props;
   const retroRed = '#FF0040';
   const iconColor = focused ? retroRed : color;
   
@@ -271,7 +267,8 @@ const CameraIcon = memo(function CameraIcon({ color, size, focused }: { color: s
   );
 });
 
-const ShoppingCartIcon = memo(function ShoppingCartIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
+const ShoppingCartIcon = memo(function ShoppingCartIcon(props: IconProps) {
+  const { color, size, focused } = props;
   if (focused) {
     // Filled shopping cart icon when active
     return (
@@ -293,7 +290,8 @@ const ShoppingCartIcon = memo(function ShoppingCartIcon({ color, size, focused }
   );
 });
 
-const MessageCircleIcon = memo(function MessageCircleIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
+const MessageCircleIcon = memo(function MessageCircleIcon(props: IconProps) {
+  const { color, size, focused } = props;
   if (focused) {
     // Filled message icon when active
     return (
@@ -315,7 +313,8 @@ const MessageCircleIcon = memo(function MessageCircleIcon({ color, size, focused
   );
 });
 
-const HistoryIcon = memo(function HistoryIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
+const HistoryIcon = memo(function HistoryIcon(props: IconProps) {
+  const { color, size, focused } = props;
   if (focused) {
     // Filled history icon when active
     return (
@@ -337,7 +336,8 @@ const HistoryIcon = memo(function HistoryIcon({ color, size, focused }: { color:
   );
 });
 
-const ProfileIcon = memo(function ProfileIcon({ color, size, focused }: { color: string; size: number; focused?: boolean }) {
+const ProfileIcon = memo(function ProfileIcon(props: IconProps) {
+  const { color, size, focused } = props;
   if (focused) {
     // Filled profile icon when active
     return (
