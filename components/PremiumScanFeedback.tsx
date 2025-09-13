@@ -2113,42 +2113,54 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                       <Target size={18} color={Colors.retroPink} />
                       <Text style={[styles.microBreakdownTitle, { color: colors.textPrimary }]}>Micro Breakdown</Text>
                     </View>
-                    <View style={styles.microBreakdownGrid}>
-                      <View style={styles.microBreakdownItem}>
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Vitamin C</Text>
-                      </View>
-                      <View style={styles.microBreakdownItem}>
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Iron</Text>
-                      </View>
-                      <View style={styles.microBreakdownItem}>
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Calcium</Text>
-                      </View>
-                      <View style={styles.microBreakdownItem}>
-                        <Text style={[styles.microBreakdownValue, { color: Colors.retroPink }]}>--</Text>
-                        <Text style={[styles.microBreakdownLabel, { color: colors.textSecondary }]}>Vitamin D</Text>
-                      </View>
-                    </View>
-                    <View style={styles.microBreakdownSecondaryGrid}>
-                      <View style={styles.microBreakdownSecondaryItem}>
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>B12</Text>
-                      </View>
-                      <View style={styles.microBreakdownSecondaryItem}>
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Folate</Text>
-                      </View>
-                      <View style={styles.microBreakdownSecondaryItem}>
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Magnesium</Text>
-                      </View>
-                      <View style={styles.microBreakdownSecondaryItem}>
-                        <Text style={[styles.microBreakdownSecondaryValue, { color: colors.textPrimary }]}>--</Text>
-                        <Text style={[styles.microBreakdownSecondaryLabel, { color: colors.textSecondary }]}>Zinc</Text>
-                      </View>
-                    </View>
+                    {(() => {
+                      type Micro = { key: string; label: string; valueMg?: number; valueMcg?: number; valueG?: number; dv: number; unit: 'mg' | 'mcg' | 'g'; };
+                      const toPct = (num: number | undefined, dv: number) => {
+                        const v = typeof num === 'number' ? num : 0;
+                        const pct = Math.max(0, Math.min(300, (v / dv) * 100));
+                        return Math.round(pct);
+                      };
+                      const micros: Micro[] = [
+                        { key: 'fiber', label: 'Fiber', valueG: nutrition.fiber ?? 0, dv: 28, unit: 'g' },
+                        { key: 'vitamin_c', label: 'Vitamin C', valueMg: nutrition.vitamin_c_mg, dv: 90, unit: 'mg' },
+                        { key: 'iron', label: 'Iron', valueMg: nutrition.iron_mg, dv: 18, unit: 'mg' },
+                        { key: 'b12', label: 'B12 (Cobalamin)', valueMcg: nutrition.vitamin_b12_mcg, dv: 2.4, unit: 'mcg' },
+                        { key: 'calcium', label: 'Calcium', valueMg: nutrition.calcium_mg, dv: 1300, unit: 'mg' },
+                        { key: 'folate', label: 'Folate', valueMcg: nutrition.folate_mcg, dv: 400, unit: 'mcg' },
+                        { key: 'vitamin_a', label: 'Vitamin A', valueMcg: nutrition.vitamin_a_mcg, dv: 900, unit: 'mcg' },
+                        { key: 'potassium', label: 'Potassium', valueMg: nutrition.potassium_mg, dv: 4700, unit: 'mg' },
+                        { key: 'magnesium', label: 'Magnesium', valueMg: nutrition.magnesium_mg, dv: 420, unit: 'mg' },
+                        { key: 'zinc', label: 'Zinc', valueMg: nutrition.zinc_mg, dv: 11, unit: 'mg' },
+                      ];
+                      const rows = micros.map((m) => {
+                        const raw = m.unit === 'g' ? (m.valueG ?? 0) : m.unit === 'mg' ? (m.valueMg ?? 0) : (m.valueMcg ?? 0);
+                        const pct = toPct(raw, m.dv);
+                        return { ...m, pct, raw };
+                      });
+                      const left = rows.filter((_r, i) => i % 2 === 0);
+                      const right = rows.filter((_r, i) => i % 2 === 1);
+                      const renderCol = (col: typeof rows, testPrefix: string) => (
+                        <View style={styles.microCol}>
+                          {col.map((r) => (
+                            <View key={r.key} style={styles.microRow} testID={`micro-row-${testPrefix}-${r.key}`}>
+                              <View style={styles.microRowHeader}>
+                                <Text style={[styles.microLabelText, { color: colors.textPrimary }]}>{r.label}</Text>
+                                <Text style={[styles.microPctText, { color: colors.textSecondary }]}>{r.pct}%</Text>
+                              </View>
+                              <View style={[styles.microBarTrack, { backgroundColor: colors.textSecondary + '25' }]}>
+                                <View style={[styles.microBarFill, { width: `${Math.min(100, r.pct)}%`, backgroundColor: Colors.retroCharcoalBlack }]} />
+                              </View>
+                            </View>
+                          ))}
+                        </View>
+                      );
+                      return (
+                        <View style={styles.microBarsGrid}>
+                          {renderCol(left, 'left')}
+                          {renderCol(right, 'right')}
+                        </View>
+                      );
+                    })()}
                   </View>
                 </View>
               </Animated.View>
@@ -3842,10 +3854,46 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   
-  microBreakdownGrid: {
+  microBarsGrid: {
     flexDirection: 'row',
+    gap: 16,
+  },
+
+  microCol: {
+    flex: 1,
+  },
+
+  microRow: {
+    marginBottom: 12,
+  },
+
+  microRowHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 6,
+  },
+
+  microLabelText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
+  microPctText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  microBarTrack: {
+    height: 10,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+
+  microBarFill: {
+    height: '100%',
+    backgroundColor: Colors.retroCharcoalBlack,
+    borderRadius: 6,
   },
   
   microBreakdownItem: {
@@ -3868,11 +3916,7 @@ const styles = StyleSheet.create({
   },
   
   microBreakdownSecondaryGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.retroPink + '10',
-    borderRadius: 8,
-    padding: 12,
+    display: 'none',
   },
   
   microBreakdownSecondaryItem: {

@@ -12,6 +12,16 @@ export interface NutritionInfo {
   fiber: number;
   sugar: number;
   sodium: number;
+  // Optional micronutrients for DV calculations
+  iron_mg?: number;
+  calcium_mg?: number;
+  vitamin_a_mcg?: number; // RAE
+  vitamin_c_mg?: number;
+  vitamin_b12_mcg?: number;
+  folate_mcg?: number; // DFE
+  potassium_mg?: number;
+  magnesium_mg?: number;
+  zinc_mg?: number;
   servingSize?: string;
   servingsPerContainer?: number;
   healthScore: number;
