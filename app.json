@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.initai2025-app",
+      "package": "app.initai.initai",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
