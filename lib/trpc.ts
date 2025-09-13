@@ -21,8 +21,9 @@ export const trpcClient = trpc.createClient({
       url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
       fetch: async (url, options) => {
-        console.log('tRPC request to:', url);
-        console.log('tRPC request options:', {
+        const timestamp = new Date().toISOString();
+        console.log(`[${timestamp}] tRPC request to:`, url);
+        console.log(`[${timestamp}] tRPC request options:`, {
           method: options?.method,
           headers: options?.headers,
           bodyLength: options?.body ? String(options.body).length : 0
@@ -37,20 +38,32 @@ export const trpcClient = trpc.createClient({
             },
           });
           
-          console.log('tRPC response status:', response.status);
-          console.log('tRPC response headers:', Object.fromEntries(response.headers.entries()));
+          console.log(`[${timestamp}] tRPC response status:`, response.status);
+          console.log(`[${timestamp}] tRPC response headers:`, Object.fromEntries(response.headers.entries()));
           
           // Check if response is HTML (error page)
           const contentType = response.headers.get('content-type');
           if (contentType && contentType.includes('text/html')) {
             const htmlText = await response.text();
-            console.error('Received HTML instead of JSON:', htmlText.substring(0, 500));
+            console.error(`[${timestamp}] Received HTML instead of JSON:`, htmlText.substring(0, 500));
             throw new Error(`Server returned HTML instead of JSON. Status: ${response.status}`);
+          }
+          
+          // Log successful responses for debugging
+          if (response.ok) {
+            console.log(`[${timestamp}] tRPC request successful`);
+          } else {
+            console.error(`[${timestamp}] tRPC request failed with status:`, response.status);
           }
           
           return response;
         } catch (error) {
-          console.error('tRPC fetch error:', error);
+          console.error(`[${timestamp}] tRPC fetch error:`, {
+            message: error instanceof Error ? error.message : 'Unknown error',
+            url,
+            method: options?.method,
+            error
+          });
           throw error;
         }
       },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { trpcClient } from '@/lib/trpc';
 import { Stack } from 'expo-router';
@@ -21,21 +21,36 @@ export default function DebugScreen() {
     setIsLoading(true);
     try {
       const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-      addResult('Environment Variable', { baseUrl });
+      addResult('Environment Variable', { 
+        baseUrl,
+        timestamp: new Date().toISOString(),
+        platform: Platform.OS
+      });
 
       // Test basic connectivity first
       try {
-        const connectivityResponse = await fetch(`${baseUrl}`);
+        console.log('Testing basic connectivity to:', baseUrl);
+        const connectivityResponse = await fetch(`${baseUrl}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'RorkMobileApp/1.0'
+          }
+        });
         const connectivityData = await connectivityResponse.text();
         addResult('Basic Connectivity Test', { 
           status: connectivityResponse.status, 
+          statusText: connectivityResponse.statusText,
           headers: Object.fromEntries(connectivityResponse.headers.entries()),
-          bodyPreview: connectivityData.substring(0, 200) + (connectivityData.length > 200 ? '...' : '')
+          bodyPreview: connectivityData.substring(0, 200) + (connectivityData.length > 200 ? '...' : ''),
+          url: baseUrl
         });
       } catch (error) {
+        console.error('Basic connectivity test failed:', error);
         addResult('Basic Connectivity Test', null, { 
           message: error instanceof Error ? error.message : 'Unknown error',
-          type: error instanceof TypeError ? 'Network Error' : 'Other Error'
+          type: error instanceof TypeError ? 'Network Error' : 'Other Error',
+          stack: error instanceof Error ? error.stack : undefined
         });
       }
 
