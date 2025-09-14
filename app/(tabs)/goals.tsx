@@ -46,6 +46,20 @@ export default function GoalsScreen() {
   const [allergensModalVisible, setAllergensModalVisible] = useState(false);
   const [newAllergen, setNewAllergen] = useState('');
 
+  // Grouped terms for Seed Oils preference toggle
+  const seedOilTerms: string[] = [
+    'soybean oil',
+    'corn oil',
+    'canola oil',
+    'rapeseed oil',
+    'cottonseed oil',
+    'sunflower oil',
+    'safflower oil',
+    'grapeseed oil',
+    'rice bran oil',
+    'peanut oil',
+  ];
+
   const [heightFeet, setHeightFeet] = useState<string>('');
   const [heightInches, setHeightInches] = useState<string>('');
   const [weightLb, setWeightLb] = useState<string>('');
@@ -1611,25 +1625,46 @@ export default function GoalsScreen() {
                 <Text style={styles.commonAllergensTitle}>Common Allergens:</Text>
                 <View style={styles.commonAllergensList}>
                   {['Peanuts', 'Tree Nuts', 'Dairy', 'Eggs', 'Soy', 'Wheat/Gluten', 'Fish', 'Shellfish', 'Seed Oils', 'Artificial Sweeteners'].map((allergen) => {
-                    const isAdded = profile.dietaryRestrictions?.includes(allergen.toLowerCase()) || false;
+                    const allergenLower = allergen.toLowerCase();
+                    const currentRestrictions = profile.dietaryRestrictions || [];
+                    const isSeedOils = allergenLower === 'seed oils';
+
+                    const seedOilsPresent = isSeedOils
+                      ? seedOilTerms.some(t => currentRestrictions.includes(t))
+                      : false;
+
+                    const isAdded = isSeedOils
+                      ? seedOilsPresent
+                      : currentRestrictions.includes(allergenLower);
+
                     return (
                       <TouchableOpacity
                         key={allergen}
                         style={[styles.commonAllergenChip, isAdded && styles.commonAllergenChipAdded]}
                         onPress={() => {
-                          const currentRestrictions = profile.dietaryRestrictions || [];
-                          const allergenLower = allergen.toLowerCase();
-                          
-                          if (isAdded) {
-                            // Remove it
-                            const newRestrictions = currentRestrictions.filter(r => r !== allergenLower);
-                            updateProfile({ dietaryRestrictions: newRestrictions });
+                          const existing = profile.dietaryRestrictions || [];
+
+                          if (isSeedOils) {
+                            // Toggle all seed oil terms as a group
+                            const anyPresent = seedOilTerms.some(t => existing.includes(t));
+                            let next: string[];
+                            if (anyPresent) {
+                              next = existing.filter(r => !seedOilTerms.includes(r));
+                            } else {
+                              const merged = new Set([...existing, ...seedOilTerms]);
+                              next = Array.from(merged);
+                            }
+                            updateProfile({ dietaryRestrictions: next });
                           } else {
-                            // Add it
-                            const newRestrictions = [...currentRestrictions, allergenLower];
-                            updateProfile({ dietaryRestrictions: newRestrictions });
+                            if (existing.includes(allergenLower)) {
+                              const next = existing.filter(r => r !== allergenLower);
+                              updateProfile({ dietaryRestrictions: next });
+                            } else {
+                              const next = [...existing, allergenLower];
+                              updateProfile({ dietaryRestrictions: next });
+                            }
                           }
-                          
+
                           if (Platform.OS !== 'web') {
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           }
