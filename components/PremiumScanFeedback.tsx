@@ -2121,7 +2121,6 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         return Math.round(pct);
                       };
                       const micros: Micro[] = [
-                        { key: 'fiber', label: 'Fiber', valueG: nutrition.fiber ?? 0, dv: 28, unit: 'g' },
                         { key: 'vitamin_c', label: 'Vitamin C', valueMg: nutrition.vitamin_c_mg, dv: 90, unit: 'mg' },
                         { key: 'iron', label: 'Iron', valueMg: nutrition.iron_mg, dv: 18, unit: 'mg' },
                         { key: 'b12', label: 'B12 (Cobalamin)', valueMcg: nutrition.vitamin_b12_mcg, dv: 2.4, unit: 'mcg' },
