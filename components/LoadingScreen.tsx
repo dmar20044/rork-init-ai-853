@@ -16,6 +16,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/contexts/ThemeContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 interface LoadingScreenProps {
@@ -615,21 +616,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
   const currentMessage = motivationalQuotes[currentMessageIndex];
   
   return (
-    <View style={[styles.loadingContainer, { backgroundColor: themeColors.background }]}>
-      {/* Dynamic Gradient Background */}
+    <View style={styles.loadingContainer}>
+      {/* Retro Tech Pop Gradient Background */}
+      <LinearGradient
+        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+        locations={[0, 0.35, 0.65, 1]}
+        style={styles.gradientBackground}
+      />
+      
+      {/* Animated overlay for subtle movement */}
       {animatedValues && (
         <Animated.View style={[
-          styles.gradientBackground,
+          styles.animatedOverlay,
           {
-            backgroundColor: themeColors.gradientBg,
             opacity: animatedValues.gradientAnimation.interpolate({
               inputRange: [0, 1],
-              outputRange: [0.3, 0.7],
+              outputRange: [0.1, 0.3],
             }),
             transform: [{
-              translateX: animatedValues.gradientAnimation.interpolate({
+              translateY: animatedValues.gradientAnimation.interpolate({
                 inputRange: [0, 1],
-                outputRange: [-100, 100],
+                outputRange: [-50, 50],
               }),
             }],
           },
@@ -642,8 +649,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
         <Animated.View style={[
           styles.shimmerCard,
           {
-            backgroundColor: themeColors.surface,
-            borderColor: themeColors.textTertiary,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: 'rgba(255, 255, 255, 0.3)',
             transform: [
               { translateY: animatedValues.slideUpValue },
               { scale: animatedValues.cardScale },
@@ -653,7 +660,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
         ]}>
         {/* Minimal Branding - Init AI Logo */}
         <View style={styles.brandingContainer}>
-          <Text style={[styles.brandingText, { color: themeColors.primary }]}>InIt AI</Text>
+          <Text style={[styles.brandingText, { color: '#4EC9F5' }]}>InIt AI</Text>
         </View>
         {/* Hero Animation - Center Icon Only */}
         <View style={styles.heroContainer}>
@@ -673,19 +680,19 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
               transform: [{ scale: animatedValues.centerPulse }],
             },
           ]}>
-            <Target size={24} color={themeColors.white} strokeWidth={1.5} />
+            <Target size={24} color="#FFFFFF" strokeWidth={1.5} />
           </Animated.View>
         </View>
         
         {/* Category Badge */}
         <View style={[styles.categoryBadge, {
-          backgroundColor: themeColors.primary + '20', // Primary color with transparency
-          borderColor: themeColors.primary,
+          backgroundColor: 'rgba(78, 201, 245, 0.2)',
+          borderColor: '#4EC9F5',
         }]}>
           <View style={styles.categoryBadgeContent}>
-            <Target size={14} color={themeColors.primary} strokeWidth={1.5} />
+            <Target size={14} color="#4EC9F5" strokeWidth={1.5} />
             <Text style={[styles.categoryBadgeText, {
-              color: themeColors.primary,
+              color: '#4EC9F5',
             }]}>
               Smart Insights
             </Text>
@@ -701,11 +708,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
           },
         ]}>
           {showProductNotFound ? (
-            <Text style={[styles.loadingText, styles.productNotFoundText, { color: themeColors.primary }]}>
+            <Text style={[styles.loadingText, styles.productNotFoundText, { color: '#4EC9F5' }]}>
               Product not found
             </Text>
           ) : (
-            <Text style={[styles.loadingText, { color: themeColors.textSecondary }]}>
+            <Text style={[styles.loadingText, { color: '#666666' }]}>
               {currentMessage}
             </Text>
           )}
@@ -730,9 +737,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                     <Animated.View style={[
                       styles.horizontalStepIndicator,
                       {
-                        backgroundColor: shouldBeHighlighted ? themeColors.primary : 'transparent',
-                        borderColor: shouldBeHighlighted ? themeColors.primary : themeColors.textTertiary,
-                        shadowColor: shouldBeHighlighted ? themeColors.primary : 'transparent',
+                        backgroundColor: shouldBeHighlighted ? '#4EC9F5' : 'transparent',
+                        borderColor: shouldBeHighlighted ? '#4EC9F5' : '#CCCCCC',
+                        shadowColor: shouldBeHighlighted ? '#4EC9F5' : 'transparent',
                         shadowOffset: { width: 0, height: 0 },
                         shadowOpacity: shouldBeHighlighted ? 0.6 : 0,
                         shadowRadius: shouldBeHighlighted ? 8 : 0,
@@ -768,7 +775,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                         ]}>
                           <IconComponent 
                             size={16} 
-                            color={shouldBeHighlighted ? themeColors.white : themeColors.textTertiary} 
+                            color={shouldBeHighlighted ? '#FFFFFF' : '#CCCCCC'} 
                             strokeWidth={1}
                           />
                         </Animated.View>
@@ -780,7 +787,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                       style={[
                         styles.horizontalStepLabel,
                         {
-                          color: shouldBeHighlighted ? themeColors.primary : themeColors.textTertiary,
+                          color: shouldBeHighlighted ? '#4EC9F5' : '#CCCCCC',
                           fontWeight: shouldBeHighlighted ? '600' : '400',
                         }
                       ]}
@@ -796,7 +803,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                     <View style={[
                       styles.stepConnector,
                       {
-                        backgroundColor: (completedSteps.has(index) || (index < currentStep)) ? themeColors.primary : themeColors.textTertiary,
+                        backgroundColor: (completedSteps.has(index) || (index < currentStep)) ? '#4EC9F5' : '#CCCCCC',
                       }
                     ]} />
                   )}
@@ -807,12 +814,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
           
           {/* Percentage-style progress bar */}
           <View style={styles.percentageProgressContainer}>
-            <View style={[styles.percentageProgressBar, { backgroundColor: themeColors.textTertiary }]}>
+            <View style={[styles.percentageProgressBar, { backgroundColor: '#E0E0E0' }]}>
               <Animated.View
                 style={[
                   styles.percentageProgressFill,
                   {
-                    backgroundColor: themeColors.primary,
+                    backgroundColor: '#4EC9F5',
                     width: animatedValues.progressBarWidth.interpolate({
                       inputRange: [0, 100],
                       outputRange: ['0%', '100%'],
@@ -822,7 +829,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
                 ]}
               />
             </View>
-            <Text style={[styles.percentageText, { color: themeColors.primary }]}>
+            <Text style={[styles.percentageText, { color: '#4EC9F5' }]}>
               {Math.round(currentProgress)}%
             </Text>
           </View>
@@ -834,8 +841,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       {onCancel && (
         <TouchableOpacity 
           style={[styles.cancelScanButton, {
-            backgroundColor: themeColors.primary + '20',
-            borderColor: themeColors.primary,
+            backgroundColor: 'rgba(78, 201, 245, 0.2)',
+            borderColor: '#4EC9F5',
           }]} 
           onPress={() => {
             if (Platform.OS !== 'web') {
@@ -845,7 +852,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
           }}
           activeOpacity={0.7}
         >
-          <Text style={[styles.cancelScanButtonText, { color: themeColors.primary }]}>Cancel Scan</Text>
+          <Text style={[styles.cancelScanButtonText, { color: '#4EC9F5' }]}>Cancel Scan</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -864,13 +871,21 @@ const styles = StyleSheet.create({
   },
   gradientBackground: {
     position: 'absolute',
-    top: -100,
-    left: -200,
-    right: -200,
-    bottom: -100,
-    opacity: 0.1,
-    transform: [{ rotate: '15deg' }],
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 0,
+  },
+  animatedOverlay: {
+    position: 'absolute',
+    top: -100,
+    left: -100,
+    right: -100,
+    bottom: -100,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 200,
+    zIndex: 1,
   },
 
   shimmerCard: {
@@ -879,14 +894,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     maxWidth: 350,
-    shadowColor: '#2E294E', // Deep Indigo shadow
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowColor: '#4EC9F5',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 12,
     zIndex: 10,
     borderWidth: 1,
-    borderColor: '#D9D9D9', // Soft Gray border
+    backdropFilter: 'blur(10px)',
   },
   heroContainer: {
     width: 200,
@@ -902,27 +917,27 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#4ECDC4', // Neon Turquoise
-    shadowColor: '#4ECDC4',
+    backgroundColor: '#4EC9F5',
+    shadowColor: '#4EC9F5',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 1,
-    shadowRadius: 25,
-    elevation: 12,
+    shadowRadius: 30,
+    elevation: 15,
   },
   centerIcon: {
     position: 'absolute',
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#4ECDC4', // Neon Turquoise
+    backgroundColor: '#4EC9F5',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 5,
-    shadowColor: '#4ECDC4',
+    shadowColor: '#4EC9F5',
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 18,
-    elevation: 10,
+    shadowOpacity: 0.9,
+    shadowRadius: 25,
+    elevation: 12,
   },
   categoryBadge: {
     paddingHorizontal: 16,
