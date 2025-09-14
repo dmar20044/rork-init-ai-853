@@ -310,7 +310,7 @@ Find products in the same category that would be significantly better for this u
     }
   }, [productData, userGoals, currentScore]);
 
-  const handleAddToGroceryList = useCallback(async (swapName: string, swapBrand: string) => {
+  const handleAddToGroceryList = useCallback(async (swapName: string, swapBrand: string, swap: BetterSwap) => {
     try {
       // Light haptic feedback
       if (Platform.OS !== 'web') {
@@ -319,8 +319,20 @@ Find products in the same category that would be significantly better for this u
       
       setAddingToList(swapName);
       const itemName = swapBrand && swapBrand !== 'Various' ? `${swapName} (${swapBrand})` : swapName;
-      await addItem(itemName);
-      console.log('Added to grocery list:', itemName);
+      
+      // Include score analysis data when adding to grocery list
+      const productDetails = {
+        healthScore: swap.score,
+        personalScore: swap.personalScore,
+        // Use current product's nutritional data as base since swap data might not have detailed nutrition
+        calories: currentProduct.calories,
+        protein: currentProduct.protein,
+        // Store reference to the original scan for potential future use
+        scanHistoryId: undefined, // This would be set if we had scan history integration
+      };
+      
+      await addItem(itemName, productDetails);
+      console.log('Added to grocery list with score analysis:', itemName, productDetails);
       
       // Show toast notification
       setShowToast(true);
@@ -330,7 +342,7 @@ Find products in the same category that would be significantly better for this u
     } finally {
       setAddingToList(null);
     }
-  }, [addItem]);
+  }, [addItem, currentProduct]);
 
   useEffect(() => {
     if (visible) {
@@ -453,7 +465,7 @@ Find products in the same category that would be significantly better for this u
                     {/* Add to Grocery List Button */}
                     <TouchableOpacity 
                       style={[styles.addToListButton, { backgroundColor: colors.primary }]}
-                      onPress={() => handleAddToGroceryList(swap.name, swap.brand || '')}
+                      onPress={() => handleAddToGroceryList(swap.name, swap.brand || '', swap)}
                       disabled={addingToList === swap.name}
                       activeOpacity={0.7}
                     >
