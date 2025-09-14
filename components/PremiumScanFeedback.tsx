@@ -2147,7 +2147,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                 <Text style={[styles.microPctText, { color: colors.textSecondary }]}>{r.pct}%</Text>
                               </View>
                               <View style={[styles.microBarTrack, { backgroundColor: colors.textSecondary + '25' }]}>
-                                <View style={[styles.microBarFill, { width: `${Math.min(100, r.pct)}%`, backgroundColor: Colors.retroCharcoalBlack }]} />
+                                <View style={[styles.microBarFill, { width: `${Math.min(100, r.pct)}%`, backgroundColor: Colors.retroNeonTurquoise }]} />
                               </View>
                             </View>
                           ))}
