@@ -1879,9 +1879,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                 return (
                                   <>
                                     {segments.map((segment, index) => {
-                                      // Create multiple small segments to approximate the arc
+                                      // Create multiple small segments to approximate the arc with glow effect
                                       const segmentElements = [];
-                                      const angleStep = 3; // degrees per segment
+                                      const angleStep = 2; // Smaller steps for smoother appearance
                                       const numSteps = Math.ceil((segment.endAngle - segment.startAngle) / angleStep);
                                       
                                       for (let i = 0; i < numSteps; i++) {
@@ -1902,9 +1902,14 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                               styles.ingredientRingSegment,
                                               {
                                                 backgroundColor: segment.color,
-                                                left: 60 + x - 2, // 60 is half of circle width (120/2)
-                                                top: 60 + y - 2,  // 60 is half of circle height (120/2)
+                                                left: 60 + x - 3, // 60 is half of circle width (120/2)
+                                                top: 60 + y - 3,  // 60 is half of circle height (120/2)
                                                 transform: [{ rotate: `${midAngle}deg` }],
+                                                shadowColor: segment.color,
+                                                shadowOffset: { width: 0, height: 0 },
+                                                shadowOpacity: 0.8,
+                                                shadowRadius: 4,
+                                                elevation: 8,
                                               },
                                             ]}
                                           />
@@ -3768,9 +3773,9 @@ const styles = StyleSheet.create({
   
   ingredientRingSegment: {
     position: 'absolute',
-    width: 4,
-    height: 8,
-    borderRadius: 2,
+    width: 6,
+    height: 12,
+    borderRadius: 3,
   },
   
   ingredientCircleNumber: {
