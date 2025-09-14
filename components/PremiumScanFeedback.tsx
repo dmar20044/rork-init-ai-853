@@ -1833,12 +1833,12 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                               {ingredientAnalysis.length > 0 && (() => {
                                 const cleanCount = ingredientAnalysis.filter(i => i.isGood).length;
                                 const questionableCount = ingredientAnalysis.filter(i => !i.isGood && !i.ingredient.toLowerCase().includes('artificial') && !i.ingredient.toLowerCase().includes('preservative')).length;
-                                const stayAwayCount = ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length;
+                                const cautiousCount = ingredientAnalysis.filter(i => i.ingredient.toLowerCase().includes('artificial') || i.ingredient.toLowerCase().includes('preservative')).length;
                                 const total = ingredientAnalysis.length;
                                 
                                 const cleanPercentage = (cleanCount / total) * 100;
                                 const questionablePercentage = (questionableCount / total) * 100;
-                                const stayAwayPercentage = (stayAwayCount / total) * 100;
+                                const cautiousPercentage = (cautiousCount / total) * 100;
                                 
                                 // Create segments for the ring
                                 const segments = [];
@@ -1851,6 +1851,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                     color: Colors.success,
                                     startAngle: currentAngle,
                                     endAngle: currentAngle + segmentAngle,
+                                    type: 'clean',
                                   });
                                   currentAngle += segmentAngle;
                                 }
@@ -1862,17 +1863,19 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                     color: Colors.warning,
                                     startAngle: currentAngle,
                                     endAngle: currentAngle + segmentAngle,
+                                    type: 'questionable',
                                   });
                                   currentAngle += segmentAngle;
                                 }
                                 
-                                // Stay away segment (red)
-                                if (stayAwayCount > 0) {
-                                  const segmentAngle = (stayAwayPercentage / 100) * 360;
+                                // Cautious segment (red neon)
+                                if (cautiousCount > 0) {
+                                  const segmentAngle = (cautiousPercentage / 100) * 360;
                                   segments.push({
                                     color: Colors.error,
                                     startAngle: currentAngle,
                                     endAngle: currentAngle + segmentAngle,
+                                    type: 'cautious',
                                   });
                                 }
                                 
@@ -1881,7 +1884,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                     {segments.map((segment, index) => {
                                       // Create multiple small segments to approximate the arc with glow effect
                                       const segmentElements = [];
-                                      const angleStep = 2; // Smaller steps for smoother appearance
+                                      const angleStep = segment.type === 'cautious' ? 1.5 : 2; // Smaller steps for cautious ingredients for smoother neon effect
                                       const numSteps = Math.ceil((segment.endAngle - segment.startAngle) / angleStep);
                                       
                                       for (let i = 0; i < numSteps; i++) {
@@ -1895,6 +1898,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                         const x = Math.cos(radians) * radius;
                                         const y = Math.sin(radians) * radius;
                                         
+                                        // Enhanced styling for cautious ingredients (red neon effect)
+                                        const isCautious = segment.type === 'cautious';
+                                        
                                         segmentElements.push(
                                           <View
                                             key={`${index}-${i}`}
@@ -1902,18 +1908,54 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                               styles.ingredientRingSegment,
                                               {
                                                 backgroundColor: segment.color,
-                                                left: 60 + x - 3, // 60 is half of circle width (120/2)
-                                                top: 60 + y - 3,  // 60 is half of circle height (120/2)
+                                                left: 60 + x - (isCautious ? 4 : 3), // Slightly wider for cautious
+                                                top: 60 + y - (isCautious ? 4 : 3),
+                                                width: isCautious ? 8 : 6, // Wider neon line
+                                                height: isCautious ? 16 : 12, // Taller neon line
+                                                borderRadius: isCautious ? 4 : 3,
                                                 transform: [{ rotate: `${midAngle}deg` }],
                                                 shadowColor: segment.color,
                                                 shadowOffset: { width: 0, height: 0 },
-                                                shadowOpacity: 0.8,
-                                                shadowRadius: 4,
-                                                elevation: 8,
+                                                shadowOpacity: isCautious ? 1.0 : 0.8, // Stronger glow for cautious
+                                                shadowRadius: isCautious ? 8 : 4, // Larger glow radius for neon effect
+                                                elevation: isCautious ? 12 : 8, // Higher elevation for more prominent effect
+                                                // Additional neon glow effect for cautious ingredients
+                                                ...(isCautious && {
+                                                  borderWidth: 1,
+                                                  borderColor: segment.color + '80',
+                                                }),
                                               },
                                             ]}
                                           />
                                         );
+                                        
+                                        // Add extra glow layer for cautious ingredients
+                                        if (isCautious) {
+                                          segmentElements.push(
+                                            <View
+                                              key={`${index}-${i}-glow`}
+                                              style={[
+                                                styles.ingredientRingSegment,
+                                                {
+                                                  backgroundColor: 'transparent',
+                                                  borderWidth: 2,
+                                                  borderColor: segment.color + '60',
+                                                  left: 60 + x - 6,
+                                                  top: 60 + y - 6,
+                                                  width: 12,
+                                                  height: 20,
+                                                  borderRadius: 6,
+                                                  transform: [{ rotate: `${midAngle}deg` }],
+                                                  shadowColor: segment.color,
+                                                  shadowOffset: { width: 0, height: 0 },
+                                                  shadowOpacity: 0.6,
+                                                  shadowRadius: 12,
+                                                  elevation: 10,
+                                                },
+                                              ]}
+                                            />
+                                          );
+                                        }
                                       }
                                       
                                       return segmentElements;
@@ -1981,7 +2023,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                   </Text>
                                 </View>
                                 
-                                {/* Processed Ingredients */}
+                                {/* Be Cautious Ingredients */}
                                 <View style={styles.ingredientCategoryItem}>
                                   <View style={styles.ingredientCategoryBar}>
                                     <View style={[styles.ingredientCategoryProgress, { 
@@ -1989,7 +2031,12 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                                       width: `${Math.max(10, (ingredientAnalysis.filter(i => {
                                         const name = i.ingredient.toLowerCase();
                                         return name.includes('artificial') || name.includes('preservative') || name.includes('color') || name.includes('flavor');
-                                      }).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`
+                                      }).length / Math.max(1, ingredientAnalysis.length)) * 100)}%`,
+                                      shadowColor: Colors.error,
+                                      shadowOffset: { width: 0, height: 0 },
+                                      shadowOpacity: 0.8,
+                                      shadowRadius: 4,
+                                      elevation: 4,
                                     }]} />
                                   </View>
                                   <Text style={[styles.ingredientCategoryLabel, { color: colors.textPrimary }]}>
