@@ -150,7 +150,8 @@ export default function IngredientFlags({ nutrition }: IngredientFlagsProps) {
     // Seed oils and processed fats (yellow to red flags)
     const seedOils = [
       'soybean oil', 'canola oil', 'corn oil', 'sunflower oil', 'safflower oil',
-      'cottonseed oil', 'rapeseed oil', 'vegetable oil', 'partially hydrogenated oil',
+      'cottonseed oil', 'rapeseed oil', 'vegetable oil', 'grapeseed oil', 'grape seed oil',
+      'rice bran oil', 'peanut oil', 'partially hydrogenated oil',
       'hydrogenated oil', 'trans fat', 'margarine', 'vegetable shortening'
     ];
 
