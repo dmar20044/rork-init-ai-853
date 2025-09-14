@@ -3483,92 +3483,7 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     flex: 1,
   },
-  // Notifications page styles
-  notificationsContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 80,
-  },
-  notificationCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 20,
-    padding: 24,
-    width: '100%',
-    borderWidth: 2,
-    borderColor: Colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  notificationMockup: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  notificationHeader: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  notificationAppName: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  notificationTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.textPrimary,
-    textAlign: 'center',
-  },
-  notificationButtons: {
-    flexDirection: 'row',
-    gap: 0,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 16,
-  },
-  notificationDenyButton: {
-    flex: 1,
-    backgroundColor: Colors.gray200,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  notificationDenyText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.textSecondary,
-  },
-  notificationAllowButton: {
-    flex: 1,
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  notificationAllowText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.white,
-  },
-  pointingHand: {
-    position: 'absolute',
-    bottom: -10,
-    right: 20,
-  },
-  pointingHandEmoji: {
-    fontSize: 24,
-  },
+
   // Referral code page styles
   referralContent: {
     flex: 1,
@@ -3865,29 +3780,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: Colors.textSecondary,
   },
-  // Notification benefits styles
-  notificationBenefits: {
-    width: '100%',
-    marginTop: 32,
-    gap: 16,
-  },
-  notificationBenefit: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.borderLight,
-    gap: 12,
-  },
-  notificationBenefitText: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: Colors.textPrimary,
-    flex: 1,
-  },
+
   // Free trial button styles
   startTrialButton: {
     flexDirection: 'row',
