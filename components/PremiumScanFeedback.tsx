@@ -2406,66 +2406,6 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                           <Text style={[styles.vibeCheckTitle, { color: colors.textPrimary }]}>Personalized Insights</Text>
                         </View>
                         <Text style={[styles.vibeCheckText, { color: colors.textPrimary }]}>{forYouAnalysis}</Text>
-                        <View style={styles.inlineActions}>
-                          <TouchableOpacity
-                            testID="for-you-add-to-grocery"
-                            style={[styles.inlineActionButton, { borderColor: Colors.retroNeonTurquoise }]}
-                            onPress={async () => {
-                              if (Platform.OS !== 'web') {
-                                await Haptics.selectionAsync();
-                              }
-                              try {
-                                const productDetails = {
-                                  imageUri: nutrition.imageUrl || imageUri,
-                                  healthScore: nutrition.healthScore,
-                                  personalScore: nutrition.personalScore,
-                                  calories: nutrition.calories,
-                                  protein: nutrition.protein,
-                                };
-                                await addItem(nutrition.name, productDetails);
-                                console.log('Added to grocery list from For You:', nutrition.name);
-                              } catch (error) {
-                                console.error('Error adding to grocery list:', error);
-                              }
-                            }}
-                            activeOpacity={0.8}
-                          >
-                            <ShoppingCart size={16} color={Colors.retroNeonTurquoise} />
-                            <Text style={[styles.inlineActionText, { color: Colors.retroNeonTurquoise }]}>Add to list</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            testID="for-you-better-bites"
-                            style={[styles.inlineActionButtonFilled, { backgroundColor: Colors.retroNeonTurquoise }]}
-                            onPress={async () => {
-                              if (Platform.OS !== 'web') {
-                                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                              }
-                              setShowBetterSwapsModal(true);
-                            }}
-                            activeOpacity={0.8}
-                          >
-                            <Text style={[styles.inlineActionTextFilled, { color: colors.white }]}>Better Bites</Text>
-                            <ArrowRight size={16} color={colors.white} />
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            testID="for-you-saved"
-                            style={[styles.inlineActionButton, { borderColor: Colors.success }]}
-                            onPress={onSaveToHistory}
-                            activeOpacity={0.8}
-                          >
-                            <CheckCircle size={16} color={Colors.success} />
-                            <Text style={[styles.inlineActionText, { color: Colors.success }]}>Saved</Text>
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            testID="for-you-scan-another"
-                            style={[styles.inlineActionButton, { borderColor: Colors.retroPink }]}
-                            onPress={onScanAnother}
-                            activeOpacity={0.8}
-                          >
-                            <Sparkles size={16} color={Colors.retroPink} />
-                            <Text style={[styles.inlineActionText, { color: Colors.retroPink }]}>Scan another</Text>
-                          </TouchableOpacity>
-                        </View>
                       </View>
                     </View>
                   </ScrollView>
