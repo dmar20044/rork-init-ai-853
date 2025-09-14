@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -101,12 +101,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
     slideUpValue: Animated.Value;
     cardScale: Animated.Value;
     cardOpacity: Animated.Value;
-    ripple1Scale: Animated.Value;
-    ripple2Scale: Animated.Value;
-    ripple3Scale: Animated.Value;
-    ripple1Opacity: Animated.Value;
-    ripple2Opacity: Animated.Value;
-    ripple3Opacity: Animated.Value;
+
     centerPulse: Animated.Value;
     centerGlow: Animated.Value;
     gradientAnimation: Animated.Value;
@@ -122,12 +117,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       slideUpValue: new Animated.Value(screenHeight),
       cardScale: new Animated.Value(0.8),
       cardOpacity: new Animated.Value(0),
-      ripple1Scale: new Animated.Value(0),
-      ripple2Scale: new Animated.Value(0),
-      ripple3Scale: new Animated.Value(0),
-      ripple1Opacity: new Animated.Value(0.8),
-      ripple2Opacity: new Animated.Value(0.8),
-      ripple3Opacity: new Animated.Value(0.8),
+
       centerPulse: new Animated.Value(1),
       centerGlow: new Animated.Value(0.5),
       gradientAnimation: new Animated.Value(0),
@@ -136,38 +126,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
   
   const animatedValues = animatedValuesRef.current;
   
-  // Create ripple animation function
-  const createRippleAnimation = useCallback((scale: Animated.Value, opacity: Animated.Value, delay: number) => {
-    return Animated.loop(
-      Animated.sequence([
-        Animated.delay(delay),
-        Animated.parallel([
-          Animated.timing(scale, {
-            toValue: 2.5,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0,
-            duration: 2000,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.parallel([
-          Animated.timing(scale, {
-            toValue: 0,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-          Animated.timing(opacity, {
-            toValue: 0.8,
-            duration: 0,
-            useNativeDriver: true,
-          }),
-        ]),
-      ])
-    );
-  }, []);
+
 
   // Initialize animations once when component mounts
   useEffect(() => {
@@ -196,15 +155,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
       animation.start();
     });
     
-    // Start ripple animations with staggered delays
-    const ripple1Animation = createRippleAnimation(animatedValues.ripple1Scale, animatedValues.ripple1Opacity, 0);
-    const ripple2Animation = createRippleAnimation(animatedValues.ripple2Scale, animatedValues.ripple2Opacity, 600);
-    const ripple3Animation = createRippleAnimation(animatedValues.ripple3Scale, animatedValues.ripple3Opacity, 1200);
-    
-    animations.push(ripple1Animation, ripple2Animation, ripple3Animation);
-    ripple1Animation.start();
-    ripple2Animation.start();
-    ripple3Animation.start();
+
     
     // Center pulse animation
     const centerPulseAnimation = Animated.loop(
@@ -286,7 +237,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
     return () => {
       animations.forEach(animation => animation.stop());
     };
-  }, [isVisible, animatedValues, createRippleAnimation]);
+  }, [isVisible, animatedValues]);
   
 
   
@@ -704,38 +655,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
         <View style={styles.brandingContainer}>
           <Text style={[styles.brandingText, { color: themeColors.primary }]}>InIt AI</Text>
         </View>
-        {/* Hero Animation - AI Scanning Ripples */}
+        {/* Hero Animation - Center Icon Only */}
         <View style={styles.heroContainer}>
-          {/* Ripple Effect 1 - Outermost */}
-          <Animated.View style={[
-            styles.rippleRing,
-            styles.ripple1,
-            {
-              transform: [{ scale: animatedValues.ripple1Scale }],
-              opacity: animatedValues.ripple1Opacity,
-            },
-          ]} />
-          
-          {/* Ripple Effect 2 - Middle */}
-          <Animated.View style={[
-            styles.rippleRing,
-            styles.ripple2,
-            {
-              transform: [{ scale: animatedValues.ripple2Scale }],
-              opacity: animatedValues.ripple2Opacity,
-            },
-          ]} />
-          
-          {/* Ripple Effect 3 - Inner */}
-          <Animated.View style={[
-            styles.rippleRing,
-            styles.ripple3,
-            {
-              transform: [{ scale: animatedValues.ripple3Scale }],
-              opacity: animatedValues.ripple3Opacity,
-            },
-          ]} />
-          
           {/* Center glow effect */}
           <Animated.View style={[
             styles.centerGlow,
@@ -975,41 +896,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'relative',
   },
-  rippleRing: {
-    position: 'absolute',
-    borderRadius: 100,
-    borderWidth: 3,
-  },
-  ripple1: {
-    width: 80,
-    height: 80,
-    borderColor: '#4ECDC4', // Neon Turquoise
-    shadowColor: '#4ECDC4',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  ripple2: {
-    width: 80,
-    height: 80,
-    borderColor: '#FF6B81', // Retro Pink
-    shadowColor: '#FF6B81',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7,
-    shadowRadius: 10,
-    elevation: 6,
-  },
-  ripple3: {
-    width: 80,
-    height: 80,
-    borderColor: '#2E294E', // Deep Indigo
-    shadowColor: '#2E294E',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 8,
-    elevation: 4,
-  },
+
   centerGlow: {
     position: 'absolute',
     width: 60,
