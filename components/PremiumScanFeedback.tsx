@@ -2125,11 +2125,11 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                         { key: 'iron', label: 'Iron', valueMg: nutrition.iron_mg, dv: 18, unit: 'mg' },
                         { key: 'b12', label: 'B12 (Cobalamin)', valueMcg: nutrition.vitamin_b12_mcg, dv: 2.4, unit: 'mcg' },
                         { key: 'calcium', label: 'Calcium', valueMg: nutrition.calcium_mg, dv: 1300, unit: 'mg' },
-                        { key: 'magnesium', label: 'Magnesium', valueMg: nutrition.magnesium_mg, dv: 420, unit: 'mg' },
                         { key: 'folate', label: 'Folate', valueMcg: nutrition.folate_mcg, dv: 400, unit: 'mcg' },
                         { key: 'vitamin_a', label: 'Vitamin A', valueMcg: nutrition.vitamin_a_mcg, dv: 900, unit: 'mcg' },
                         { key: 'potassium', label: 'Potassium', valueMg: nutrition.potassium_mg, dv: 4700, unit: 'mg' },
                         { key: 'zinc', label: 'Zinc', valueMg: nutrition.zinc_mg, dv: 11, unit: 'mg' },
+                        { key: 'magnesium', label: 'Magnesium', valueMg: nutrition.magnesium_mg, dv: 420, unit: 'mg' },
                       ];
                       const rows = micros.map((m) => {
                         const raw = m.unit === 'g' ? (m.valueG ?? 0) : m.unit === 'mg' ? (m.valueMg ?? 0) : (m.valueMcg ?? 0);
