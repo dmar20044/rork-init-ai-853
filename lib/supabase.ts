@@ -201,10 +201,7 @@ export interface Database {
 
 // Helper functions for database operations
 export const createUserProfile = async (userId: string, profileData: any) => {
-  console.log('[Supabase] createUserProfile called with:', {
-    userId,
-    profileData
-  });
+  // Debug logging removed for production
   
   const insertData = {
     user_id: userId,
@@ -229,7 +226,7 @@ export const createUserProfile = async (userId: string, profileData: any) => {
     dietary_preferences: profileData.dietaryPreferences || [],
   };
   
-  console.log('[Supabase] Inserting user profile data:', insertData);
+  // Debug logging removed for production
   
   const { data, error } = await supabase
     .from('user_profiles')
@@ -247,22 +244,19 @@ export const createUserProfile = async (userId: string, profileData: any) => {
     throw error;
   }
 
-  console.log('[Supabase] User profile created successfully:', data);
+  // Debug logging removed for production
   return data;
 };
 
 export const updateUserProfile = async (userId: string, updates: any) => {
-  console.log('[Supabase] updateUserProfile called with:', {
-    userId,
-    updates
-  });
+  // Debug logging removed for production
   
   const updateData = {
     ...updates,
     updated_at: new Date().toISOString(),
   };
   
-  console.log('[Supabase] Updating user profile with data:', updateData);
+  // Debug logging removed for production
   
   const { data, error } = await supabase
     .from('user_profiles')
@@ -289,7 +283,7 @@ export const updateUserProfile = async (userId: string, updates: any) => {
     throw error;
   }
 
-  console.log('[Supabase] User profile updated successfully:', data);
+  // Debug logging removed for production
   return data;
 };
 
@@ -301,7 +295,7 @@ export const getUserProfile = async (userId: string) => {
     .single();
 
   if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-    console.error('Error fetching user profile:', error);
+    // Error logging kept for debugging
     throw error;
   }
 
@@ -309,7 +303,7 @@ export const getUserProfile = async (userId: string) => {
 };
 
 export const checkEmailExists = async (email: string) => {
-  console.log('[Supabase] checkEmailExists called with:', email);
+  // Debug logging removed for production
   
   const { data, error } = await supabase
     .from('user_profiles')
@@ -323,22 +317,12 @@ export const checkEmailExists = async (email: string) => {
   }
 
   const exists = !!data;
-  console.log('[Supabase] Email exists:', exists);
+  // Debug logging removed for production
   return exists;
 };
 
 export const saveQuizResponse = async (userId: string, quizData: any) => {
-  console.log('[Supabase] saveQuizResponse called with:', {
-    userId,
-    name: quizData.name,
-    bodyGoal: quizData.goals.bodyGoal,
-    healthGoal: quizData.goals.healthGoal,
-    dietGoal: quizData.goals.dietGoal,
-    lifeGoal: quizData.goals.lifeGoal,
-    motivation: quizData.goals.motivation,
-    referralSource: quizData.referralSource || 'unknown',
-    dietaryRestrictions: quizData.dietaryRestrictions || []
-  });
+  // Debug logging removed for production
   
   const insertData = {
     user_id: userId,
@@ -353,7 +337,7 @@ export const saveQuizResponse = async (userId: string, quizData: any) => {
     dietary_preferences: [], // Empty for now, can be expanded later
   };
   
-  console.log('[Supabase] Inserting quiz response data:', insertData);
+  // Debug logging removed for production
   
   const { data, error } = await supabase
     .from('quiz_responses')
@@ -371,7 +355,7 @@ export const saveQuizResponse = async (userId: string, quizData: any) => {
     throw error;
   }
 
-  console.log('[Supabase] Quiz response saved successfully:', data);
+  // Debug logging removed for production
   return data;
 };
 
@@ -386,11 +370,7 @@ export const saveScanToHistory = async (userId: string, scanData: {
   nutritionData: any;
   analysisData?: any;
 }) => {
-  console.log('[Supabase] saveScanToHistory called with:', {
-    userId,
-    productName: scanData.productName,
-    score: scanData.score
-  });
+  // Debug logging removed for production
   
   // Ensure all score values are properly formatted as numbers
   const score = Number(scanData.score);
@@ -420,7 +400,7 @@ export const saveScanToHistory = async (userId: string, scanData: {
     analysis_data: scanData.analysisData || null,
   };
   
-  console.log('[Supabase] Inserting scan history data:', insertData);
+  // Debug logging removed for production
   
   const { data, error } = await supabase
     .from('scan_history')
@@ -438,12 +418,12 @@ export const saveScanToHistory = async (userId: string, scanData: {
     throw error;
   }
 
-  console.log('[Supabase] Scan saved to history successfully:', data);
+  // Debug logging removed for production
   return data;
 };
 
 export const getUserScanHistory = async (userId: string) => {
-  console.log('[Supabase] getUserScanHistory called with:', userId);
+  // Debug logging removed for production
   
   const { data, error } = await supabase
     .from('scan_history')
@@ -461,12 +441,12 @@ export const getUserScanHistory = async (userId: string) => {
     throw error;
   }
 
-  console.log('[Supabase] Scan history fetched successfully:', data?.length || 0, 'items');
+  // Debug logging removed for production
   return data || [];
 };
 
 export const deleteScanFromHistory = async (userId: string, scanId: string) => {
-  console.log('[Supabase] deleteScanFromHistory called with:', { userId, scanId });
+  // Debug logging removed for production
   
   const { error } = await supabase
     .from('scan_history')
@@ -484,11 +464,11 @@ export const deleteScanFromHistory = async (userId: string, scanId: string) => {
     throw error;
   }
 
-  console.log('[Supabase] Scan deleted from history successfully');
+  // Debug logging removed for production
 };
 
 export const clearUserScanHistory = async (userId: string) => {
-  console.log('[Supabase] clearUserScanHistory called with:', userId);
+  // Debug logging removed for production
   
   const { error } = await supabase
     .from('scan_history')
@@ -505,5 +485,5 @@ export const clearUserScanHistory = async (userId: string) => {
     throw error;
   }
 
-  console.log('[Supabase] Scan history cleared successfully');
+  // Debug logging removed for production
 };
