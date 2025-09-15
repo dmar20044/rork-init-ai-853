@@ -719,7 +719,7 @@ export default function PremiumScanFeedback({
 }: PremiumScanFeedbackProps) {
   const { profile } = useUser();
   const { addItem } = useGroceryList();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
   const showPersonalized = profile.hasCompletedQuiz && nutrition.personalScore !== undefined;
   const [showParticles, setShowParticles] = useState<boolean>(false);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState<number>(0);
@@ -1504,8 +1504,8 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
   
   return (
     <LinearGradient
-      colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
-      locations={[0, 0.35, 0.65, 1]}
+      colors={isDarkMode ? ['#2E294E', '#4ECDC4', '#FF6B81', '#FF6B3B', '#1E1E1E'] : ['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+      locations={isDarkMode ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.35, 0.65, 1]}
       style={styles.container}
     >
       {/* Header with back arrow and title */}
