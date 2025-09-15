@@ -1053,9 +1053,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           <View style={styles.retroGradientOverlay} />
           <View style={styles.retroHeaderContent}>
             <View style={styles.retroTitleContainer}>
-              <View style={[styles.retroIconAccent, { backgroundColor: Colors.retroNeonTurquoise }]}>
-                <Feather size={24} color={Colors.white} />
-              </View>
+
               <Text style={[styles.retroMagazineTitle, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>Ask InIt</Text>
               <View style={[styles.retroSubtitleDivider, { backgroundColor: Colors.retroPink }]} />
             </View>
