@@ -12,7 +12,6 @@ import {
   Dimensions,
   SafeAreaView,
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Clock, TrendingUp, Award, AlertCircle, Trash2, Trophy, Target, ShoppingBasket, Settings, BarChart3 } from "lucide-react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/colors";
@@ -176,7 +175,7 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
           styles.historyCardNoTimeline,
           {
             transform: [{ translateX }],
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
+            backgroundColor: colors.surface,
           },
         ]}
         {...panResponder.panHandlers}
@@ -191,20 +190,20 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
             <Image source={{ uri: item.imageUri }} style={styles.productThumbnail} />
             
             <View style={styles.productInfo}>
-              <Text style={[styles.productName, { color: '#FDFDFD' }]}>{item.nutrition.name}</Text>
+              <Text style={[styles.productName, { color: colors.textPrimary }]}>{item.nutrition.name}</Text>
               <View style={styles.productDetails}>
-                <Text style={[styles.detailText, { color: 'rgba(255, 255, 255, 0.8)' }]}>{item.nutrition.calories} cal</Text>
-                <Text style={[styles.detailSeparator, { color: 'rgba(255, 255, 255, 0.8)' }]}>•</Text>
-                <Text style={[styles.detailText, { color: 'rgba(255, 255, 255, 0.8)' }]}>{item.nutrition.protein}g protein</Text>
+                <Text style={[styles.detailText, { color: colors.textSecondary }]}>{item.nutrition.calories} cal</Text>
+                <Text style={[styles.detailSeparator, { color: colors.textSecondary }]}>•</Text>
+                <Text style={[styles.detailText, { color: colors.textSecondary }]}>{item.nutrition.protein}g protein</Text>
               </View>
               <View style={styles.timeRow}>
                 <Clock size={10} color="#5F5F5F" />
-                <Text style={[styles.timeText, { color: 'rgba(255, 255, 255, 0.7)' }]}>{formatDate(item.timestamp)}</Text>
+                <Text style={[styles.timeText, { color: colors.textTertiary }]}>{formatDate(item.timestamp)}</Text>
               </View>
             </View>
             
             <View style={styles.scoreRing}>
-              <View style={[styles.miniScoreRing, { borderColor: color, backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
+              <View style={[styles.miniScoreRing, { borderColor: color, backgroundColor: colors.surface }]}>
                 <Text style={[styles.miniGradeText, { color }]}>{grade}</Text>
               </View>
             </View>
@@ -252,106 +251,92 @@ export default function HistoryScreen() {
   
   if (isLoading) {
     return (
-      <LinearGradient
-        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
-        style={styles.gradientContainer}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.brandingHeader}>
-            <Text style={[styles.brandingText, { color: '#FDFDFD' }]}>InIt AI</Text>
-          </View>
-          <View style={[styles.container, styles.centered]}>
-            <ActivityIndicator size="large" color="#FDFDFD" />
-            <Text style={[styles.loadingText, { color: '#FDFDFD' }]}>Loading scan history...</Text>
-          </View>
-        </SafeAreaView>
-      </LinearGradient>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
+          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
+        </View>
+        <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading scan history...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
   
   if (history.length === 0) {
     return (
-      <LinearGradient
-        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
-        style={styles.gradientContainer}
-      >
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.brandingHeader}>
-            <Text style={[styles.brandingText, { color: '#FDFDFD' }]}>InIt AI</Text>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
+          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
+        </View>
+        <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
+          <View style={styles.emptyBasket}>
+            <Image 
+              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
+              style={styles.emptyImage}
+              resizeMode="contain"
+            />
           </View>
-          <View style={[styles.container, styles.centered]}>
-            <View style={styles.emptyBasket}>
-              <Image 
-                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
-                style={styles.emptyImage}
-                resizeMode="contain"
-              />
-            </View>
-            <Text style={[styles.emptyTitle, { color: '#FDFDFD' }]}>No scans yet!</Text>
-            <Text style={[styles.emptyText, { color: '#FDFDFD' }]}>
-              Start your health journey by scanning your first product
-            </Text>
-            <TouchableOpacity 
-              style={[styles.startScanningButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
-              onPress={() => router.push('/(tabs)')}
-            >
-              <Text style={[styles.startScanningText, { color: '#FDFDFD' }]}>Start Scanning</Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </LinearGradient>
+          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No scans yet!</Text>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            Start your health journey by scanning your first product
+          </Text>
+          <TouchableOpacity 
+            style={[styles.startScanningButton, { backgroundColor: '#4ECDC4' }]}
+            onPress={() => router.push('/(tabs)')}
+          >
+            <Text style={[styles.startScanningText, { color: '#FDFDFD' }]}>Start Scanning</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
-      style={styles.gradientContainer}
-    >
-      <SafeAreaView style={styles.safeArea}>
-        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-          <View style={styles.brandingHeader}>
-            <Text style={[styles.brandingText, { color: '#FDFDFD' }]}>InIt AI</Text>
-          </View>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
+        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
+          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
+        </View>
         
         {/* New Top Stats Section */}
         <View style={styles.newStatsContainer}>
           {/* Avg Score Badge */}
-          <View style={[styles.avgScoreBadge, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+          <View style={[styles.avgScoreBadge, { backgroundColor: colors.surface }]}>
             <View style={styles.ribbonContainer}>
               <View style={[styles.ribbon, { backgroundColor: averageGrade.color }]}>
-                <Text style={[styles.ribbonGrade, { color: '#FDFDFD' }]}>{averageGrade.grade}</Text>
+                <Text style={[styles.ribbonGrade, { color: colors.white }]}>{averageGrade.grade}</Text>
               </View>
               <View style={styles.ribbonTail} />
             </View>
-            <Text style={[styles.avgScoreLabel, { color: 'rgba(255, 255, 255, 0.8)' }]}>7-Day Average</Text>
-            <Text style={[styles.avgScoreValue, { color: '#FDFDFD' }]}>{averageScore}</Text>
+            <Text style={[styles.avgScoreLabel, { color: colors.textSecondary }]}>7-Day Average</Text>
+            <Text style={[styles.avgScoreValue, { color: colors.textPrimary }]}>{averageScore}</Text>
           </View>
           
           {/* Top Choice of the Week */}
-          <View style={[styles.topChoiceCard, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+          <View style={[styles.topChoiceCard, { backgroundColor: colors.surface }]}>
             <View style={styles.topChoiceHeader}>
               <Trophy size={16} color="#4ECDC4" />
-              <Text style={[styles.topChoiceTitle, { color: '#FDFDFD' }]}>Top Choice</Text>
+              <Text style={[styles.topChoiceTitle, { color: colors.textPrimary }]}>Top Choice</Text>
             </View>
             {topChoice ? (
               <View style={styles.topChoiceContent}>
                 <Image source={{ uri: topChoice.imageUri }} style={styles.topChoiceThumbnail} />
                 <View style={styles.topChoiceInfo}>
-                  <Text style={[styles.topChoiceName, { color: '#FDFDFD' }]} numberOfLines={2}>{topChoice.nutrition.name}</Text>
+                  <Text style={[styles.topChoiceName, { color: colors.textPrimary }]} numberOfLines={2}>{topChoice.nutrition.name}</Text>
                   <Text style={[styles.topChoiceScore, { color: colors.primary }]}>{getDisplayScore(topChoice)}</Text>
                 </View>
               </View>
             ) : (
-              <Text style={[styles.topChoicePlaceholder, { color: 'rgba(255, 255, 255, 0.7)' }]}>Make your first scan!</Text>
+              <Text style={[styles.topChoicePlaceholder, { color: colors.textSecondary }]}>Make your first scan!</Text>
             )}
           </View>
           
           {/* Goal Alignment */}
-          <View style={[styles.goalAlignmentCard, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+          <View style={[styles.goalAlignmentCard, { backgroundColor: colors.surface }]}>
             <View style={styles.goalAlignmentHeader}>
               <Target size={16} color="#4ECDC4" />
-              <Text style={[styles.goalAlignmentTitle, { color: '#FDFDFD' }]}>Goal Alignment</Text>
+              <Text style={[styles.goalAlignmentTitle, { color: colors.textPrimary }]}>Goal Alignment</Text>
             </View>
             <View style={styles.progressRingContainer}>
               <View style={[styles.progressRing, { backgroundColor: colors.textTertiary }]}>
@@ -364,12 +349,12 @@ export default function HistoryScreen() {
                     }
                   ]}
                 />
-                <View style={[styles.progressRingInner, { backgroundColor: 'rgba(255, 255, 255, 0.9)' }]}>
-                  <Text style={[styles.progressPercentage, { color: '#1E1E1E' }]}>{goalAlignment}%</Text>
+                <View style={[styles.progressRingInner, { backgroundColor: colors.surface }]}>
+                  <Text style={[styles.progressPercentage, { color: colors.textPrimary }]}>{goalAlignment}%</Text>
                 </View>
               </View>
             </View>
-            <Text style={[styles.goalAlignmentLabel, { color: 'rgba(255, 255, 255, 0.8)' }]}>{getGoalAlignmentLabel(profile.goals.healthGoal)}</Text>
+            <Text style={[styles.goalAlignmentLabel, { color: colors.textSecondary }]}>{getGoalAlignmentLabel(profile.goals.healthGoal)}</Text>
           </View>
         </View>
 
@@ -377,13 +362,13 @@ export default function HistoryScreen() {
         <View style={styles.historyContainer}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleContainer}>
-              <Text style={[styles.sectionTitle, { color: '#FDFDFD' }]}>Recent Scans</Text>
+              <Text style={[styles.sectionTitle, { color: '#1E1E1E' }]}>Recent Scans</Text>
               <View style={[styles.sectionAccent, { backgroundColor: '#FF6B81' }]} />
             </View>
             {history.length > 0 && (
-              <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
-                <BarChart3 size={16} color="#FDFDFD" />
-                <Text style={[styles.manageButtonText, { color: '#FDFDFD' }]}>View Full Insights</Text>
+              <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: '#4ECDC4' + '20' }]}>
+                <BarChart3 size={16} color="#4ECDC4" />
+                <Text style={[styles.manageButtonText, { color: '#4ECDC4' }]}>View Full Insights</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -407,29 +392,25 @@ export default function HistoryScreen() {
             );
           })}
         </View>
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  gradientContainer: {
-    flex: 1,
-  },
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#FDFDFD', // Cream White
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingHeader: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: 'transparent',
+    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingText: {
     fontSize: 24,
@@ -501,16 +482,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   historyCardNoTimeline: {
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 12,
     padding: 16,
-    shadowColor: 'rgba(0, 0, 0, 0.2)',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowColor: '#D9D9D9', // Soft Gray
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#2E294E15', // Deep Indigo with opacity
   },
   deleteButtonContainer: {
     position: 'absolute',
@@ -631,7 +612,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: '#4ECDC4' + '20', // Neon Turquoise with opacity
   },
   manageButtonText: {
     fontSize: 12,
@@ -699,17 +680,17 @@ const styles = StyleSheet.create({
   // Avg Score Badge styles
   avgScoreBadge: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#2E294E20', // Deep Indigo with opacity
   },
   ribbonContainer: {
     position: 'relative',
@@ -755,16 +736,16 @@ const styles = StyleSheet.create({
   // Top Choice Card styles
   topChoiceCard: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 16,
-    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#FF6B8120', // Retro Pink with opacity
   },
   topChoiceHeader: {
     flexDirection: 'row',
@@ -812,17 +793,17 @@ const styles = StyleSheet.create({
   // Goal Alignment Card styles
   goalAlignmentCard: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: '#FDFDFD', // Cream White
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowColor: '#D9D9D9', // Soft Gray
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: '#4ECDC420', // Neon Turquoise with opacity
   },
   goalAlignmentHeader: {
     flexDirection: 'row',
