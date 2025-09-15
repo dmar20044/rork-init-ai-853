@@ -31,7 +31,7 @@ import {
   X,
   Star,
   Users,
-  CreditCard
+
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useUser, UserGoals } from '@/contexts/UserContext';
@@ -44,7 +44,7 @@ interface QuizStep {
   title: string;
   subtitle: string;
   icon: React.ReactNode;
-  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'free-trial' | 'subscription-selection' | 'tags-input' | 'ingredient-confusion' | 'biometrics';
+  type: 'input' | 'single-select' | 'welcome' | 'complete' | 'email-auth' | 'otp-verify' | 'privacy-trust' | 'instruction' | 'loading' | 'rating-request' | 'tags-input' | 'ingredient-confusion' | 'biometrics';
   options?: {
     id: string;
     label: string;
@@ -196,20 +196,7 @@ const quizSteps: QuizStep[] = [
     icon: <CheckCircle size={48} color={Colors.success} />,
     type: 'complete',
   },
-  {
-    id: 'free-trial',
-    title: 'Secure your 3 day free trial',
-    subtitle: 'Get unlimited access to all premium features',
-    icon: <Star size={48} color={Colors.primary} />,
-    type: 'free-trial',
-  },
-  {
-    id: 'subscription-selection',
-    title: 'Choose your plan',
-    subtitle: 'After 3 days, your subscription will automatically renew at $8.99/month unless canceled at least 24 hours before the end of the trial.',
-    icon: <Star size={48} color={Colors.primary} />,
-    type: 'subscription-selection',
-  },
+
 ];
 
 function QuizScreen() {
@@ -221,7 +208,7 @@ function QuizScreen() {
     dietGoal: string | null;
     lifeGoal: string | null;
     referralCode: string;
-    selectedSubscription: string | null;
+
     dietaryRestrictions: string[];
     healthStrictness: string | null;
     dietStrictness: string | null;
@@ -237,7 +224,7 @@ function QuizScreen() {
     dietGoal: null,
     lifeGoal: null,
     referralCode: '',
-    selectedSubscription: null,
+
     dietaryRestrictions: [],
     healthStrictness: null,
     dietStrictness: null,
@@ -691,7 +678,10 @@ function QuizScreen() {
           console.error('[Quiz] Failed to save biometrics:', biometricErr);
         }
       }
-      handleNext();
+      
+      // Navigate directly to main app after completing quiz
+      console.log('[Quiz] Final step - navigating to main app');
+      router.replace('/(tabs)');
     } catch (error) {
       console.error('[Quiz] Error completing quiz:', error);
     }
@@ -741,51 +731,7 @@ function QuizScreen() {
 
 
 
-  const handleStartFreeTrial = async () => {
-    try {
-      console.log('[Quiz] Starting free trial process');
-      
-      // In a real app, you would integrate with:
-      // - RevenueCat for cross-platform subscriptions
-      // - Expo In-App Purchases
-      // - Stripe for web payments
-      
-      if (Platform.OS === 'ios' || Platform.OS === 'android') {
-        // Mobile: Would use in-app purchases
-        Alert.alert(
-          'Free Trial Started!',
-          'Your 3-day free trial has begun. You now have access to all premium features!',
-          [
-            {
-              text: 'Continue',
-              style: 'default',
-              onPress: () => handleNext()
-            }
-          ]
-        );
-      } else {
-        // Web: Would redirect to payment processor
-        Alert.alert(
-          'Free Trial',
-          'In the full app, this would start your free trial with payment processing.',
-          [
-            {
-              text: 'Continue',
-              style: 'default',
-              onPress: () => handleNext()
-            }
-          ]
-        );
-      }
-    } catch (error) {
-      console.error('[Quiz] Error starting free trial:', error);
-      Alert.alert(
-        'Error',
-        'There was an issue starting your free trial. Please try again.',
-        [{ text: 'OK', style: 'default' }]
-      );
-    }
-  };
+
 
   const canProceed = () => {
     switch (currentStepData.id) {
@@ -827,10 +773,7 @@ function QuizScreen() {
         return email.trim().length > 0 && email.includes('@');
       case 'verify-otp':
         return otp.trim().length === 6 && !otpError && !isVerifying;
-      case 'free-trial':
-        return true;
-      case 'subscription-selection':
-        return answers.selectedSubscription !== null;
+
       case 'complete':
         return true;
       default:
@@ -1327,180 +1270,7 @@ function QuizScreen() {
 
 
 
-      case 'free-trial':
-        return (
-          <View style={styles.freeTrialContent}>
-            <View style={styles.iconContainer}>
-              <CreditCard size={48} color={Colors.primary} />
-            </View>
-            <Text style={styles.title}>{currentStepData.title}</Text>
-            <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
-            
-            <View style={styles.freeTrialCard}>
-              <View style={styles.freeTrialHeader}>
-                <Text style={styles.freeTrialPrice}>$0</Text>
-                <Text style={styles.freeTrialPeriod}>for 3 days</Text>
-              </View>
-              
-              <View style={styles.freeTrialFeatures}>
-                <View style={styles.freeTrialFeature}>
-                  <CheckCircle size={20} color={Colors.success} />
-                  <Text style={styles.freeTrialFeatureText}>Unlimited product scans</Text>
-                </View>
-                <View style={styles.freeTrialFeature}>
-                  <CheckCircle size={20} color={Colors.success} />
-                  <Text style={styles.freeTrialFeatureText}>Personalized nutrition insights</Text>
-                </View>
-                <View style={styles.freeTrialFeature}>
-                  <CheckCircle size={20} color={Colors.success} />
-                  <Text style={styles.freeTrialFeatureText}>Smart food recommendations</Text>
-                </View>
-                <View style={styles.freeTrialFeature}>
-                  <CheckCircle size={20} color={Colors.success} />
-                  <Text style={styles.freeTrialFeatureText}>Progress tracking & streaks</Text>
-                </View>
-              </View>
-              
-              <TouchableOpacity 
-                style={styles.startTrialButton}
-                onPress={handleStartFreeTrial}
-              >
-                <CreditCard size={20} color={Colors.white} />
-                <Text style={styles.startTrialButtonText}>Start Free Trial</Text>
-              </TouchableOpacity>
-            </View>
-            
-            <View style={styles.paymentDisclaimer}>
-              <Text style={styles.paymentDisclaimerText}>
-                No payment required now. Cancel anytime during your free trial.
-              </Text>
-            </View>
-          </View>
-        );
 
-      case 'subscription-selection':
-        return (
-          <View style={styles.subscriptionContent}>
-            <View style={styles.iconContainer}>
-              {currentStepData.icon}
-            </View>
-            <Text style={styles.title}>{currentStepData.title}</Text>
-            <Text style={styles.subscriptionSubtitle}>{currentStepData.subtitle}</Text>
-            
-            <View style={styles.subscriptionOptions}>
-              {/* Weekly Option */}
-              <TouchableOpacity
-                style={[
-                  styles.subscriptionCard,
-                  answers.selectedSubscription === 'weekly' && styles.subscriptionCardSelected
-                ]}
-                onPress={() => setAnswers(prev => ({ ...prev, selectedSubscription: 'weekly' }))}
-              >
-                <View style={styles.subscriptionHeader}>
-                  <Text style={[
-                    styles.subscriptionTitle,
-                    answers.selectedSubscription === 'weekly' && styles.subscriptionTitleSelected
-                  ]}>Weekly</Text>
-                  <Text style={[
-                    styles.subscriptionPrice,
-                    answers.selectedSubscription === 'weekly' && styles.subscriptionPriceSelected
-                  ]}>$4.99</Text>
-                  <Text style={[
-                    styles.subscriptionPeriod,
-                    answers.selectedSubscription === 'weekly' && styles.subscriptionPeriodSelected
-                  ]}>per week</Text>
-                </View>
-                
-                <View style={styles.subscriptionFeatures}>
-                  <View style={styles.subscriptionFeature}>
-                    <CheckCircle size={16} color={answers.selectedSubscription === 'weekly' ? Colors.white : Colors.success} />
-                    <Text style={[
-                      styles.subscriptionFeatureText,
-                      answers.selectedSubscription === 'weekly' && styles.subscriptionFeatureTextSelected
-                    ]}>All premium features</Text>
-                  </View>
-                  <View style={styles.subscriptionFeature}>
-                    <CheckCircle size={16} color={answers.selectedSubscription === 'weekly' ? Colors.white : Colors.success} />
-                    <Text style={[
-                      styles.subscriptionFeatureText,
-                      answers.selectedSubscription === 'weekly' && styles.subscriptionFeatureTextSelected
-                    ]}>Cancel anytime</Text>
-                  </View>
-                </View>
-                
-                {answers.selectedSubscription === 'weekly' && (
-                  <View style={styles.subscriptionCheckmark}>
-                    <CheckCircle size={24} color={Colors.white} />
-                  </View>
-                )}
-              </TouchableOpacity>
-              
-              {/* Monthly Option with Free Trial */}
-              <TouchableOpacity
-                style={[
-                  styles.subscriptionCard,
-                  styles.subscriptionCardRecommended,
-                  answers.selectedSubscription === 'monthly' && styles.subscriptionCardSelected
-                ]}
-                onPress={() => setAnswers(prev => ({ ...prev, selectedSubscription: 'monthly' }))}
-              >
-                <View style={styles.recommendedBadge}>
-                  <Text style={styles.recommendedBadgeText}>BEST VALUE</Text>
-                </View>
-                
-                <View style={styles.subscriptionHeader}>
-                  <Text style={[
-                    styles.subscriptionTitle,
-                    answers.selectedSubscription === 'monthly' && styles.subscriptionTitleSelected
-                  ]}>Monthly</Text>
-                  <Text style={[
-                    styles.subscriptionPrice,
-                    answers.selectedSubscription === 'monthly' && styles.subscriptionPriceSelected
-                  ]}>$8.99</Text>
-                  <Text style={[
-                    styles.subscriptionPeriod,
-                    answers.selectedSubscription === 'monthly' && styles.subscriptionPeriodSelected
-                  ]}>per month</Text>
-                </View>
-                
-                <View style={styles.freeTrialBanner}>
-                  <Star size={16} color={Colors.white} fill={Colors.white} />
-                  <Text style={styles.freeTrialBannerText}>3-day free trial included</Text>
-                </View>
-                
-                <View style={styles.subscriptionFeatures}>
-                  <View style={styles.subscriptionFeature}>
-                    <CheckCircle size={16} color={answers.selectedSubscription === 'monthly' ? Colors.white : Colors.success} />
-                    <Text style={[
-                      styles.subscriptionFeatureText,
-                      answers.selectedSubscription === 'monthly' && styles.subscriptionFeatureTextSelected
-                    ]}>All premium features</Text>
-                  </View>
-                  <View style={styles.subscriptionFeature}>
-                    <CheckCircle size={16} color={answers.selectedSubscription === 'monthly' ? Colors.white : Colors.success} />
-                    <Text style={[
-                      styles.subscriptionFeatureText,
-                      answers.selectedSubscription === 'monthly' && styles.subscriptionFeatureTextSelected
-                    ]}>Better value per week</Text>
-                  </View>
-                  <View style={styles.subscriptionFeature}>
-                    <CheckCircle size={16} color={answers.selectedSubscription === 'monthly' ? Colors.white : Colors.success} />
-                    <Text style={[
-                      styles.subscriptionFeatureText,
-                      answers.selectedSubscription === 'monthly' && styles.subscriptionFeatureTextSelected
-                    ]}>Cancel anytime</Text>
-                  </View>
-                </View>
-                
-                {answers.selectedSubscription === 'monthly' && (
-                  <View style={styles.subscriptionCheckmark}>
-                    <CheckCircle size={24} color={Colors.white} />
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        );
 
       case 'complete':
         return (
@@ -1912,20 +1682,10 @@ function QuizScreen() {
               style={[styles.nextButton, styles.completeButton]}
               onPress={handleComplete}
             >
-              <Text style={styles.completeButtonText}>Continue</Text>
+              <Text style={styles.completeButtonText}>Start Your Journey</Text>
               <ChevronRight size={20} color={Colors.white} />
             </TouchableOpacity>
-          ) : currentStepData.type === 'subscription-selection' ? (
-            <TouchableOpacity
-              style={[styles.nextButton, styles.completeButton, !canProceed() && styles.nextButtonDisabled]}
-              onPress={() => {
-                console.log('[Quiz] Final step - navigating to main app');
-                router.replace('/(tabs)');
-              }}
-              disabled={!canProceed()}
-            >
-              <Text style={[styles.completeButtonText, !canProceed() && styles.nextButtonTextDisabled]}>Start Your Journey</Text>
-            </TouchableOpacity>
+
           ) : currentStepData.type === 'email-auth' ? (
             <TouchableOpacity
               style={[styles.nextButton, styles.authButton, (!canProceed() || isAuthenticating) && styles.nextButtonDisabled]}
@@ -1969,16 +1729,7 @@ function QuizScreen() {
                 </Text>
               </View>
             )
-          ) : currentStepData.type === 'free-trial' ? (
-            <TouchableOpacity
-              style={[styles.nextButton, styles.skipButton]}
-              onPress={handleNext}
-            >
-              <Text style={styles.skipButtonText}>
-                Skip for Now
-              </Text>
-              <ChevronRight size={20} color={Colors.gray600} />
-            </TouchableOpacity>
+
           ) : (
             <TouchableOpacity
               style={[styles.nextButton, !canProceed() && styles.nextButtonDisabled]}
