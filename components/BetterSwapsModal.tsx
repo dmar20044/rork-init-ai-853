@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
   X,
@@ -24,7 +23,7 @@ import {
   MapPin,
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
-
+import { useTheme } from '@/contexts/ThemeContext';
 import { NutritionInfo } from '@/services/foodAnalysis';
 import { useUser } from '@/contexts/UserContext';
 import { useGroceryList } from '@/contexts/GroceryListContext';
@@ -81,7 +80,7 @@ const getBenefitIcon = (benefit: string, textSecondaryColor: string) => {
 export default function BetterSwapsModal({ visible, onClose, currentProduct }: BetterSwapsModalProps) {
   const { profile } = useUser();
   const { addItem } = useGroceryList();
-  // const { colors } = useTheme(); // Removed since we're using gradient colors
+  const { colors } = useTheme();
   const [swaps, setSwaps] = useState<BetterSwap[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -358,23 +357,19 @@ Find products in the same category that would be significantly better for this u
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <LinearGradient
-        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
-        locations={[0, 0.33, 0.66, 1]}
-        style={styles.container}
-      >
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: 'rgba(255, 255, 255, 0.15)', borderBottomColor: 'rgba(255, 255, 255, 0.2)' }]}>
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.textSecondary + '20' }]}>
           <View style={styles.headerContent}>
-            <Text style={[styles.headerTitle, { color: '#FFFFFF' }]}>Better Bites</Text>
-            <Text style={[styles.headerSubtitle, { color: 'rgba(255, 255, 255, 0.8)' }]}>AI-powered alternatives for your goals</Text>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Better Bites</Text>
+            <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>AI-powered alternatives for your goals</Text>
           </View>
           <TouchableOpacity 
-            style={[styles.closeButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
+            style={[styles.closeButton, { backgroundColor: colors.textSecondary + '10' }]}
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <X size={24} color="#FFFFFF" />
+            <X size={24} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
@@ -383,43 +378,43 @@ Find products in the same category that would be significantly better for this u
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           {isLoading ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#FFFFFF" />
-              <Text style={[styles.loadingText, { color: '#FFFFFF' }]}>Finding better alternatives...</Text>
-              <Text style={[styles.loadingSubtext, { color: 'rgba(255, 255, 255, 0.8)' }]}>Analyzing products that match your goals</Text>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Finding better alternatives...</Text>
+              <Text style={[styles.loadingSubtext, { color: colors.textSecondary }]}>Analyzing products that match your goals</Text>
             </View>
           ) : error ? (
             <View style={styles.errorContainer}>
-              <AlertTriangle size={48} color="#FFFFFF" />
-              <Text style={[styles.errorTitle, { color: '#FFFFFF' }]}>Couldn&apos;t Find Swaps</Text>
-              <Text style={[styles.errorText, { color: 'rgba(255, 255, 255, 0.8)' }]}>{error}</Text>
+              <AlertTriangle size={48} color={colors.error} />
+              <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>Couldn&apos;t Find Swaps</Text>
+              <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
               <TouchableOpacity 
-                style={[styles.retryButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
+                style={[styles.retryButton, { backgroundColor: colors.primary }]}
                 onPress={findBetterSwaps}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.retryButtonText, { color: '#FFFFFF' }]}>Try Again</Text>
+                <Text style={[styles.retryButtonText, { color: colors.white }]}>Try Again</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.swapsContainer}>
-              <Text style={[styles.swapsTitle, { color: '#FFFFFF' }]}>Recommended for You</Text>
+              <Text style={[styles.swapsTitle, { color: colors.textPrimary }]}>Recommended for You</Text>
               
               {swaps.map((swap, index) => {
                 const displayScore = showPersonalized ? swap.personalScore || swap.score : swap.score;
                 const improvement = displayScore - currentScore;
                 
                 return (
-                  <View key={index} style={[styles.swapCard, { backgroundColor: 'rgba(255, 255, 255, 0.15)' }]}>
+                  <View key={index} style={[styles.swapCard, { backgroundColor: colors.surface }]}>
                     {/* Comparison Layout */}
                     <View style={styles.comparisonContainer}>
                       {/* Current Choice */}
                       <View style={styles.comparisonSide}>
-                        <Text style={[styles.comparisonLabel, { color: 'rgba(255, 255, 255, 0.8)' }]}>Current</Text>
-                        <Text style={[styles.comparisonProductName, { color: '#FFFFFF' }]} numberOfLines={2}>
+                        <Text style={[styles.comparisonLabel, { color: colors.textSecondary }]}>Current</Text>
+                        <Text style={[styles.comparisonProductName, { color: colors.textPrimary }]} numberOfLines={2}>
                           {currentProduct.name}
                         </Text>
                         <View style={styles.scoreRing}>
-                          <View style={[styles.scoreRingInner, { borderColor: getScoreColor(currentScore), backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                          <View style={[styles.scoreRingInner, { borderColor: getScoreColor(currentScore), backgroundColor: colors.surface }]}>
                             <Text style={[styles.scoreNumber, { color: getScoreColor(currentScore) }]}>
                               {Math.round(currentScore)}
                             </Text>
@@ -429,7 +424,7 @@ Find products in the same category that would be significantly better for this u
 
                       {/* Arrow & Improvement */}
                       <View style={styles.comparisonArrow}>
-                        <ArrowRight size={20} color="rgba(255, 255, 255, 0.8)" />
+                        <ArrowRight size={20} color={colors.textSecondary} />
                         {improvement > 0 && (
                           <View style={styles.improvementIndicator}>
                             {getScoreIcon(improvement)}
@@ -440,12 +435,12 @@ Find products in the same category that would be significantly better for this u
 
                       {/* Recommended Choice */}
                       <View style={styles.comparisonSide}>
-                        <Text style={[styles.comparisonLabel, { color: 'rgba(255, 255, 255, 0.8)' }]}>Swap</Text>
-                        <Text style={[styles.comparisonProductName, { color: '#FFFFFF' }]} numberOfLines={2}>
+                        <Text style={[styles.comparisonLabel, { color: colors.textSecondary }]}>Swap</Text>
+                        <Text style={[styles.comparisonProductName, { color: colors.textPrimary }]} numberOfLines={2}>
                           {swap.name}
                         </Text>
                         <View style={styles.scoreRing}>
-                          <View style={[styles.scoreRingInner, { borderColor: getScoreColor(displayScore), backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                          <View style={[styles.scoreRingInner, { borderColor: getScoreColor(displayScore), backgroundColor: colors.surface }]}>
                             <Text style={[styles.scoreNumber, { color: getScoreColor(displayScore) }]}>
                               {Math.round(displayScore)}
                             </Text>
@@ -456,12 +451,12 @@ Find products in the same category that would be significantly better for this u
 
                     {/* Why It's Better - Condensed */}
                     <View style={styles.benefitsCondensed}>
-                      <Text style={[styles.benefitsCondensedTitle, { color: '#FFFFFF' }]}>Better for you:</Text>
+                      <Text style={[styles.benefitsCondensedTitle, { color: colors.textPrimary }]}>Better for you:</Text>
                       <View style={styles.benefitsList}>
                         {swap.reasons.slice(0, 3).map((reason, reasonIndex) => (
                           <View key={reasonIndex} style={styles.benefitItemCondensed}>
-                            {getBenefitIcon(reason, 'rgba(255, 255, 255, 0.8)')}
-                            <Text style={[styles.benefitTextCondensed, { color: 'rgba(255, 255, 255, 0.8)' }]}>{reason}</Text>
+                            {getBenefitIcon(reason, colors.textSecondary)}
+                            <Text style={[styles.benefitTextCondensed, { color: colors.textSecondary }]}>{reason}</Text>
                           </View>
                         ))}
                       </View>
@@ -469,31 +464,31 @@ Find products in the same category that would be significantly better for this u
 
                     {/* Add to Grocery List Button */}
                     <TouchableOpacity 
-                      style={[styles.addToListButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
+                      style={[styles.addToListButton, { backgroundColor: colors.primary }]}
                       onPress={() => handleAddToGroceryList(swap.name, swap.brand || '', swap)}
                       disabled={addingToList === swap.name}
                       activeOpacity={0.7}
                     >
                       {addingToList === swap.name ? (
-                        <ActivityIndicator size="small" color="#FFFFFF" />
+                        <ActivityIndicator size="small" color={colors.white} />
                       ) : (
-                        <Plus size={16} color="#FFFFFF" />
+                        <Plus size={16} color={colors.white} />
                       )}
-                      <Text style={[styles.addToListButtonText, { color: '#FFFFFF' }]}>
+                      <Text style={[styles.addToListButtonText, { color: colors.white }]}>
                         {addingToList === swap.name ? 'Adding...' : 'Save Swap'}
                       </Text>
                     </TouchableOpacity>
 
                     {/* Price & Availability - Footer Strip */}
-                    <View style={[styles.footerStrip, { borderTopColor: 'rgba(255, 255, 255, 0.2)' }]}>
+                    <View style={[styles.footerStrip, { borderTopColor: colors.textSecondary + '20' }]}>
                       <View style={styles.footerItem}>
-                        <DollarSign size={14} color="rgba(255, 255, 255, 0.8)" />
-                        <Text style={[styles.footerText, { color: 'rgba(255, 255, 255, 0.8)' }]}>{swap.price}</Text>
+                        <DollarSign size={14} color={colors.textSecondary} />
+                        <Text style={[styles.footerText, { color: colors.textSecondary }]}>{swap.price}</Text>
                       </View>
-                      <View style={[styles.footerSeparator, { backgroundColor: 'rgba(255, 255, 255, 0.3)' }]} />
+                      <View style={[styles.footerSeparator, { backgroundColor: colors.textSecondary + '30' }]} />
                       <View style={styles.footerItem}>
-                        <MapPin size={14} color="rgba(255, 255, 255, 0.8)" />
-                        <Text style={[styles.footerText, { color: 'rgba(255, 255, 255, 0.8)' }]}>{swap.availability}</Text>
+                        <MapPin size={14} color={colors.textSecondary} />
+                        <Text style={[styles.footerText, { color: colors.textSecondary }]}>{swap.availability}</Text>
                       </View>
                     </View>
                   </View>
@@ -504,13 +499,13 @@ Find products in the same category that would be significantly better for this u
         </ScrollView>
 
         {/* Footer */}
-        <View style={[styles.footer, { backgroundColor: 'rgba(255, 255, 255, 0.15)', borderTopColor: 'rgba(255, 255, 255, 0.2)' }]}>
+        <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.textSecondary + '20' }]}>
           <TouchableOpacity 
-            style={[styles.doneButton, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }]}
+            style={[styles.doneButton, { backgroundColor: colors.textSecondary + '10' }]}
             onPress={onClose}
             activeOpacity={0.7}
           >
-            <Text style={[styles.doneButtonText, { color: '#FFFFFF' }]}>Continue</Text>
+            <Text style={[styles.doneButtonText, { color: colors.textPrimary }]}>Continue</Text>
           </TouchableOpacity>
         </View>
         
@@ -519,7 +514,7 @@ Find products in the same category that would be significantly better for this u
           visible={showToast} 
           message="Added to your grocery list" 
         />
-      </LinearGradient>
+      </View>
     </Modal>
   );
 }
@@ -527,6 +522,7 @@ Find products in the same category that would be significantly better for this u
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF', // Will be overridden by theme
   },
   header: {
     flexDirection: 'row',
@@ -534,8 +530,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
+    backgroundColor: '#FFFFFF', // Will be overridden by theme
     borderBottomWidth: 1,
-    backdropFilter: 'blur(10px)',
+    borderBottomColor: '#E0E0E0', // Will be overridden by theme
   },
   headerContent: {
     flex: 1,
@@ -543,24 +540,20 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    color: '#000000', // Will be overridden by theme
   },
   headerSubtitle: {
     fontSize: 14,
+    color: '#333333', // Will be overridden by theme
     marginTop: 2,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
   },
   closeButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
+    backgroundColor: '#F0F0F0', // Will be overridden by theme
     justifyContent: 'center',
     alignItems: 'center',
-    backdropFilter: 'blur(10px)',
   },
 
   scrollView: {
@@ -625,17 +618,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   swapCard: {
+    backgroundColor: '#FFFFFF', // Will be overridden by theme
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
-    backdropFilter: 'blur(20px)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6,
   },
   comparisonContainer: {
     flexDirection: 'row',
@@ -746,16 +737,15 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: 20,
+    backgroundColor: '#FFFFFF', // Will be overridden by theme
     borderTopWidth: 1,
-    backdropFilter: 'blur(10px)',
+    borderTopColor: '#E0E0E0', // Will be overridden by theme
   },
   doneButton: {
+    backgroundColor: '#F0F0F0', // Will be overridden by theme
     paddingVertical: 16,
     borderRadius: 25,
     alignItems: 'center',
-    backdropFilter: 'blur(10px)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   doneButtonText: {
     color: '#000000', // Will be overridden by theme
@@ -766,13 +756,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#FF0040', // Will be overridden by theme
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 25,
     marginBottom: 16,
-    backdropFilter: 'blur(10px)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   addToListButtonText: {
     color: '#FFFFFF', // Will be overridden by theme
