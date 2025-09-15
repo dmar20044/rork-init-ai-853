@@ -1502,7 +1502,9 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 
   
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      {/* Retro Tech Pop Gradient Background */}
+      <View style={styles.gradientBackground} />
       {/* Header with back arrow and title */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.textSecondary + '20' }]}>
         <TouchableOpacity 
@@ -2500,13 +2502,22 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.retroCreamWhite,
+    backgroundColor: '#4EC9F5',
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
     paddingTop: 0,
+  },
+  gradientBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#4EC9F5',
+    background: 'linear-gradient(180deg, #4EC9F5 0%, #7ED9CF 35%, #F9BFC9 65%, #FF9E57 100%)',
   },
   header: {
     flexDirection: 'row',
@@ -2515,8 +2526,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    backgroundColor: Colors.retroCreamWhite,
-    borderBottomColor: Colors.retroSoftGray,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.2)',
+    backdropFilter: 'blur(10px)',
   },
   backButton: {
     width: 40,
@@ -2524,12 +2536,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.retroSoftGray + '30',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backdropFilter: 'blur(10px)',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.retroCharcoalBlack,
+    color: 'rgba(255, 255, 255, 0.95)',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   headerSpacer: {
     width: 40,
@@ -2655,14 +2671,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 16,
     padding: 16,
-    backgroundColor: Colors.retroCreamWhite,
-    shadowColor: Colors.retroSoftGray,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(20px)',
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
     borderWidth: 1,
-    borderColor: Colors.retroDeepIndigo + '15',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   productHeader: {
     flexDirection: 'row',
@@ -2874,14 +2891,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 16,
     padding: 16,
-    backgroundColor: Colors.retroCreamWhite,
-    shadowColor: Colors.retroSoftGray,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backdropFilter: 'blur(20px)',
+    shadowColor: 'rgba(0, 0, 0, 0.2)',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 8,
     borderWidth: 1,
-    borderColor: Colors.retroDeepIndigo + '15',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   
   cardHeader: {
@@ -3215,13 +3233,15 @@ const styles = StyleSheet.create({
   vibeCheckCard: {
     borderRadius: 16,
     padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backdropFilter: 'blur(15px)',
     shadowColor: Colors.retroPink,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 6,
     borderWidth: 1,
-    borderColor: Colors.retroPink + '20',
+    borderColor: 'rgba(249, 191, 201, 0.4)',
   },
   
   vibeCheckHeader: {
@@ -3307,10 +3327,13 @@ const styles = StyleSheet.create({
   macroSecondaryGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: Colors.retroSoftGray + '30',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    backdropFilter: 'blur(8px)',
     borderRadius: 12,
     padding: 16,
     paddingHorizontal: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   
   macroSecondaryItem: {
@@ -3828,9 +3851,12 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: Colors.retroPink + '05',
+    backgroundColor: 'rgba(249, 191, 201, 0.15)',
+    backdropFilter: 'blur(10px)',
     borderRadius: 12,
     marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(249, 191, 201, 0.3)',
   },
   
   microBreakdownHeader: {
