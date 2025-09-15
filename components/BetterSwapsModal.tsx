@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
   X,
@@ -357,9 +358,13 @@ Find products in the same category that would be significantly better for this u
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <LinearGradient
+        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+        locations={[0, 0.3, 0.6, 1]}
+        style={styles.container}
+      >
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.textSecondary + '20' }]}>
+        <View style={[styles.header, { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderBottomColor: colors.textSecondary + '20' }]}>
           <View style={styles.headerContent}>
             <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>Better Bites</Text>
             <Text style={[styles.headerSubtitle, { color: colors.textSecondary }]}>AI-powered alternatives for your goals</Text>
@@ -375,15 +380,15 @@ Find products in the same category that would be significantly better for this u
 
 
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {isLoading ? (
-            <View style={styles.loadingContainer}>
+            <View style={[styles.loadingContainer, styles.whiteBox]}>
               <ActivityIndicator size="large" color={colors.primary} />
               <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Finding better alternatives...</Text>
               <Text style={[styles.loadingSubtext, { color: colors.textSecondary }]}>Analyzing products that match your goals</Text>
             </View>
           ) : error ? (
-            <View style={styles.errorContainer}>
+            <View style={[styles.errorContainer, styles.whiteBox]}>
               <AlertTriangle size={48} color={colors.error} />
               <Text style={[styles.errorTitle, { color: colors.textPrimary }]}>Couldn&apos;t Find Swaps</Text>
               <Text style={[styles.errorText, { color: colors.textSecondary }]}>{error}</Text>
@@ -404,7 +409,7 @@ Find products in the same category that would be significantly better for this u
                 const improvement = displayScore - currentScore;
                 
                 return (
-                  <View key={index} style={[styles.swapCard, { backgroundColor: colors.surface }]}>
+                  <View key={index} style={[styles.swapCard, styles.whiteBox]}>
                     {/* Comparison Layout */}
                     <View style={styles.comparisonContainer}>
                       {/* Current Choice */}
@@ -499,7 +504,7 @@ Find products in the same category that would be significantly better for this u
         </ScrollView>
 
         {/* Footer */}
-        <View style={[styles.footer, { backgroundColor: colors.surface, borderTopColor: colors.textSecondary + '20' }]}>
+        <View style={[styles.footer, { backgroundColor: 'rgba(255, 255, 255, 0.95)', borderTopColor: colors.textSecondary + '20' }]}>
           <TouchableOpacity 
             style={[styles.doneButton, { backgroundColor: colors.textSecondary + '10' }]}
             onPress={onClose}
@@ -514,7 +519,7 @@ Find products in the same category that would be significantly better for this u
           visible={showToast} 
           message="Added to your grocery list" 
         />
-      </View>
+      </LinearGradient>
     </Modal>
   );
 }
@@ -522,7 +527,6 @@ Find products in the same category that would be significantly better for this u
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF', // Will be overridden by theme
   },
   header: {
     flexDirection: 'row',
@@ -559,10 +563,24 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  whiteBox: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+  },
   loadingContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
+    marginHorizontal: 16,
+    marginTop: 40,
   },
   loadingText: {
     fontSize: 18,
@@ -580,6 +598,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 60,
     paddingHorizontal: 32,
+    marginHorizontal: 16,
+    marginTop: 40,
   },
   errorTitle: {
     fontSize: 20,
@@ -618,15 +638,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   swapCard: {
-    backgroundColor: '#FFFFFF', // Will be overridden by theme
-    borderRadius: 20,
     padding: 24,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 6,
   },
   comparisonContainer: {
     flexDirection: 'row',
