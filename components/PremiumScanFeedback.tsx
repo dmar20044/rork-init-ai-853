@@ -11,6 +11,7 @@ import {
   Platform,
   PanResponder,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import {
   Sparkles,
@@ -1502,7 +1503,11 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
 
   
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <LinearGradient
+      colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+      locations={[0, 0.35, 0.65, 1]}
+      style={styles.container}
+    >
       {/* Header with back arrow and title */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.textSecondary + '20' }]}>
         <TouchableOpacity 
@@ -2493,14 +2498,13 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
         ingredients={ingredientAnalysis}
         isLoading={isAnalyzingIngredients}
       />
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.retroCreamWhite,
   },
   scrollView: {
     flex: 1,
@@ -2515,8 +2519,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    backgroundColor: Colors.retroCreamWhite,
-    borderBottomColor: Colors.retroSoftGray,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.3)',
   },
   backButton: {
     width: 40,
@@ -2655,14 +2659,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 16,
     padding: 16,
-    backgroundColor: Colors.retroCreamWhite,
-    shadowColor: Colors.retroSoftGray,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: Colors.retroDeepIndigo + '15',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   productHeader: {
     flexDirection: 'row',
@@ -2874,14 +2878,14 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderRadius: 16,
     padding: 16,
-    backgroundColor: Colors.retroCreamWhite,
-    shadowColor: Colors.retroSoftGray,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: Colors.retroDeepIndigo + '15',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   
   cardHeader: {
@@ -3215,6 +3219,7 @@ const styles = StyleSheet.create({
   vibeCheckCard: {
     borderRadius: 16,
     padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     shadowColor: Colors.retroPink,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -3828,7 +3833,7 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: Colors.retroPink + '05',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 12,
     marginHorizontal: 16,
   },
