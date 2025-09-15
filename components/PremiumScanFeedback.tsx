@@ -2165,7 +2165,7 @@ Provide a concise analysis of ${score >= 66 ? 'how this product supports my heal
                   </View>
                   
                   {/* Micro Breakdown Section */}
-                  <View style={styles.microBreakdownContainer}>
+                  <View style={[styles.microBreakdownContainer, { backgroundColor: colors.surface }]}>
                     <View style={styles.microBreakdownHeader}>
                       <Target size={18} color={Colors.retroPink} />
                       <Text style={[styles.microBreakdownTitle, { color: colors.textPrimary }]}>Micro Breakdown</Text>
@@ -3833,9 +3833,15 @@ const styles = StyleSheet.create({
     marginTop: 24,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 12,
     marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   
   microBreakdownHeader: {
