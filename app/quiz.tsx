@@ -31,7 +31,6 @@ import {
   X,
   Star,
   Users,
-
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useUser, UserGoals } from '@/contexts/UserContext';
