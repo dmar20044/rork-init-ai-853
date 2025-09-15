@@ -23,8 +23,6 @@ interface GroceryListContextType {
   updateItem: (id: string, name: string) => Promise<void>;
   clearCompleted: () => Promise<void>;
   isLoading: boolean;
-  showToast: boolean;
-  toastMessage: string;
 }
 
 const GroceryListContext = createContext<GroceryListContextType | undefined>(undefined);
@@ -32,8 +30,7 @@ const GroceryListContext = createContext<GroceryListContextType | undefined>(und
 export function GroceryListProvider({ children }: { children: React.ReactNode }) {
   const [groceryItems, setGroceryItems] = useState<GroceryItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [showToast, setShowToast] = useState<boolean>(false);
-  const [toastMessage, setToastMessage] = useState<string>('');
+
 
   const loadGroceryList = useCallback(async () => {
     try {
@@ -76,11 +73,7 @@ export function GroceryListProvider({ children }: { children: React.ReactNode })
       const updatedItems = [newItem, ...groceryItems];
       setGroceryItems(updatedItems);
       await saveGroceryList(updatedItems);
-      
-      // Show toast notification
-      setToastMessage('Added to your list');
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 2000);
+
     }
   }, [groceryItems, saveGroceryList]);
 
@@ -122,8 +115,7 @@ export function GroceryListProvider({ children }: { children: React.ReactNode })
     updateItem,
     clearCompleted,
     isLoading,
-    showToast,
-    toastMessage,
+
   };
 
   return (

@@ -7,10 +7,10 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { View, ActivityIndicator, Text, TouchableOpacity } from "react-native";
 import { ScanHistoryProvider } from "@/contexts/ScanHistoryContext";
 import { UserProvider, useUser } from "@/contexts/UserContext";
-import { GroceryListProvider, useGroceryList } from "@/contexts/GroceryListContext";
+import { GroceryListProvider } from "@/contexts/GroceryListContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import { ToastNotification } from "@/components/ToastNotification";
+
 import { Colors } from "@/constants/colors";
 import "@/constants/production"; // Initialize production config
 
@@ -73,7 +73,7 @@ const queryClient = new QueryClient({
 
 const RootLayoutNav = memo(function RootLayoutNav() {
   const { profile, isLoading, authState } = useUser();
-  const { showToast, toastMessage } = useGroceryList();
+
   const [hasNavigated, setHasNavigated] = useState(false);
 
   // Memoize stack screen options for better performance (moved before conditional returns)
@@ -130,7 +130,7 @@ const RootLayoutNav = memo(function RootLayoutNav() {
         <Stack.Screen name="(tabs)" options={tabsScreenOptions} />
         <Stack.Screen name="nutrition-results" options={nutritionResultsScreenOptions} />
       </Stack>
-      <ToastNotification visible={showToast} message={toastMessage} />
+
     </>
   );
 });
