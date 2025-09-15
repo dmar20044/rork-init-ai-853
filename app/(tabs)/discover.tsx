@@ -1166,7 +1166,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               {/* Empty State with Coach Image */}
               <View style={styles.emptyStateContainer}>
                 <Image 
-                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/e99af0hvgm7p4qmwrkbmj' }}
+                  source={{ uri: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=240&h=240&fit=crop&crop=face' }}
                   style={styles.coachImage}
                   resizeMode="contain"
                 />
