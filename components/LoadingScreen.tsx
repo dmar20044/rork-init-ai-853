@@ -619,8 +619,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ isVisible, onCancel, onCo
     <View style={styles.loadingContainer}>
       {/* Retro Tech Pop Gradient Background */}
       <LinearGradient
-        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
-        locations={[0, 0.35, 0.65, 1]}
+        colors={isDarkMode 
+          ? ['#2E294E', '#4ECDC4', '#FF6B81', '#FF6B3B', '#1E1E1E'] 
+          : ['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']
+        }
+        locations={isDarkMode 
+          ? [0, 0.25, 0.5, 0.75, 1] 
+          : [0, 0.35, 0.65, 1]
+        }
         style={styles.gradientBackground}
       />
       
