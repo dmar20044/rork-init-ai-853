@@ -12,6 +12,7 @@ import {
   Dimensions,
   SafeAreaView,
 } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
 import { Clock, TrendingUp, Award, AlertCircle, Trash2, Trophy, Target, ShoppingBasket, Settings, BarChart3 } from "lucide-react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/colors";
@@ -251,58 +252,75 @@ export default function HistoryScreen() {
   
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
-        </View>
-        <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading scan history...</Text>
-        </View>
-      </SafeAreaView>
+      <LinearGradient
+        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+        locations={[0, 0.35, 0.65, 1]}
+        style={styles.gradientBackground}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.brandingHeader}>
+            <Text style={styles.brandingText}>InIt AI</Text>
+          </View>
+          <View style={[styles.container, styles.centered]}>
+            <ActivityIndicator size="large" color="#FFFFFF" />
+            <Text style={[styles.loadingText, { color: '#FFFFFF' }]}>Loading scan history...</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
   
   if (history.length === 0) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
-        </View>
-        <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
-          <View style={styles.emptyBasket}>
-            <Image 
-              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
-              style={styles.emptyImage}
-              resizeMode="contain"
-            />
+      <LinearGradient
+        colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+        locations={[0, 0.35, 0.65, 1]}
+        style={styles.gradientBackground}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.brandingHeader}>
+            <Text style={styles.brandingText}>InIt AI</Text>
           </View>
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No scans yet!</Text>
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Start your health journey by scanning your first product
-          </Text>
-          <TouchableOpacity 
-            style={[styles.startScanningButton, { backgroundColor: '#4ECDC4' }]}
-            onPress={() => router.push('/(tabs)')}
-          >
-            <Text style={[styles.startScanningText, { color: '#FDFDFD' }]}>Start Scanning</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+          <View style={[styles.container, styles.centered]}>
+            <View style={styles.emptyBasket}>
+              <Image 
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
+                style={styles.emptyImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={[styles.emptyTitle, { color: '#FFFFFF' }]}>No scans yet!</Text>
+            <Text style={[styles.emptyText, { color: '#FFFFFF' }]}>
+              Start your health journey by scanning your first product
+            </Text>
+            <TouchableOpacity 
+              style={styles.startScanningButton}
+              onPress={() => router.push('/(tabs)')}
+            >
+              <Text style={styles.startScanningText}>Start Scanning</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
-        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
+    <LinearGradient
+      colors={['#4EC9F5', '#7ED9CF', '#F9BFC9', '#FF9E57']}
+      locations={[0, 0.35, 0.65, 1]}
+      style={styles.gradientBackground}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.brandingHeader}>
+          <Text style={styles.brandingText}>InIt AI</Text>
         </View>
         
         {/* New Top Stats Section */}
         <View style={styles.newStatsContainer}>
           {/* Avg Score Badge */}
-          <View style={[styles.avgScoreBadge, { backgroundColor: colors.surface }]}>
+          <View style={styles.avgScoreBadge}>
             <View style={styles.ribbonContainer}>
               <View style={[styles.ribbon, { backgroundColor: averageGrade.color }]}>
                 <Text style={[styles.ribbonGrade, { color: colors.white }]}>{averageGrade.grade}</Text>
@@ -314,7 +332,7 @@ export default function HistoryScreen() {
           </View>
           
           {/* Top Choice of the Week */}
-          <View style={[styles.topChoiceCard, { backgroundColor: colors.surface }]}>
+          <View style={styles.topChoiceCard}>
             <View style={styles.topChoiceHeader}>
               <Trophy size={16} color="#4ECDC4" />
               <Text style={[styles.topChoiceTitle, { color: colors.textPrimary }]}>Top Choice</Text>
@@ -333,7 +351,7 @@ export default function HistoryScreen() {
           </View>
           
           {/* Goal Alignment */}
-          <View style={[styles.goalAlignmentCard, { backgroundColor: colors.surface }]}>
+          <View style={styles.goalAlignmentCard}>
             <View style={styles.goalAlignmentHeader}>
               <Target size={16} color="#4ECDC4" />
               <Text style={[styles.goalAlignmentTitle, { color: colors.textPrimary }]}>Goal Alignment</Text>
@@ -392,30 +410,36 @@ export default function HistoryScreen() {
             );
           })}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: 'transparent',
+  },
+  gradientBackground: {
+    flex: 1,
   },
   brandingHeader: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: '#FDFDFD', // Cream White
   },
   brandingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: '#1E1E1E', // Charcoal Black
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.1)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   statsContainer: {
     flexDirection: "row",
