@@ -1106,7 +1106,7 @@ function QuizScreen() {
                     testID="biometrics-height-feet-dropdown"
                   >
                     <Text style={heightFeet !== null ? styles.dropdownValueText : styles.dropdownPlaceholderText}>
-                      {heightFeet !== null ? `${heightFeet}` : 'ft'}
+                      {heightFeet !== null ? `${heightFeet}` : 'Select'}
                     </Text>
                     <ChevronDown size={20} color={Colors.gray500} />
                   </TouchableOpacity>
@@ -1118,7 +1118,7 @@ function QuizScreen() {
                     testID="biometrics-height-inches-dropdown"
                   >
                     <Text style={heightInches !== null ? styles.dropdownValueText : styles.dropdownPlaceholderText}>
-                      {heightInches !== null ? `${heightInches}` : 'in'}
+                      {heightInches !== null ? `${heightInches}` : 'Select'}
                     </Text>
                     <ChevronDown size={20} color={Colors.gray500} />
                   </TouchableOpacity>
