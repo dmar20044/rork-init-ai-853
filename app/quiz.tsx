@@ -1110,7 +1110,6 @@ function QuizScreen() {
                     </Text>
                     <ChevronDown size={20} color={Colors.gray500} />
                   </TouchableOpacity>
-                  <Text style={styles.heightUnitLabel}>ft</Text>
                   <TouchableOpacity
                     style={[styles.textInput, styles.heightInput, styles.dropdownInput]}
                     onPress={() => setShowInchesPicker(true)}
@@ -1122,7 +1121,6 @@ function QuizScreen() {
                     </Text>
                     <ChevronDown size={20} color={Colors.gray500} />
                   </TouchableOpacity>
-                  <Text style={styles.heightUnitLabel}>in</Text>
                 </View>
               </View>
               <View style={styles.biometricsField}>
