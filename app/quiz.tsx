@@ -15,6 +15,8 @@ import {
   PanResponder,
   Dimensions,
   Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from 'react-native';
 
 import { router } from 'expo-router';
@@ -1091,10 +1093,11 @@ function QuizScreen() {
         );
       case 'biometrics':
         return (
-          <View style={styles.selectContent}>
-            <View style={styles.iconContainer}>{currentStepData.icon}</View>
-            <Text style={styles.title}>{currentStepData.title}</Text>
-            <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.selectContent}>
+              <View style={styles.iconContainer}>{currentStepData.icon}</View>
+              <Text style={styles.title}>{currentStepData.title}</Text>
+              <Text style={styles.subtitle}>{currentStepData.subtitle}</Text>
             <View style={styles.biometricsRow}>
               <View style={styles.biometricsField}>
                 <Text style={styles.biometricsLabel}>Height (ft/in)</Text>
@@ -1174,7 +1177,8 @@ function QuizScreen() {
                 </TouchableOpacity>
               ))}
             </View>
-          </View>
+            </View>
+          </TouchableWithoutFeedback>
         );
 
       case 'rating-request':
