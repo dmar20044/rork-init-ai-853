@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { serializeError } from '@/utils/error';
 
 // These will be set from environment variables
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://djkastkpaaicewoicqxf.supabase.co';
@@ -235,12 +236,7 @@ export const createUserProfile = async (userId: string, profileData: any) => {
     .single();
 
   if (error) {
-    console.error('[Supabase] Error creating user profile:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error creating user profile:', serializeError(error));
     throw error;
   }
 
@@ -266,15 +262,9 @@ export const updateUserProfile = async (userId: string, updates: any) => {
     .single();
 
   if (error) {
-    console.error('[Supabase] Error updating user profile:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error updating user profile:', serializeError(error));
     
-    // If the error is PGRST116 (no rows found), it means the profile doesn't exist
-    if (error.code === 'PGRST116') {
+    if ((error as any)?.code === 'PGRST116') {
       const customError = new Error('User profile not found. Profile must be created first.');
       (customError as any).code = 'PROFILE_NOT_FOUND';
       throw customError;
@@ -294,8 +284,8 @@ export const getUserProfile = async (userId: string) => {
     .eq('user_id', userId)
     .single();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-    // Error logging kept for debugging
+  if (error && (error as any).code !== 'PGRST116') {
+    console.error('[Supabase] Error fetching user profile:', serializeError(error));
     throw error;
   }
 
@@ -311,8 +301,8 @@ export const checkEmailExists = async (email: string) => {
     .eq('email', email.trim().toLowerCase())
     .single();
 
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found"
-    console.error('[Supabase] Error checking email existence:', error);
+  if (error && (error as any).code !== 'PGRST116') {
+    console.error('[Supabase] Error checking email existence:', serializeError(error));
     throw error;
   }
 
@@ -346,12 +336,7 @@ export const saveQuizResponse = async (userId: string, quizData: any) => {
     .single();
 
   if (error) {
-    console.error('[Supabase] Error saving quiz response:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error saving quiz response:', serializeError(error));
     throw error;
   }
 
@@ -409,12 +394,7 @@ export const saveScanToHistory = async (userId: string, scanData: {
     .single();
 
   if (error) {
-    console.error('[Supabase] Error saving scan to history:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error saving scan to history:', serializeError(error));
     throw error;
   }
 
@@ -432,12 +412,7 @@ export const getUserScanHistory = async (userId: string) => {
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error('[Supabase] Error fetching scan history:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error fetching scan history:', serializeError(error));
     throw error;
   }
 
@@ -455,12 +430,7 @@ export const deleteScanFromHistory = async (userId: string, scanId: string) => {
     .eq('id', scanId);
 
   if (error) {
-    console.error('[Supabase] Error deleting scan from history:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error deleting scan from history:', serializeError(error));
     throw error;
   }
 
@@ -476,12 +446,7 @@ export const clearUserScanHistory = async (userId: string) => {
     .eq('user_id', userId);
 
   if (error) {
-    console.error('[Supabase] Error clearing scan history:', {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
+    console.error('[Supabase] Error clearing scan history:', serializeError(error));
     throw error;
   }
 

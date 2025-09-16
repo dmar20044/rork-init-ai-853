@@ -346,16 +346,25 @@ export const [UserProvider, useUser] = createContextHook(() => {
           console.log('[UserContext] Profile updates synced to Supabase successfully');
         }
       } catch (error: any) {
-        console.error('[UserContext] Failed to sync profile updates to Supabase:', error);
+        try {
+          const { serializeError } = await import('@/utils/error');
+          console.error('[UserContext] Failed to sync profile updates to Supabase:', serializeError(error));
+        } catch {
+          console.error('[UserContext] Failed to sync profile updates to Supabase:', error);
+        }
         
-        // If the profile doesn't exist, try to create it
         if (error?.code === 'PROFILE_NOT_FOUND' || error?.code === 'PGRST116') {
           try {
             console.log('[UserContext] Profile not found, creating new profile...');
             await createUserProfile(authState.user.id, newProfile);
             console.log('[UserContext] Profile created successfully');
           } catch (createError) {
-            console.error('[UserContext] Failed to create profile:', createError);
+            try {
+              const { serializeError } = await import('@/utils/error');
+              console.error('[UserContext] Failed to create profile:', serializeError(createError));
+            } catch {
+              console.error('[UserContext] Failed to create profile:', createError);
+            }
           }
         }
         // Continue with local update even if Supabase fails
@@ -528,19 +537,18 @@ export const [UserProvider, useUser] = createContextHook(() => {
         console.log('[UserContext] ✅ Updated existing user profile:', updatedProfile?.id);
       } catch (updateError: any) {
         console.log('[UserContext] Update failed, creating new profile...');
-        console.log('[UserContext] Update error:', {
-          message: updateError?.message,
-          code: updateError?.code,
-          details: updateError?.details
-        });
+        try {
+          const { serializeError } = await import('@/utils/error');
+          console.log('[UserContext] Update error:', serializeError(updateError));
+        } catch {
+          console.log('[UserContext] Update error:', updateError);
+        }
         
-        // Check if it's the specific "profile not found" error or the original PGRST116
         if (updateError?.code === 'PROFILE_NOT_FOUND' || updateError?.code === 'PGRST116') {
           console.log('[UserContext] Profile does not exist, creating new one...');
           const newProfile = await createUserProfile(userId, profileData);
           console.log('[UserContext] ✅ Created new user profile:', newProfile?.id);
         } else {
-          // Re-throw other errors
           throw updateError;
         }
       }
@@ -548,7 +556,12 @@ export const [UserProvider, useUser] = createContextHook(() => {
       console.log('[UserContext] ✅ Supabase integration completed successfully');
       
     } catch (error: any) {
-      console.error('[UserContext] ❌ Supabase integration failed:', error);
+      try {
+        const { serializeError } = await import('@/utils/error');
+        console.error('[UserContext] ❌ Supabase integration failed:', serializeError(error));
+      } catch {
+        console.error('[UserContext] ❌ Supabase integration failed:', error);
+      }
       console.error('[UserContext] Full error details:', {
         message: error?.message,
         code: error?.code,
