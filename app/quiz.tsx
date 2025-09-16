@@ -638,6 +638,15 @@ function QuizScreen() {
         console.log('[Quiz] Saving dietary restrictions to profile:', answers.dietaryRestrictions);
         await updateProfile({ dietaryRestrictions: answers.dietaryRestrictions });
       }
+      if (answers.heightCm && answers.weightKg && answers.sex && answers.activityLevel) {
+        const activityForProfile = (answers.activityLevel === 'extremely-active' ? 'extra-active' : answers.activityLevel);
+        await updateProfile({
+          heightCm: answers.heightCm,
+          weightKg: answers.weightKg,
+          sex: answers.sex,
+          activityLevel: activityForProfile as any,
+        });
+      }
       if (answers.heightCm && answers.weightKg && answers.sex && answers.activityLevel && answers.ageYears) {
         try {
           const { data: userData } = await supabase.auth.getUser();
