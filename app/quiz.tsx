@@ -1098,39 +1098,27 @@ function QuizScreen() {
               <View style={styles.biometricsField}>
                 <Text style={styles.biometricsLabel}>Height (ft/in)</Text>
                 <View style={styles.heightRow}>
-                  <TextInput
-                    style={[styles.textInput, styles.heightInput]}
-                    value={heightFeet?.toString() ?? ''}
-                    onChangeText={(t) => {
-                      const n = Number(t.replace(/[^0-9]/g, ''));
-                      const feet = isNaN(n) ? null : n;
-                      setHeightFeet(feet);
-                      const inchesTotal = (feet ?? 0) * 12 + (heightInches ?? 0);
-                      const cm = inchesTotal > 0 ? inchesTotal * 2.54 : NaN;
-                      setAnswers((prev) => ({ ...prev, heightCm: isNaN(cm) ? null : Math.round(cm * 10) / 10 }));
-                    }}
-                    keyboardType="number-pad"
-                    placeholder="6"
-                    placeholderTextColor={Colors.gray500}
-                    testID="biometrics-height-feet"
-                  />
+                  <TouchableOpacity
+                    style={[styles.textInput, styles.heightInput, styles.dropdownInput]}
+                    onPress={() => setShowFeetPicker(true)}
+                    activeOpacity={0.8}
+                    testID="biometrics-height-feet-dropdown"
+                  >
+                    <Text style={heightFeet !== null ? styles.dropdownValueText : styles.dropdownPlaceholderText}>
+                      {heightFeet !== null ? `${heightFeet}` : 'Select'}
+                    </Text>
+                  </TouchableOpacity>
                   <Text style={styles.heightUnitLabel}>ft</Text>
-                  <TextInput
-                    style={[styles.textInput, styles.heightInput]}
-                    value={heightInches?.toString() ?? ''}
-                    onChangeText={(t) => {
-                      const n = Number(t.replace(/[^0-9]/g, ''));
-                      const inches = isNaN(n) ? null : Math.min(n, 11);
-                      setHeightInches(inches);
-                      const inchesTotal = (heightFeet ?? 0) * 12 + (inches ?? 0);
-                      const cm = inchesTotal > 0 ? inchesTotal * 2.54 : NaN;
-                      setAnswers((prev) => ({ ...prev, heightCm: isNaN(cm) ? null : Math.round(cm * 10) / 10 }));
-                    }}
-                    keyboardType="number-pad"
-                    placeholder="1"
-                    placeholderTextColor={Colors.gray500}
-                    testID="biometrics-height-inches"
-                  />
+                  <TouchableOpacity
+                    style={[styles.textInput, styles.heightInput, styles.dropdownInput]}
+                    onPress={() => setShowInchesPicker(true)}
+                    activeOpacity={0.8}
+                    testID="biometrics-height-inches-dropdown"
+                  >
+                    <Text style={heightInches !== null ? styles.dropdownValueText : styles.dropdownPlaceholderText}>
+                      {heightInches !== null ? `${heightInches}` : 'Select'}
+                    </Text>
+                  </TouchableOpacity>
                   <Text style={styles.heightUnitLabel}>in</Text>
                 </View>
               </View>
@@ -1587,6 +1575,14 @@ function QuizScreen() {
   const [heightFeet, setHeightFeet] = useState<number | null>(null);
   const [heightInches, setHeightInches] = useState<number | null>(null);
   const [weightLb, setWeightLb] = useState<number | null>(null);
+  const [showFeetPicker, setShowFeetPicker] = useState<boolean>(false);
+  const [showInchesPicker, setShowInchesPicker] = useState<boolean>(false);
+  const feetOptions = useMemo<number[]>(() => {
+    return [4,5,6,7,8];
+  }, []);
+  const inchesOptions = useMemo<number[]>(() => {
+    return Array.from({ length: 12 }, (_, i) => i);
+  }, []);
   const commonRestrictionSuggestions = useMemo<string[]>(
     () => [
       'peanuts',
@@ -1654,6 +1650,69 @@ function QuizScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {renderSignInModal()}
+
+      <Modal
+        visible={showFeetPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowFeetPicker(false)}
+      >
+        <TouchableOpacity style={styles.pickerModalOverlay} activeOpacity={1} onPress={() => setShowFeetPicker(false)} />
+        <View style={styles.pickerSheet}>
+          <View style={styles.pickerHandle} />
+          <Text style={styles.pickerTitle}>Select Feet</Text>
+          <ScrollView style={styles.pickerList}>
+            {feetOptions.map((opt) => (
+              <TouchableOpacity
+                key={`feet-${opt}`}
+                style={[styles.pickerOption, heightFeet === opt && styles.pickerOptionSelected]}
+                onPress={() => {
+                  setHeightFeet(opt);
+                  const inchesTotal = opt * 12 + (heightInches ?? 0);
+                  const cm = inchesTotal > 0 ? inchesTotal * 2.54 : NaN;
+                  setAnswers((prev) => ({ ...prev, heightCm: isNaN(cm) ? null : Math.round(cm * 10) / 10 }));
+                  setShowFeetPicker(false);
+                }}
+                testID={`picker-feet-${opt}`}
+              >
+                <Text style={[styles.pickerOptionText, heightFeet === opt && styles.pickerOptionTextSelected]}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showInchesPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowInchesPicker(false)}
+      >
+        <TouchableOpacity style={styles.pickerModalOverlay} activeOpacity={1} onPress={() => setShowInchesPicker(false)} />
+        <View style={styles.pickerSheet}>
+          <View style={styles.pickerHandle} />
+          <Text style={styles.pickerTitle}>Select Inches</Text>
+          <ScrollView style={styles.pickerList}>
+            {inchesOptions.map((opt) => (
+              <TouchableOpacity
+                key={`inches-${opt}`}
+                style={[styles.pickerOption, heightInches === opt && styles.pickerOptionSelected]}
+                onPress={() => {
+                  const clamped = Math.min(Math.max(opt, 0), 11);
+                  setHeightInches(clamped);
+                  const inchesTotal = (heightFeet ?? 0) * 12 + clamped;
+                  const cm = inchesTotal > 0 ? inchesTotal * 2.54 : NaN;
+                  setAnswers((prev) => ({ ...prev, heightCm: isNaN(cm) ? null : Math.round(cm * 10) / 10 }));
+                  setShowInchesPicker(false);
+                }}
+                testID={`picker-inches-${opt}`}
+              >
+                <Text style={[styles.pickerOptionText, heightInches === opt && styles.pickerOptionTextSelected]}>{opt}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </Modal>
       {currentStepData.type !== 'welcome' && (
         <View style={styles.header}>
           <View style={styles.progressContainer}>
@@ -3849,6 +3908,74 @@ const styles = StyleSheet.create({
   },
   sexChipTextSelected: {
     color: Colors.white,
+  },
+  dropdownInput: {
+    justifyContent: 'center',
+  },
+  dropdownValueText: {
+    color: Colors.textPrimary,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  dropdownPlaceholderText: {
+    color: Colors.gray500,
+    fontSize: 16,
+  },
+  pickerModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  pickerSheet: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    maxHeight: '60%',
+    paddingBottom: 24,
+  },
+  pickerHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.gray300,
+    alignSelf: 'center',
+    marginVertical: 8,
+  },
+  pickerTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  pickerList: {
+    paddingHorizontal: 16,
+  },
+  pickerOption: {
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.borderLight,
+    backgroundColor: Colors.surface,
+    marginBottom: 10,
+  },
+  pickerOptionSelected: {
+    backgroundColor: Colors.primaryLight,
+    borderColor: Colors.primary,
+  },
+  pickerOptionText: {
+    fontSize: 16,
+    color: Colors.textPrimary,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  pickerOptionTextSelected: {
+    color: Colors.white,
+    fontWeight: '700',
   },
 });
 
