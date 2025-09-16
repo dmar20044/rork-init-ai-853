@@ -31,6 +31,7 @@ import {
   X,
   Star,
   Users,
+  ChevronDown,
 } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { useUser, UserGoals } from '@/contexts/UserContext';
@@ -1107,6 +1108,7 @@ function QuizScreen() {
                     <Text style={heightFeet !== null ? styles.dropdownValueText : styles.dropdownPlaceholderText}>
                       {heightFeet !== null ? `${heightFeet}` : 'ft'}
                     </Text>
+                    <ChevronDown size={20} color={Colors.gray500} />
                   </TouchableOpacity>
                   <Text style={styles.heightUnitLabel}>ft</Text>
                   <TouchableOpacity
@@ -1118,6 +1120,7 @@ function QuizScreen() {
                     <Text style={heightInches !== null ? styles.dropdownValueText : styles.dropdownPlaceholderText}>
                       {heightInches !== null ? `${heightInches}` : 'in'}
                     </Text>
+                    <ChevronDown size={20} color={Colors.gray500} />
                   </TouchableOpacity>
                   <Text style={styles.heightUnitLabel}>in</Text>
                 </View>
@@ -3910,7 +3913,9 @@ const styles = StyleSheet.create({
     color: Colors.white,
   },
   dropdownInput: {
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dropdownValueText: {
     color: Colors.textPrimary,
