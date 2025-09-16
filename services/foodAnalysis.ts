@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserGoals, UserProfile } from '@/contexts/UserContext';
 import { trpcClient } from '@/lib/trpc';
-import { calculateBMR, type Sex } from '@/utils/calorie';
+import { calculateBMR, calculateCalorieTargets, type Sex, type ActivityLevel, type BodyGoal, type CalorieInputs } from '@/utils/calorie';
 
 export interface NutritionInfo {
   name: string;
@@ -1010,8 +1010,10 @@ interface Profile {
   dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
   lifeStrictness?: 'not-strict' | 'neutral' | 'very-strict';
-  // BMR-based personalization
+  // BMR and TDEE-based personalization
   bmr?: number;
+  tdee?: number;
+  targetCalories?: number;
   age?: number;
   heightCm?: number;
   weightKg?: number;
@@ -1176,26 +1178,37 @@ function deltaBody(product: Product, body: Profile['bodyGoal'], profile?: Profil
   let d = 0;
   const why: string[] = [];
   
-  // Calculate BMR-based calorie thresholds if user data is available
+  // Calculate TDEE-based calorie thresholds if user data is available
   let calorieThresholds = {
     veryHigh: 400,
     high: 250,
     moderate: 150
   };
   
-  if (profile?.bmr) {
-    // Adjust thresholds based on BMR - higher BMR allows more calories
-    const bmrFactor = profile.bmr / 1500; // 1500 is average BMR
+  // Use TDEE for more accurate personalization, fallback to BMR if TDEE not available
+  const metabolicRate = profile?.tdee || profile?.bmr;
+  if (metabolicRate) {
+    // Adjust thresholds based on TDEE/BMR - higher metabolic rate allows more calories per serving
+    const metabolicFactor = metabolicRate / 1800; // 1800 is average TDEE for moderate activity
     calorieThresholds = {
-      veryHigh: Math.round(400 * bmrFactor),
-      high: Math.round(250 * bmrFactor),
-      moderate: Math.round(150 * bmrFactor)
+      veryHigh: Math.round(400 * metabolicFactor),
+      high: Math.round(250 * metabolicFactor),
+      moderate: Math.round(150 * metabolicFactor)
     };
-    console.log(`[BMR Personalization] BMR: ${profile.bmr}, Adjusted thresholds:`, calorieThresholds);
+    
+    const rateType = profile?.tdee ? 'TDEE' : 'BMR';
+    console.log(`[${rateType} Personalization] ${rateType}: ${metabolicRate}, Adjusted calorie thresholds:`, calorieThresholds);
+    
+    // Add context about personalization to reasons
+    if (profile?.tdee) {
+      why.push(`Personalized for your TDEE of ${profile.tdee} calories/day`);
+    } else if (profile?.bmr) {
+      why.push(`Personalized for your BMR of ${profile.bmr} calories/day`);
+    }
   }
   
   if (body === 'lose') {
-    // BMR-adjusted calorie penalties for weight loss
+    // TDEE/BMR-adjusted calorie penalties for weight loss
     if (m.energyKcal > calorieThresholds.veryHigh) {
       d -= 20; // Much harsher penalty
       why.push(`Very high calories (${m.energyKcal}) conflict with weight loss goal`);
@@ -1219,7 +1232,7 @@ function deltaBody(product: Product, body: Profile['bodyGoal'], profile?: Profil
   }
   
   if (body === 'slightly-lose') {
-    // BMR-adjusted moderate calorie penalties for slight weight loss
+    // TDEE/BMR-adjusted moderate calorie penalties for slight weight loss
     const slightlyLoseThresholds = {
       high: Math.round((calorieThresholds.veryHigh + calorieThresholds.high) / 2),
       moderate: Math.round((calorieThresholds.high + calorieThresholds.moderate) / 2)
@@ -1249,7 +1262,7 @@ function deltaBody(product: Product, body: Profile['bodyGoal'], profile?: Profil
   
   if (body === 'gain') {
     d += clamp(m.protein_g / 25, 0, 1) * 10; // Increased protein bonus
-    // BMR-adjusted calorie bonus for weight gain
+    // TDEE/BMR-adjusted calorie bonus for weight gain
     const gainThreshold = Math.round(calorieThresholds.moderate * 1.3);
     d += clamp((m.energyKcal - gainThreshold) / 300, 0, 1) * 8;
     if (m.protein_g >= 20) why.push('High protein supports weight gain goals');
@@ -1258,12 +1271,12 @@ function deltaBody(product: Product, body: Profile['bodyGoal'], profile?: Profil
   if (body === 'slightly-gain') {
     // Moderate protein bonus for slight weight gain
     d += clamp(m.protein_g / 25, 0, 1) * 6;
-    // BMR-adjusted smaller calorie bonus than aggressive weight gain
+    // TDEE/BMR-adjusted smaller calorie bonus than aggressive weight gain
     const slightGainThreshold = Math.round(calorieThresholds.moderate * 1.1);
     d += clamp((m.energyKcal - slightGainThreshold) / 250, 0, 1) * 5;
     if (m.protein_g >= 15) why.push('Good protein supports gradual weight gain goals');
     
-    // Still want to avoid excessive calories (BMR-adjusted)
+    // Still want to avoid excessive calories (TDEE/BMR-adjusted)
     const excessiveThreshold = Math.round(calorieThresholds.veryHigh * 1.2);
     if (m.energyKcal > excessiveThreshold) {
       d -= 5;
@@ -1273,7 +1286,7 @@ function deltaBody(product: Product, body: Profile['bodyGoal'], profile?: Profil
   
   if (body === 'maintain') {
     d += clamp(m.fiber_g / 6, 0, 1) * 4;
-    // BMR-adjusted penalty for very high calories even for maintenance
+    // TDEE/BMR-adjusted penalty for very high calories even for maintenance
     const maintainThreshold = Math.round(calorieThresholds.veryHigh * 1.3);
     if (m.energyKcal > maintainThreshold) {
       d -= 8;
@@ -1371,7 +1384,7 @@ function deltaLife(product: Product, life: Profile['lifeGoal'], strictness: Prof
   return { d: Math.round(d * mult), why };
 }
 
-// Convert UserGoals and UserProfile to Profile format with BMR calculation
+// Convert UserGoals and UserProfile to Profile format with BMR and TDEE calculation
 function convertUserGoalsToProfile(goals: UserGoals, userProfile?: UserProfile): Profile {
   const bodyGoalMap: Record<string, Profile['bodyGoal']> = {
     'lose-weight': 'lose',
@@ -1405,14 +1418,52 @@ function convertUserGoalsToProfile(goals: UserGoals, userProfile?: UserProfile):
     'clear-skin': 'clear_skin'
   };
   
-  // Calculate BMR if user profile data is available
+  // Map activity level from UserProfile to CalorieInputs format
+  const activityLevelMap: Record<string, ActivityLevel> = {
+    'inactive': 'inactive',
+    'lightly-active': 'lightly-active',
+    'moderately-active': 'moderately-active',
+    'very-active': 'very-active',
+    'extra-active': 'extremely-active'
+  };
+  
+  // Map body goal from UserGoals to CalorieInputs format
+  const bodyGoalForCalorieMap: Record<string, BodyGoal> = {
+    'lose-weight': 'lose-weight',
+    'slightly-lose-weight': 'slightly-lose-weight',
+    'maintain-weight': 'maintain-weight',
+    'slightly-gain-weight': 'slightly-gain-weight',
+    'gain-weight': 'gain-weight'
+  };
+  
+  // Calculate BMR and TDEE if user profile data is available
   let bmr: number | undefined;
+  let tdee: number | undefined;
+  let targetCalories: number | undefined;
   let age: number | undefined;
   
-  if (userProfile?.heightCm && userProfile?.weightKg && userProfile?.sex) {
+  if (userProfile?.heightCm && userProfile?.weightKg && userProfile?.sex && userProfile?.activityLevel && goals.bodyGoal) {
     // Calculate age from birth year if available, otherwise use a default
-    age = 30; // Default age if not provided
+    age = 30; // Default age if not provided - in future this could come from user profile
     
+    const calorieInputs: CalorieInputs = {
+      heightCm: userProfile.heightCm,
+      weightKg: userProfile.weightKg,
+      age,
+      sex: userProfile.sex as Sex,
+      activityLevel: activityLevelMap[userProfile.activityLevel] || 'inactive',
+      bodyGoal: bodyGoalForCalorieMap[goals.bodyGoal] || 'maintain-weight'
+    };
+    
+    const calorieTargets = calculateCalorieTargets(calorieInputs);
+    bmr = calorieTargets.bmr;
+    tdee = calorieTargets.tdee;
+    targetCalories = calorieTargets.targetCalories;
+    
+    console.log(`[Personalized Scoring] BMR: ${bmr}, TDEE: ${tdee}, Target Calories: ${targetCalories}`);
+  } else if (userProfile?.heightCm && userProfile?.weightKg && userProfile?.sex) {
+    // Fallback to just BMR calculation if activity level or body goal is missing
+    age = 30;
     bmr = calculateBMR({
       heightCm: userProfile.heightCm,
       weightKg: userProfile.weightKg,
@@ -1420,7 +1471,7 @@ function convertUserGoalsToProfile(goals: UserGoals, userProfile?: UserProfile):
       sex: userProfile.sex as Sex
     });
     
-    console.log(`[BMR Calculation] Height: ${userProfile.heightCm}cm, Weight: ${userProfile.weightKg}kg, Sex: ${userProfile.sex}, Age: ${age}, BMR: ${bmr}`);
+    console.log(`[Personalized Scoring] BMR only: ${bmr} (missing activity level or body goal for TDEE)`);
   }
   
   return {
@@ -1432,6 +1483,8 @@ function convertUserGoalsToProfile(goals: UserGoals, userProfile?: UserProfile):
     lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier',
     lifeStrictness: (goals as any).lifeStrictness ?? 'neutral',
     bmr,
+    tdee,
+    targetCalories,
     age,
     heightCm: userProfile?.heightCm ?? undefined,
     weightKg: userProfile?.weightKg ?? undefined,
