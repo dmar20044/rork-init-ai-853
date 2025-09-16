@@ -12,14 +12,13 @@ import {
   Dimensions,
   SafeAreaView,
 } from "react-native";
-import { Clock, TrendingUp, Award, AlertCircle, Trash2, Trophy, Target, ShoppingBasket, Settings, BarChart3 } from "lucide-react-native";
+import { Clock, Trophy, Target, BarChart3, Trash2 } from "lucide-react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/colors";
 import { useScanHistory, ScanHistoryItem } from "@/contexts/ScanHistoryContext";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
-
-
+import { LinearGradient } from "expo-linear-gradient";
 
 const getHealthGrade = (score: number): { grade: string; color: string; label: string } => {
   if (score >= 95) return { grade: 'A+', color: '#00FF00', label: 'Excellent' };
@@ -50,23 +49,21 @@ const getGoalAlignmentLabel = (goal: string | null): string => {
 
 const checkGoalAlignment = (item: ScanHistoryItem, healthGoal: string | null): boolean => {
   if (!healthGoal) return false;
-  
   switch (healthGoal) {
     case 'high-protein':
-      return (item.nutrition.protein || 0) >= 10; // 10g+ protein
+      return (item.nutrition.protein ?? 0) >= 10;
     case 'low-sugar':
-      return (item.nutrition.sugar || 0) <= 5; // 5g or less sugar
+      return (item.nutrition.sugar ?? 0) <= 5;
     case 'low-fat':
-      return (item.nutrition.fat || 0) <= 3; // 3g or less fat
+      return (item.nutrition.fat ?? 0) <= 3;
     case 'keto':
-      return (item.nutrition.carbs || 0) <= 5; // 5g or less carbs
+      return (item.nutrition.carbs ?? 0) <= 5;
     default:
-      return getDisplayScore(item) >= 70; // General healthy choice
+      return getDisplayScore(item) >= 70;
   }
 };
 
 const getDisplayScore = (item: ScanHistoryItem): number => {
-  // Use personalized score if available, otherwise fall back to base score
   return item.nutrition.personalScore ?? item.nutrition.healthScore;
 };
 
@@ -74,7 +71,6 @@ const formatDate = (timestamp: number): string => {
   const date = new Date(timestamp);
   const now = new Date();
   const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-  
   if (diffInHours < 24) {
     return `Today, ${date.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
@@ -108,25 +104,25 @@ interface HistoryCardProps {
   index: number;
 }
 
-function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: HistoryCardProps) {
+function HistoryCard({ item, grade, color, label, onDelete, onPress }: HistoryCardProps) {
   const { colors } = useTheme();
   const [translateX] = useState(new Animated.Value(0));
-  const [showDeleteButton, setShowDeleteButton] = useState(false);
+  const [showDeleteButton, setShowDeleteButton] = useState<boolean>(false);
   const screenWidth = Dimensions.get('window').width;
   const deleteButtonWidth = 80;
   const swipeThreshold = deleteButtonWidth * 0.6;
 
   const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: (evt, gestureState) => {
+    onMoveShouldSetPanResponder: (_evt, gestureState) => {
       return Math.abs(gestureState.dx) > 10 && Math.abs(gestureState.dy) < 50;
     },
-    onPanResponderMove: (evt, gestureState) => {
+    onPanResponderMove: (_evt, gestureState) => {
       if (gestureState.dx < 0) {
         const clampedDx = Math.max(gestureState.dx, -deleteButtonWidth);
         translateX.setValue(clampedDx);
       }
     },
-    onPanResponderRelease: (evt, gestureState) => {
+    onPanResponderRelease: (_evt, gestureState) => {
       if (gestureState.dx < -swipeThreshold) {
         setShowDeleteButton(true);
         Animated.spring(translateX, {
@@ -169,7 +165,7 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
           <Text style={[styles.deleteButtonText, { color: '#FDFDFD' }]}>Delete</Text>
         </TouchableOpacity>
       </View>
-      
+
       <Animated.View 
         style={[
           styles.historyCardNoTimeline,
@@ -188,7 +184,7 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
         >
           <View style={styles.cardHeader}>
             <Image source={{ uri: item.imageUri }} style={styles.productThumbnail} />
-            
+
             <View style={styles.productInfo}>
               <Text style={[styles.productName, { color: colors.textPrimary }]}>{item.nutrition.name}</Text>
               <View style={styles.productDetails}>
@@ -201,15 +197,14 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
                 <Text style={[styles.timeText, { color: colors.textTertiary }]}>{formatDate(item.timestamp)}</Text>
               </View>
             </View>
-            
+
             <View style={styles.scoreRing}>
               <View style={[styles.miniScoreRing, { borderColor: color, backgroundColor: colors.surface }]}>
                 <Text style={[styles.miniGradeText, { color }]}>{grade}</Text>
               </View>
             </View>
           </View>
-          
-          {/* Color bar at bottom */}
+
           <View style={[styles.colorBar, { backgroundColor: color }]} />
         </TouchableOpacity>
       </Animated.View>
@@ -218,204 +213,219 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress, index }: Hi
 }
 
 export default function HistoryScreen() {
-  const { history, removeFromHistory, clearHistory, isLoading } = useScanHistory();
+  const { history, removeFromHistory, isLoading } = useScanHistory();
   const { profile } = useUser();
   const { colors } = useTheme();
-  
-  // Calculate stats for last 7 days
+
   const last7Days = useMemo(() => {
     const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     return history.filter(item => item.timestamp >= sevenDaysAgo);
   }, [history]);
-  
+
   const averageScore = last7Days.length > 0 
     ? Math.round(last7Days.reduce((acc, item) => acc + getDisplayScore(item), 0) / last7Days.length)
     : 0;
-    
+
   const averageGrade = getHealthGrade(averageScore);
-  
-  // Find top choice of the week
+
   const topChoice = useMemo(() => {
     if (last7Days.length === 0) return null;
     return last7Days.reduce((best, current) => 
       getDisplayScore(current) > getDisplayScore(best) ? current : best
     );
   }, [last7Days]);
-  
-  // Calculate goal alignment percentage
+
   const goalAlignment = useMemo(() => {
     if (last7Days.length === 0) return 0;
     const alignedScans = last7Days.filter(item => checkGoalAlignment(item, profile.goals.healthGoal));
     return Math.round((alignedScans.length / last7Days.length) * 100);
   }, [last7Days, profile.goals.healthGoal]);
-  
+
+  const Gradient = (
+    <LinearGradient
+      colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+      locations={[0, 0.35, 0.7, 1]}
+      start={{ x: 0.5, y: 0 }}
+      end={{ x: 0.5, y: 1 }}
+      style={StyleSheet.absoluteFill}
+    />
+  );
+
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
-        </View>
-        <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
-          <ActivityIndicator size="large" color={colors.primary} />
-          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading scan history...</Text>
-        </View>
-      </SafeAreaView>
+      <View style={{ flex: 1 }}>
+        {Gradient}
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.brandingHeader}>
+            <Text style={[styles.brandingText, { color: colors.white }]}>InIt AI</Text>
+          </View>
+          <View style={[styles.container, styles.centered]}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.white }]}>Loading scan history...</Text>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
-  
+
   if (history.length === 0) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
-        </View>
-        <View style={[styles.container, styles.centered, { backgroundColor: colors.background }]}>
-          <View style={styles.emptyBasket}>
-            <Image 
-              source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
-              style={styles.emptyImage}
-              resizeMode="contain"
-            />
+      <View style={{ flex: 1 }}>
+        {Gradient}
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.brandingHeader}>
+            <Text style={[styles.brandingText, { color: colors.white }]}>InIt AI</Text>
           </View>
-          <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>No scans yet!</Text>
-          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-            Start your health journey by scanning your first product
-          </Text>
-          <TouchableOpacity 
-            style={[styles.startScanningButton, { backgroundColor: '#4ECDC4' }]}
-            onPress={() => router.push('/(tabs)')}
-          >
-            <Text style={[styles.startScanningText, { color: '#FDFDFD' }]}>Start Scanning</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+          <View style={[styles.container, styles.centered]}>
+            <View style={styles.emptyBasket}>
+              <Image 
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/f6dtp7p9vfrbkhez4wmsh' }}
+                style={styles.emptyImage}
+                resizeMode="contain"
+              />
+            </View>
+            <Text style={[styles.emptyTitle, { color: colors.white }]}>No scans yet!</Text>
+            <Text style={[styles.emptyText, { color: colors.white }]}>Start your health journey by scanning your first product</Text>
+            <TouchableOpacity 
+              style={[styles.startScanningButton, { backgroundColor: '#ffffff', }]}
+              onPress={() => router.push('/(tabs)')}
+            >
+              <Text style={[styles.startScanningText, { color: '#2E294E' }]}>Start Scanning</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} showsVerticalScrollIndicator={false}>
-        <View style={[styles.brandingHeader, { backgroundColor: colors.background }]}>
-          <Text style={[styles.brandingText, { color: colors.primary }]}>InIt AI</Text>
-        </View>
-        
-        {/* New Top Stats Section */}
-        <View style={styles.newStatsContainer}>
-          {/* Avg Score Badge */}
-          <View style={[styles.avgScoreBadge, { backgroundColor: colors.surface }]}>
-            <View style={styles.ribbonContainer}>
-              <View style={[styles.ribbon, { backgroundColor: averageGrade.color }]}>
-                <Text style={[styles.ribbonGrade, { color: colors.white }]}>{averageGrade.grade}</Text>
-              </View>
-              <View style={styles.ribbonTail} />
-            </View>
-            <Text style={[styles.avgScoreLabel, { color: colors.textSecondary }]}>7-Day Average</Text>
-            <Text style={[styles.avgScoreValue, { color: colors.textPrimary }]}>{averageScore}</Text>
+    <View style={{ flex: 1 }}>
+      {Gradient}
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+          <View style={styles.brandingHeader}>
+            <Text style={[styles.brandingText, { color: colors.white }]}>InIt AI</Text>
           </View>
-          
-          {/* Top Choice of the Week */}
-          <View style={[styles.topChoiceCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.topChoiceHeader}>
-              <Trophy size={16} color="#4ECDC4" />
-              <Text style={[styles.topChoiceTitle, { color: colors.textPrimary }]}>Top Choice</Text>
+
+          <View style={styles.newStatsContainer}>
+            <View style={[styles.avgScoreBadge, { backgroundColor: colors.surface }]}
+              testID="avg-score-badge"
+            >
+              <View style={styles.ribbonContainer}>
+                <View style={[styles.ribbon, { backgroundColor: averageGrade.color }]}>
+                  <Text style={[styles.ribbonGrade, { color: colors.white }]}>{averageGrade.grade}</Text>
+                </View>
+                <View style={styles.ribbonTail} />
+              </View>
+              <Text style={[styles.avgScoreLabel, { color: colors.textSecondary }]}>7-Day Average</Text>
+              <Text style={[styles.avgScoreValue, { color: colors.textPrimary }]}>{averageScore}</Text>
             </View>
-            {topChoice ? (
-              <View style={styles.topChoiceContent}>
-                <Image source={{ uri: topChoice.imageUri }} style={styles.topChoiceThumbnail} />
-                <View style={styles.topChoiceInfo}>
-                  <Text style={[styles.topChoiceName, { color: colors.textPrimary }]} numberOfLines={2}>{topChoice.nutrition.name}</Text>
-                  <Text style={[styles.topChoiceScore, { color: colors.primary }]}>{getDisplayScore(topChoice)}</Text>
+
+            <View style={[styles.topChoiceCard, { backgroundColor: colors.surface }]}
+              testID="top-choice-card"
+            >
+              <View style={styles.topChoiceHeader}>
+                <Trophy size={16} color="#4ECDC4" />
+                <Text style={[styles.topChoiceTitle, { color: colors.textPrimary }]}>Top Choice</Text>
+              </View>
+              {topChoice ? (
+                <View style={styles.topChoiceContent}>
+                  <Image source={{ uri: topChoice.imageUri }} style={styles.topChoiceThumbnail} />
+                  <View style={styles.topChoiceInfo}>
+                    <Text style={[styles.topChoiceName, { color: colors.textPrimary }]} numberOfLines={2}>{topChoice.nutrition.name}</Text>
+                    <Text style={[styles.topChoiceScore, { color: colors.primary }]}>{getDisplayScore(topChoice)}</Text>
+                  </View>
+                </View>
+              ) : (
+                <Text style={[styles.topChoicePlaceholder, { color: colors.textSecondary }]}>Make your first scan!</Text>
+              )}
+            </View>
+
+            <View style={[styles.goalAlignmentCard, { backgroundColor: colors.surface }]}
+              testID="goal-alignment-card"
+            >
+              <View style={styles.goalAlignmentHeader}>
+                <Target size={16} color="#4ECDC4" />
+                <Text style={[styles.goalAlignmentTitle, { color: colors.textPrimary }]}>Goal Alignment</Text>
+              </View>
+              <View style={styles.progressRingContainer}>
+                <View style={[styles.progressRing, { backgroundColor: colors.textTertiary }]}>
+                  <View 
+                    style={[
+                      styles.progressRingFill,
+                      {
+                        transform: [{ rotate: `${(goalAlignment / 100) * 360}deg` }],
+                        backgroundColor: goalAlignment >= 70 ? '#4ECDC4' : goalAlignment >= 40 ? '#FF6B81' : '#2E294E',
+                      }
+                    ]}
+                  />
+                  <View style={[styles.progressRingInner, { backgroundColor: colors.surface }]}>
+                    <Text style={[styles.progressPercentage, { color: colors.textPrimary }]}>{goalAlignment}%</Text>
+                  </View>
                 </View>
               </View>
-            ) : (
-              <Text style={[styles.topChoicePlaceholder, { color: colors.textSecondary }]}>Make your first scan!</Text>
-            )}
-          </View>
-          
-          {/* Goal Alignment */}
-          <View style={[styles.goalAlignmentCard, { backgroundColor: colors.surface }]}>
-            <View style={styles.goalAlignmentHeader}>
-              <Target size={16} color="#4ECDC4" />
-              <Text style={[styles.goalAlignmentTitle, { color: colors.textPrimary }]}>Goal Alignment</Text>
+              <Text style={[styles.goalAlignmentLabel, { color: colors.textSecondary }]}>{getGoalAlignmentLabel(profile.goals.healthGoal)}</Text>
             </View>
-            <View style={styles.progressRingContainer}>
-              <View style={[styles.progressRing, { backgroundColor: colors.textTertiary }]}>
-                <View 
-                  style={[
-                    styles.progressRingFill,
-                    {
-                      transform: [{ rotate: `${(goalAlignment / 100) * 360}deg` }],
-                      backgroundColor: goalAlignment >= 70 ? '#4ECDC4' : goalAlignment >= 40 ? '#FF6B81' : '#2E294E',
-                    }
-                  ]}
+          </View>
+
+          <View style={styles.historyContainer}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleContainer}>
+                <Text style={[styles.sectionTitle, { color: '#1E1E1E' }]}>Recent Scans</Text>
+                <View style={[styles.sectionAccent, { backgroundColor: '#FF6B81' }]} />
+              </View>
+              {history.length > 0 && (
+                <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: '#4ECDC4' + '20' }]}
+                  testID="view-full-insights"
+                >
+                  <BarChart3 size={16} color="#4ECDC4" />
+                  <Text style={[styles.manageButtonText, { color: '#4ECDC4' }]}>View Full Insights</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {history.map((item, index) => {
+              const displayScore = getDisplayScore(item);
+              const { grade, color } = getHealthGrade(displayScore);
+              return (
+                <HistoryCard
+                  key={item.id}
+                  item={item}
+                  grade={grade}
+                  color={color}
+                  label={''}
+                  index={index}
+                  onDelete={() => removeFromHistory(item.id)}
+                  onPress={() => router.push(`/nutrition-results?itemId=${item.id}`)}
                 />
-                <View style={[styles.progressRingInner, { backgroundColor: colors.surface }]}>
-                  <Text style={[styles.progressPercentage, { color: colors.textPrimary }]}>{goalAlignment}%</Text>
-                </View>
-              </View>
-            </View>
-            <Text style={[styles.goalAlignmentLabel, { color: colors.textSecondary }]}>{getGoalAlignmentLabel(profile.goals.healthGoal)}</Text>
+              );
+            })}
           </View>
-        </View>
-
-        {/* Recent Scans with Timeline */}
-        <View style={styles.historyContainer}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionTitleContainer}>
-              <Text style={[styles.sectionTitle, { color: '#1E1E1E' }]}>Recent Scans</Text>
-              <View style={[styles.sectionAccent, { backgroundColor: '#FF6B81' }]} />
-            </View>
-            {history.length > 0 && (
-              <TouchableOpacity onPress={() => router.push('/insights')} style={[styles.manageButton, { backgroundColor: '#4ECDC4' + '20' }]}>
-                <BarChart3 size={16} color="#4ECDC4" />
-                <Text style={[styles.manageButtonText, { color: '#4ECDC4' }]}>View Full Insights</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-          
-
-          
-          {history.map((item, index) => {
-            const displayScore = getDisplayScore(item);
-            const { grade, color, label } = getHealthGrade(displayScore);
-            return (
-              <HistoryCard
-                key={item.id}
-                item={item}
-                grade={grade}
-                color={color}
-                label={label}
-                index={index}
-                onDelete={() => removeFromHistory(item.id)}
-                onPress={() => router.push(`/nutrition-results?itemId=${item.id}`)}
-              />
-            );
-          })}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: 'transparent',
   },
   brandingHeader: {
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: 'transparent',
   },
   brandingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
   },
   statsContainer: {
     flexDirection: "row",
@@ -426,18 +436,18 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
     borderRadius: 12,
     padding: 16,
     marginHorizontal: 4,
     alignItems: "center",
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: '#D9D9D9',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#2E294E20', // Deep Indigo with opacity
+    borderColor: '#2E294E20',
   },
   statIcon: {
     width: 48,
@@ -450,12 +460,12 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 24,
     fontWeight: "bold",
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
   },
   historyContainer: {
     padding: 16,
@@ -463,7 +473,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
     marginBottom: 16,
   },
   historyCardContainer: {
@@ -482,16 +492,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   historyCardNoTimeline: {
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
     borderRadius: 12,
     padding: 16,
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: '#D9D9D9',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#2E294E15', // Deep Indigo with opacity
+    borderColor: '#2E294E15',
   },
   deleteButtonContainer: {
     position: 'absolute',
@@ -578,13 +588,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 16,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
     textAlign: 'center',
     paddingHorizontal: 32,
     lineHeight: 22,
@@ -604,7 +614,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: '#FF6B81', // Retro Pink
+    backgroundColor: '#FF6B81',
   },
   manageButton: {
     flexDirection: 'row',
@@ -612,11 +622,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
-    backgroundColor: '#4ECDC4' + '20', // Neon Turquoise with opacity
+    backgroundColor: '#4ECDC4' + '20',
   },
   manageButtonText: {
     fontSize: 12,
-    color: '#4ECDC4', // Neon Turquoise
+    color: '#4ECDC4',
     marginLeft: 4,
     fontWeight: '600',
   },
@@ -646,7 +656,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   deleteButton: {
-    backgroundColor: '#FF6B81', // Retro Pink
+    backgroundColor: '#FF6B81',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -656,7 +666,7 @@ const styles = StyleSheet.create({
     minHeight: 80,
   },
   deleteButtonText: {
-    color: '#FDFDFD', // Cream White
+    color: '#FDFDFD',
     fontSize: 12,
     fontWeight: '600',
     marginTop: 4,
@@ -668,29 +678,25 @@ const styles = StyleSheet.create({
   cardContent: {
     flex: 1,
   },
-  
-  // New styles for redesigned history
   newStatsContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 16,
     gap: 12,
   },
-  
-  // Avg Score Badge styles
   avgScoreBadge: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: '#D9D9D9',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#2E294E20', // Deep Indigo with opacity
+    borderColor: '#2E294E20',
   },
   ribbonContainer: {
     position: 'relative',
@@ -703,7 +709,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   ribbonGrade: {
-    color: '#FDFDFD', // Cream White
+    color: '#FDFDFD',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -720,32 +726,30 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: '#D9D9D9', // Soft Gray
+    borderTopColor: '#D9D9D9',
   },
   avgScoreLabel: {
     fontSize: 12,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
     marginBottom: 4,
   },
   avgScoreValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
   },
-  
-  // Top Choice Card styles
   topChoiceCard: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: '#D9D9D9',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#FF6B8120', // Retro Pink with opacity
+    borderColor: '#FF6B8120',
   },
   topChoiceHeader: {
     flexDirection: 'row',
@@ -756,7 +760,7 @@ const styles = StyleSheet.create({
   topChoiceTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
   },
   topChoiceContent: {
     flexDirection: 'row',
@@ -774,36 +778,34 @@ const styles = StyleSheet.create({
   topChoiceName: {
     fontSize: 11,
     fontWeight: '500',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
     marginBottom: 2,
   },
   topChoiceScore: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#4ECDC4', // Neon Turquoise
+    color: '#4ECDC4',
   },
   topChoicePlaceholder: {
     fontSize: 11,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
   },
-  
-  // Goal Alignment Card styles
   goalAlignmentCard: {
     flex: 1,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
     borderRadius: 16,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#D9D9D9', // Soft Gray
+    shadowColor: '#D9D9D9',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#4ECDC420', // Neon Turquoise with opacity
+    borderColor: '#4ECDC420',
   },
   goalAlignmentHeader: {
     flexDirection: 'row',
@@ -814,7 +816,7 @@ const styles = StyleSheet.create({
   goalAlignmentTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
   },
   progressRingContainer: {
     marginBottom: 8,
@@ -823,7 +825,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#D9D9D9', // Soft Gray
+    backgroundColor: '#D9D9D9',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -839,7 +841,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1,
@@ -847,17 +849,13 @@ const styles = StyleSheet.create({
   progressPercentage: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
   },
   goalAlignmentLabel: {
     fontSize: 10,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
     textAlign: 'center',
   },
-  
-
-  
-  // New card styles
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -875,7 +873,7 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 15,
     fontWeight: '600',
-    color: '#1E1E1E', // Charcoal Black
+    color: '#1E1E1E',
     marginBottom: 4,
   },
   productDetails: {
@@ -886,11 +884,11 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 12,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
   },
   detailSeparator: {
     fontSize: 12,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
   },
   timeRow: {
     flexDirection: 'row',
@@ -899,7 +897,7 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 10,
-    color: '#5F5F5F', // Slate Gray
+    color: '#5F5F5F',
   },
   scoreRing: {
     alignItems: 'center',
@@ -911,7 +909,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FDFDFD', // Cream White
+    backgroundColor: '#FDFDFD',
   },
   miniGradeText: {
     fontSize: 14,
@@ -922,8 +920,6 @@ const styles = StyleSheet.create({
     borderRadius: 1.5,
     marginTop: 8,
   },
-  
-  // Empty state styles
   emptyBasket: {
     marginBottom: 16,
   },
@@ -932,14 +928,14 @@ const styles = StyleSheet.create({
     height: 120,
   },
   startScanningButton: {
-    backgroundColor: '#4ECDC4', // Neon Turquoise
+    backgroundColor: '#4ECDC4',
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 24,
     marginTop: 16,
   },
   startScanningText: {
-    color: '#FDFDFD', // Cream White
+    color: '#FDFDFD',
     fontSize: 16,
     fontWeight: '600',
   },
