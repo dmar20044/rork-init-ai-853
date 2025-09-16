@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserGoals } from '@/contexts/UserContext';
+import { UserGoals, UserProfile } from '@/contexts/UserContext';
 import { trpcClient } from '@/lib/trpc';
+import { calculateBMR, type Sex } from '@/utils/calorie';
 
 export interface NutritionInfo {
   name: string;
@@ -979,7 +980,7 @@ export function testFoodScoring() {
 }
 
 // PERSONALIZATION SYSTEM
-// Based on user goals, adjust the base score to create a personalized score
+// Based on user goals and BMR, adjust the base score to create a personalized score
 
 interface Product {
   name: string;
@@ -1009,6 +1010,12 @@ interface Profile {
   dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   lifeGoal: 'healthier' | 'energy_mood' | 'body_confidence' | 'clear_skin';
   lifeStrictness?: 'not-strict' | 'neutral' | 'very-strict';
+  // BMR-based personalization
+  bmr?: number;
+  age?: number;
+  heightCm?: number;
+  weightKg?: number;
+  sex?: Sex;
 }
 
 const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
@@ -1164,20 +1171,38 @@ function fitsDiet(
   return { d: bonus, why };
 }
 
-function deltaBody(product: Product, body: Profile['bodyGoal']) {
+function deltaBody(product: Product, body: Profile['bodyGoal'], profile?: Profile) {
   const m = product.macros;
   let d = 0;
   const why: string[] = [];
   
+  // Calculate BMR-based calorie thresholds if user data is available
+  let calorieThresholds = {
+    veryHigh: 400,
+    high: 250,
+    moderate: 150
+  };
+  
+  if (profile?.bmr) {
+    // Adjust thresholds based on BMR - higher BMR allows more calories
+    const bmrFactor = profile.bmr / 1500; // 1500 is average BMR
+    calorieThresholds = {
+      veryHigh: Math.round(400 * bmrFactor),
+      high: Math.round(250 * bmrFactor),
+      moderate: Math.round(150 * bmrFactor)
+    };
+    console.log(`[BMR Personalization] BMR: ${profile.bmr}, Adjusted thresholds:`, calorieThresholds);
+  }
+  
   if (body === 'lose') {
-    // Stricter calorie penalties for weight loss
-    if (m.energyKcal > 400) {
+    // BMR-adjusted calorie penalties for weight loss
+    if (m.energyKcal > calorieThresholds.veryHigh) {
       d -= 20; // Much harsher penalty
       why.push(`Very high calories (${m.energyKcal}) conflict with weight loss goal`);
-    } else if (m.energyKcal > 250) {
+    } else if (m.energyKcal > calorieThresholds.high) {
       d -= 10;
       why.push(`High calories (${m.energyKcal}) may hinder weight loss`);
-    } else {
+    } else if (m.energyKcal <= calorieThresholds.moderate) {
       d += 8; // Bonus for low calories
       why.push('Good calorie level for weight loss');
     }
@@ -1194,11 +1219,16 @@ function deltaBody(product: Product, body: Profile['bodyGoal']) {
   }
   
   if (body === 'slightly-lose') {
-    // Moderate calorie penalties for slight weight loss
-    if (m.energyKcal > 350) {
+    // BMR-adjusted moderate calorie penalties for slight weight loss
+    const slightlyLoseThresholds = {
+      high: Math.round((calorieThresholds.veryHigh + calorieThresholds.high) / 2),
+      moderate: Math.round((calorieThresholds.high + calorieThresholds.moderate) / 2)
+    };
+    
+    if (m.energyKcal > slightlyLoseThresholds.high) {
       d -= 12; // Moderate penalty
       why.push(`High calories (${m.energyKcal}) may slow gradual weight loss`);
-    } else if (m.energyKcal > 200) {
+    } else if (m.energyKcal > slightlyLoseThresholds.moderate) {
       d -= 5;
       why.push(`Moderate calories (${m.energyKcal}) for gradual weight loss`);
     } else {
@@ -1219,19 +1249,23 @@ function deltaBody(product: Product, body: Profile['bodyGoal']) {
   
   if (body === 'gain') {
     d += clamp(m.protein_g / 25, 0, 1) * 10; // Increased protein bonus
-    d += clamp((m.energyKcal - 200) / 300, 0, 1) * 8;
+    // BMR-adjusted calorie bonus for weight gain
+    const gainThreshold = Math.round(calorieThresholds.moderate * 1.3);
+    d += clamp((m.energyKcal - gainThreshold) / 300, 0, 1) * 8;
     if (m.protein_g >= 20) why.push('High protein supports weight gain goals');
   }
   
   if (body === 'slightly-gain') {
     // Moderate protein bonus for slight weight gain
     d += clamp(m.protein_g / 25, 0, 1) * 6;
-    // Smaller calorie bonus than aggressive weight gain
-    d += clamp((m.energyKcal - 150) / 250, 0, 1) * 5;
+    // BMR-adjusted smaller calorie bonus than aggressive weight gain
+    const slightGainThreshold = Math.round(calorieThresholds.moderate * 1.1);
+    d += clamp((m.energyKcal - slightGainThreshold) / 250, 0, 1) * 5;
     if (m.protein_g >= 15) why.push('Good protein supports gradual weight gain goals');
     
-    // Still want to avoid excessive calories
-    if (m.energyKcal > 450) {
+    // Still want to avoid excessive calories (BMR-adjusted)
+    const excessiveThreshold = Math.round(calorieThresholds.veryHigh * 1.2);
+    if (m.energyKcal > excessiveThreshold) {
       d -= 5;
       why.push('Very high calories may lead to excessive weight gain');
     }
@@ -1239,8 +1273,9 @@ function deltaBody(product: Product, body: Profile['bodyGoal']) {
   
   if (body === 'maintain') {
     d += clamp(m.fiber_g / 6, 0, 1) * 4;
-    // Penalty for very high calories even for maintenance
-    if (m.energyKcal > 500) {
+    // BMR-adjusted penalty for very high calories even for maintenance
+    const maintainThreshold = Math.round(calorieThresholds.veryHigh * 1.3);
+    if (m.energyKcal > maintainThreshold) {
       d -= 8;
       why.push('Very high calories even for maintenance');
     }
@@ -1336,8 +1371,8 @@ function deltaLife(product: Product, life: Profile['lifeGoal'], strictness: Prof
   return { d: Math.round(d * mult), why };
 }
 
-// Convert UserGoals to Profile format
-function convertUserGoalsToProfile(goals: UserGoals): Profile {
+// Convert UserGoals and UserProfile to Profile format with BMR calculation
+function convertUserGoalsToProfile(goals: UserGoals, userProfile?: UserProfile): Profile {
   const bodyGoalMap: Record<string, Profile['bodyGoal']> = {
     'lose-weight': 'lose',
     'slightly-lose-weight': 'slightly-lose',
@@ -1370,6 +1405,24 @@ function convertUserGoalsToProfile(goals: UserGoals): Profile {
     'clear-skin': 'clear_skin'
   };
   
+  // Calculate BMR if user profile data is available
+  let bmr: number | undefined;
+  let age: number | undefined;
+  
+  if (userProfile?.heightCm && userProfile?.weightKg && userProfile?.sex) {
+    // Calculate age from birth year if available, otherwise use a default
+    age = 30; // Default age if not provided
+    
+    bmr = calculateBMR({
+      heightCm: userProfile.heightCm,
+      weightKg: userProfile.weightKg,
+      age,
+      sex: userProfile.sex as Sex
+    });
+    
+    console.log(`[BMR Calculation] Height: ${userProfile.heightCm}cm, Weight: ${userProfile.weightKg}kg, Sex: ${userProfile.sex}, Age: ${age}, BMR: ${bmr}`);
+  }
+  
   return {
     bodyGoal: bodyGoalMap[goals.bodyGoal || ''] || 'maintain',
     healthFocus: healthGoalMap[goals.healthGoal || ''] || 'balanced',
@@ -1378,6 +1431,11 @@ function convertUserGoalsToProfile(goals: UserGoals): Profile {
     dietStrictness: (goals as any).dietStrictness ?? 'neutral',
     lifeGoal: lifeGoalMap[goals.lifeGoal || ''] || 'healthier',
     lifeStrictness: (goals as any).lifeStrictness ?? 'neutral',
+    bmr,
+    age,
+    heightCm: userProfile?.heightCm ?? undefined,
+    weightKg: userProfile?.weightKg ?? undefined,
+    sex: userProfile?.sex as Sex,
   };
 }
 
@@ -1404,16 +1462,16 @@ function convertNutritionInfoToProduct(nutrition: NutritionInfo): Product {
   };
 }
 
-export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals) {
+export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals, userProfile?: UserProfile) {
   const product = convertNutritionInfoToProduct(nutritionInfo);
-  const profile = convertUserGoalsToProfile(userGoals);
+  const profile = convertUserGoalsToProfile(userGoals, userProfile);
 
   const reasons: string[] = [];
 
   const { d: h, why: wh } = deltaHealth(product, profile.healthFocus, profile.healthStrictness);
   const dietResult = fitsDiet(product, profile.dietPreference, profile.dietStrictness ?? 'neutral');
   const { d: df, why: wf, forceZero } = dietResult;
-  const { d: b, why: wb } = deltaBody(product, profile.bodyGoal);
+  const { d: b, why: wb } = deltaBody(product, profile.bodyGoal, profile);
   const { d: l, why: wl } = deltaLife(product, profile.lifeGoal, profile.lifeStrictness ?? 'neutral');
 
   const base = clamp(product.baseScore, 0, 100);
@@ -1479,10 +1537,11 @@ export function personalScore(nutritionInfo: NutritionInfo, userGoals: UserGoals
   };
 }
 
-// Enhanced analyze function that includes personalization
+// Enhanced analyze function that includes BMR-based personalization
 export async function analyzeFoodImageWithPersonalization(
   imageUri: string, 
-  userGoals?: UserGoals
+  userGoals?: UserGoals,
+  userProfile?: UserProfile
 ): Promise<FoodAnalysisResult> {
   try {
     console.log('Starting personalized food analysis for image:', imageUri);
@@ -1503,9 +1562,9 @@ export async function analyzeFoodImageWithPersonalization(
       const cachedData = analysisCache.get(imageHash)!;
       console.log('Returning cached data for:', cachedData.name);
       
-      // Apply personalization to cached data if user goals provided
+      // Apply BMR-based personalization to cached data if user goals provided
       if (userGoals) {
-        const personalResult = personalScore(cachedData, userGoals);
+        const personalResult = personalScore(cachedData, userGoals, userProfile);
         const enhancedData: NutritionInfo = {
           ...cachedData,
           personalScore: personalResult.score,
@@ -1632,9 +1691,9 @@ export async function analyzeFoodImageWithPersonalization(
         }
       };
       
-      // Apply personalization to fallback data if user goals provided
+      // Apply BMR-based personalization to fallback data if user goals provided
       if (userGoals) {
-        const personalResult = personalScore(fallbackData, userGoals);
+        const personalResult = personalScore(fallbackData, userGoals, userProfile);
         fallbackData.personalScore = personalResult.score;
         fallbackData.personalReasons = personalResult.reasons;
         fallbackData.personalGrade = personalResult.personalGrade;
