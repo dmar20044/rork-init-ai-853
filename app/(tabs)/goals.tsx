@@ -12,6 +12,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
+import { LinearGradient } from 'expo-linear-gradient';
 import { User, Target, Trophy, ChevronRight, Settings, Bell, Heart, Zap, TrendingUp, X, UserCircle, LogOut, Flame, Calendar, Edit3, Moon, Sun, Shield, Camera, Image as ImageIcon, AlertTriangle, Plus } from "lucide-react-native";
 import { format, getDay } from 'date-fns';
 
@@ -294,11 +295,23 @@ export default function GoalsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-      <View style={styles.brandingHeader}>
-        <Text style={styles.brandingText}>InIt AI</Text>
-      </View>
+    <View style={styles.safeArea}>
+      <LinearGradient
+        colors={[
+          '#2E294E', // Deep Indigo at top
+          '#4ECDC4', // Neon Turquoise
+          '#FF6B81', // Retro Pink in middle
+          '#FF6B3B', // Warm Sunset Orange
+          '#1E1E1E'  // Charcoal Black at bottom
+        ]}
+        locations={[0, 0.25, 0.5, 0.75, 1]}
+        style={styles.gradientBackground}
+      >
+        <SafeAreaView style={styles.innerSafeArea}>
+          <ScrollView style={styles.container}>
+          <View style={styles.brandingHeader}>
+            <Text style={styles.brandingText}>InIt AI</Text>
+          </View>
       
       {/* Hero Profile Card */}
       <TouchableOpacity 
@@ -620,7 +633,9 @@ export default function GoalsScreen() {
 
 
 
-      </ScrollView>
+          </ScrollView>
+        </SafeAreaView>
+      </LinearGradient>
       
       {/* Goal Selection Modal */}
       {selectedGoalType && (
@@ -1684,46 +1699,52 @@ export default function GoalsScreen() {
       </Modal>
       
 
-    </SafeAreaView>
+    </View>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  gradientBackground: {
+    flex: 1,
+  },
+  innerSafeArea: {
+    flex: 1,
   },
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   brandingHeader: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 8,
-    backgroundColor: colors.background,
   },
   brandingText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: colors.textPrimary,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   
   // Hero Profile Card
   heroCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     marginHorizontal: 20,
     marginVertical: 16,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: colors.textSecondary,
+    shadowColor: 'rgba(0, 0, 0, 0.3)',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.25,
     shadowRadius: 16,
     elevation: 12,
     position: 'relative',
-    borderWidth: 1,
-    borderColor: '#4ECDC4', // Neon Turquoise outline
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   heroBackground: {
     position: 'absolute',
@@ -1731,8 +1752,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     left: 0,
     right: 0,
     height: '100%',
-    backgroundColor: colors.surface,
-    opacity: 0.8,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
   },
   heroContent: {
     flexDirection: 'row',
@@ -2084,23 +2104,26 @@ const createStyles = (colors: any) => StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    color: '#FF6B81', // Retro Pink for section titles
+    color: '#FFFFFF',
     marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
   },
   goalCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 16,
     padding: 20,
     marginBottom: 12,
-    shadowColor: colors.textSecondary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 1,
-    borderColor: '#2E294E', // Deep Indigo outline
+    shadowColor: 'rgba(0, 0, 0, 0.3)',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   goalIcon: {
     width: 56,
@@ -2312,17 +2335,17 @@ const createStyles = (colors: any) => StyleSheet.create({
   streakCountContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
-    shadowColor: colors.textSecondary,
+    shadowColor: 'rgba(0, 0, 0, 0.3)',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: '#4ECDC4', // Neon Turquoise
+    elevation: 4,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   flameIconContainer: {
     marginRight: 6,
@@ -2333,16 +2356,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textPrimary,
   },
   calAiStreakCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 20,
     padding: 20,
-    shadowColor: colors.textSecondary,
+    shadowColor: 'rgba(0, 0, 0, 0.3)',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 8,
-    borderWidth: 1,
-    borderColor: '#4ECDC4', // Neon Turquoise outline
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   calAiDaysContainer: {
     flexDirection: 'row',
