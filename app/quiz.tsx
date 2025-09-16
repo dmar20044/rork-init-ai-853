@@ -643,14 +643,14 @@ function QuizScreen() {
             console.log('[Quiz] Saving biometrics & calorie targets to Supabase');
             const sex = answers.sex === 'male' || answers.sex === 'female' ? answers.sex : 'female';
             const bodyGoal = (answers.bodyGoal as any) ?? 'maintain-weight';
-            const { calculateCalorieTargets } = await import('@/utils/calorie');
+            const { calculateCalorieTargets, normalizeActivityLevel, normalizeBodyGoal } = await import('@/utils/calorie');
             const targets = calculateCalorieTargets({
-              heightCm: answers.heightCm,
-              weightKg: answers.weightKg,
-              age: answers.ageYears,
+              height_cm: answers.heightCm ?? 0,
+              weight_kg: answers.weightKg ?? 0,
+              age: answers.ageYears ?? 0,
               sex,
-              activityLevel: answers.activityLevel,
-              bodyGoal,
+              activity_level: normalizeActivityLevel(answers.activityLevel ?? 'inactive'),
+              body_goal: normalizeBodyGoal(bodyGoal ?? 'maintain'),
             });
             await updateUserProfile(userId, {
               dietary_preferences: {
@@ -664,7 +664,7 @@ function QuizScreen() {
                 calorie_targets: {
                   bmr: targets.bmr,
                   tdee: targets.tdee,
-                  target_calories: targets.targetCalories,
+                  target_calories: targets.daily_calorie_target,
                   activity_factor: targets.activityFactor,
                   goal_adjustment: targets.goalAdjustment,
                 }
