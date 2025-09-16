@@ -197,6 +197,30 @@ export const [UserProvider, useUser] = createContextHook(() => {
             
             const dietaryPrefs = supabaseProfile.dietary_preferences || [];
             const biometricsPref = Array.isArray(dietaryPrefs) ? null : (dietaryPrefs?.biometrics ?? null);
+            const calorieTargetsPref = Array.isArray(dietaryPrefs) ? null : (dietaryPrefs?.calorie_targets ?? null);
+            
+            // Extract calorie targets from dietary_preferences or individual columns
+            let calorieTargets: CalorieTargets | null = null;
+            if (calorieTargetsPref) {
+              console.log('[UserContext] Found calorie targets in dietary_preferences:', calorieTargetsPref);
+              calorieTargets = {
+                bmr: calorieTargetsPref.bmr || 0,
+                tdee: calorieTargetsPref.tdee || 0,
+                dailyCalorieTarget: calorieTargetsPref.target_calories || 0,
+                activityFactor: calorieTargetsPref.activity_factor || 1.2,
+                goalAdjustment: calorieTargetsPref.goal_adjustment || 0,
+              };
+            } else if (supabaseProfile.bmr && supabaseProfile.tdee && supabaseProfile.daily_calorie_target) {
+              console.log('[UserContext] Found calorie targets in individual columns');
+              calorieTargets = {
+                bmr: parseFloat(supabaseProfile.bmr.toString()),
+                tdee: parseFloat(supabaseProfile.tdee.toString()),
+                dailyCalorieTarget: parseFloat(supabaseProfile.daily_calorie_target.toString()),
+                activityFactor: 1.2, // Default value since it's not stored in individual columns
+                goalAdjustment: 0, // Default value since it's not stored in individual columns
+              };
+            }
+            
             const profileFromSupabase: UserProfile = {
               name: supabaseProfile.name,
               email: supabaseProfile.email || user.email || '',
@@ -216,6 +240,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
               weightKg: (supabaseProfile as any).weight_kg ?? biometricsPref?.weight_kg ?? null,
               sex: (supabaseProfile as any).sex ?? biometricsPref?.sex ?? null,
               activityLevel: biometricsPref?.activity_level ?? null,
+              calorieTargets,
               currentStreak: supabaseProfile.current_streak || 0,
               longestStreak: supabaseProfile.longest_streak || 0,
               lastScanDate: supabaseProfile.last_scan_date || null,
