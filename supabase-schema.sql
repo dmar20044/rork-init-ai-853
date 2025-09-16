@@ -2,13 +2,23 @@
 -- Run these SQL commands in your Supabase SQL editor
 -- IMPORTANT: Make sure to run this entire script to create all tables and policies
 
--- Activity level is stored in dietary_preferences JSONB as:
+-- Personal details are stored in both individual columns and dietary_preferences JSONB:
+-- Individual columns: height_cm, weight_kg, sex, age, activity_level, bmr, tdee, daily_calorie_target
+-- JSONB structure in dietary_preferences:
 -- {
 --   "biometrics": {
 --     "height_cm": 175,
 --     "weight_kg": 70,
+--     "age_years": 28,
 --     "sex": "male",
 --     "activity_level": "moderately-active"
+--   },
+--   "calorie_targets": {
+--     "bmr": 1800.5,
+--     "tdee": 2790.8,
+--     "target_calories": 2290.8,
+--     "activity_factor": 1.55,
+--     "goal_adjustment": -500
 --   }
 -- }
 
@@ -27,7 +37,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
     life_goal TEXT,
     -- New: store lists like allergies (peanuts) and preferences (no seed oils)
     dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
-    dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+    dietary_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
     height_cm DECIMAL(5,1),
     weight_kg DECIMAL(5,1),
     sex TEXT CHECK (sex IN ('male', 'female', 'other')),
@@ -60,7 +70,7 @@ CREATE TABLE IF NOT EXISTS public.quiz_responses (
     life_goal TEXT NOT NULL,
     -- New: capture responses at submission time
     dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
-    dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+    dietary_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
     height_cm DECIMAL(5,1),
     weight_kg DECIMAL(5,1),
     sex TEXT CHECK (sex IN ('male', 'female', 'other')),
@@ -78,7 +88,7 @@ CREATE TABLE IF NOT EXISTS public.quiz_responses (
 -- Backfill-safe: ensure columns exist if tables were created before
 ALTER TABLE public.user_profiles
   ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS health_strictness TEXT DEFAULT 'neutral',
   ADD COLUMN IF NOT EXISTS diet_strictness TEXT DEFAULT 'neutral',
   ADD COLUMN IF NOT EXISTS life_strictness TEXT DEFAULT 'neutral',
@@ -94,7 +104,7 @@ ALTER TABLE public.user_profiles
 
 ALTER TABLE public.quiz_responses
   ADD COLUMN IF NOT EXISTS dietary_restrictions JSONB NOT NULL DEFAULT '[]'::jsonb,
-  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS dietary_preferences JSONB NOT NULL DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS height_cm DECIMAL(5,1),
   ADD COLUMN IF NOT EXISTS weight_kg DECIMAL(5,1),
   ADD COLUMN IF NOT EXISTS sex TEXT CHECK (sex IN ('male', 'female', 'other')),
