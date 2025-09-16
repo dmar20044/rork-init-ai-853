@@ -647,23 +647,57 @@ function QuizScreen() {
           activityLevel: activityForProfile as any,
         });
       }
+      // Calculate and save calorie targets to local profile
       if (answers.heightCm && answers.weightKg && answers.sex && answers.activityLevel && answers.ageYears) {
         try {
+          console.log('[Quiz] Calculating BMR, TDEE, and daily calorie target');
+          const sex = answers.sex === 'male' || answers.sex === 'female' ? answers.sex : 'female';
+          const bodyGoal = (answers.bodyGoal as any) ?? 'maintain-weight';
+          const { calculateCalorieTargets, normalizeActivityLevel, normalizeBodyGoal, normalizeGoalSeriousness } = await import('@/utils/calorie');
+          
+          // Map strictness levels to goal seriousness
+          const healthStrictness = answers.healthStrictness || 'neutral';
+          const goalSeriousness = normalizeGoalSeriousness(
+            healthStrictness === 'not-strict' ? 'not-too-serious' :
+            healthStrictness === 'very-strict' ? 'very-serious' : 'standard'
+          );
+          
+          const targets = calculateCalorieTargets({
+            height_cm: answers.heightCm ?? 0,
+            weight_kg: answers.weightKg ?? 0,
+            age: answers.ageYears ?? 0,
+            sex,
+            activity_level: normalizeActivityLevel(answers.activityLevel ?? 'inactive'),
+            body_goal: normalizeBodyGoal(bodyGoal ?? 'maintain'),
+            goal_seriousness: goalSeriousness,
+          });
+          
+          console.log('[Quiz] Calculated calorie targets:', {
+            bmr: targets.bmr,
+            tdee: targets.tdee,
+            daily_calorie_target: targets.daily_calorie_target,
+            activityFactor: targets.activityFactor,
+            goalAdjustment: targets.goalAdjustment
+          });
+          
+          // Save calorie targets to local profile
+          await updateProfile({
+            calorieTargets: {
+              bmr: targets.bmr,
+              tdee: targets.tdee,
+              dailyCalorieTarget: targets.daily_calorie_target,
+              activityFactor: targets.activityFactor,
+              goalAdjustment: targets.goalAdjustment,
+            }
+          });
+          
+          console.log('[Quiz] Calorie targets saved to local profile');
+          
+          // Also try to save to Supabase if user is authenticated
           const { data: userData } = await supabase.auth.getUser();
           const userId = userData?.user?.id;
           if (userId) {
             console.log('[Quiz] Saving biometrics & calorie targets to Supabase');
-            const sex = answers.sex === 'male' || answers.sex === 'female' ? answers.sex : 'female';
-            const bodyGoal = (answers.bodyGoal as any) ?? 'maintain-weight';
-            const { calculateCalorieTargets, normalizeActivityLevel, normalizeBodyGoal } = await import('@/utils/calorie');
-            const targets = calculateCalorieTargets({
-              height_cm: answers.heightCm ?? 0,
-              weight_kg: answers.weightKg ?? 0,
-              age: answers.ageYears ?? 0,
-              sex,
-              activity_level: normalizeActivityLevel(answers.activityLevel ?? 'inactive'),
-              body_goal: normalizeBodyGoal(bodyGoal ?? 'maintain'),
-            });
             await updateUserProfile(userId, {
               dietary_preferences: {
                 biometrics: {
@@ -682,11 +716,12 @@ function QuizScreen() {
                 }
               },
             });
+            console.log('[Quiz] Biometrics & calorie targets saved to Supabase');
           } else {
-            console.log('[Quiz] Cannot save biometrics yet - user not authenticated');
+            console.log('[Quiz] User not authenticated - calorie targets saved locally only');
           }
         } catch (biometricErr) {
-          console.error('[Quiz] Failed to save biometrics:', biometricErr);
+          console.error('[Quiz] Failed to calculate/save calorie targets:', biometricErr);
         }
       }
       

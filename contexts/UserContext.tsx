@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { format, subDays, differenceInDays } from 'date-fns';
 
 import { supabase, createUserProfile, updateUserProfile, getUserProfile, saveQuizResponse } from '@/lib/supabase';
-import { calculateCalorieTargets, type CalorieInputs, type CalorieTargets } from '@/utils/calorie';
+import { calculateCalorieTargets, type CalorieInputs, type CalorieTargets as UtilCalorieTargets } from '@/utils/calorie';
 import type { User } from '@supabase/supabase-js';
 
 export interface UserGoals {
@@ -15,6 +15,14 @@ export interface UserGoals {
   healthStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   dietStrictness?: 'not-strict' | 'neutral' | 'very-strict';
   lifeStrictness?: 'not-strict' | 'neutral' | 'very-strict';
+}
+
+export interface CalorieTargets {
+  bmr: number;
+  tdee: number;
+  dailyCalorieTarget: number;
+  activityFactor: number;
+  goalAdjustment: number;
 }
 
 export interface UserProfile {
@@ -28,6 +36,7 @@ export interface UserProfile {
   weightKg?: number | null;
   sex?: 'male' | 'female' | 'other' | null;
   activityLevel?: 'inactive' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extra-active' | null;
+  calorieTargets?: CalorieTargets | null;
 
   currentStreak: number;
   longestStreak: number;
@@ -59,6 +68,7 @@ const defaultProfile: UserProfile = {
   weightKg: null,
   sex: null,
   activityLevel: null,
+  calorieTargets: null,
 
   currentStreak: 0,
   longestStreak: 0,
@@ -785,7 +795,16 @@ export const [UserProvider, useUser] = createContextHook(() => {
     };
     
     console.log(`[getCalorieTargets] Using seriousness level: ${seriousnessLevel} for calorie calculation`);
-    return calculateCalorieTargets(inputsWithSeriousness);
+    const targets = calculateCalorieTargets(inputsWithSeriousness);
+    
+    // Convert to our local CalorieTargets interface
+    return {
+      bmr: targets.bmr,
+      tdee: targets.tdee,
+      dailyCalorieTarget: targets.daily_calorie_target,
+      activityFactor: targets.activityFactor,
+      goalAdjustment: targets.goalAdjustment,
+    };
   }, [profile.goals.healthStrictness]);
 
   return useMemo(() => ({
