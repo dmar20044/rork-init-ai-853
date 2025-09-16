@@ -762,8 +762,18 @@ export const [UserProvider, useUser] = createContextHook(() => {
   }, [profile.scanDates]);
   
   const getCalorieTargets = useCallback((inputs: CalorieInputs): CalorieTargets => {
-    return calculateCalorieTargets(inputs);
-  }, []);
+    // Use the body goal strictness level for calorie calculations
+    // If not available, fall back to health strictness, then neutral
+    const seriousnessLevel = profile.goals.healthStrictness || 'neutral';
+    
+    const inputsWithSeriousness = {
+      ...inputs,
+      seriousnessLevel,
+    };
+    
+    console.log(`[getCalorieTargets] Using seriousness level: ${seriousnessLevel} for calorie calculation`);
+    return calculateCalorieTargets(inputsWithSeriousness);
+  }, [profile.goals.healthStrictness]);
 
   return useMemo(() => ({
     profile,

@@ -1,6 +1,7 @@
 export type Sex = 'male' | 'female';
 export type ActivityLevel = 'inactive' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extremely-active';
 export type BodyGoal = 'lose-weight' | 'slightly-lose-weight' | 'maintain-weight' | 'slightly-gain-weight' | 'gain-weight';
+export type SeriousnessLevel = 'not-strict' | 'neutral' | 'very-strict';
 
 export interface CalorieInputs {
   heightCm: number;
@@ -9,6 +10,7 @@ export interface CalorieInputs {
   sex: Sex;
   activityLevel: ActivityLevel;
   bodyGoal: BodyGoal;
+  seriousnessLevel?: SeriousnessLevel;
 }
 
 export interface CalorieTargets {
@@ -46,15 +48,48 @@ export function getActivityFactor(level: ActivityLevel): number {
   }
 }
 
-export function adjustForGoal(tdee: number, goal: BodyGoal): { targetCalories: number; goalAdjustment: number } {
+export function adjustForGoal(tdee: number, goal: BodyGoal, seriousnessLevel: SeriousnessLevel = 'neutral', sex: Sex): { targetCalories: number; goalAdjustment: number } {
   let adj = 0;
-  if (goal === 'lose-weight') adj = -500;
-  else if (goal === 'gain-weight') adj = 500;
-  else if (goal === 'slightly-lose-weight') adj = -250;
-  else if (goal === 'slightly-gain-weight') adj = 250;
-  else adj = 0; // maintain-weight
+  
+  // Base TDEE calculation remains the same, adjust calorie targets depending on goal and seriousness level
+  if (goal === 'lose-weight') {
+    // Lose Weight adjustments based on seriousness
+    if (seriousnessLevel === 'not-strict') {
+      adj = -250; // Not too serious → TDEE – 250 calories/day (slower, ~0.5 lb/week)
+    } else if (seriousnessLevel === 'neutral') {
+      adj = -500; // Standard → TDEE – 500 calories/day (~1 lb/week)
+    } else if (seriousnessLevel === 'very-strict') {
+      adj = -750; // Very serious → TDEE – 750 calories/day (~1.5 lbs/week, max recommended)
+    }
+  } else if (goal === 'gain-weight') {
+    // Gain Weight adjustments based on seriousness
+    if (seriousnessLevel === 'not-strict') {
+      adj = 250; // Not too serious → TDEE + 250 calories/day (slower, ~0.5 lb/week)
+    } else if (seriousnessLevel === 'neutral') {
+      adj = 500; // Standard → TDEE + 500 calories/day (~1 lb/week)
+    } else if (seriousnessLevel === 'very-strict') {
+      adj = 750; // Very serious → TDEE + 750 calories/day (~1.5 lbs/week)
+    }
+  } else if (goal === 'slightly-lose-weight') {
+    adj = -250; // Keep existing logic for slightly lose weight
+  } else if (goal === 'slightly-gain-weight') {
+    adj = 250; // Keep existing logic for slightly gain weight
+  } else {
+    adj = 0; // Maintain (Neutral): Always set to TDEE baseline
+  }
 
-  const target = tdee + adj;
+  let target = tdee + adj;
+  
+  // Safety checks: Never recommend less than 1,200 calories/day for women or 1,500 for men
+  const minCalories = sex === 'female' ? 1200 : 1500;
+  if (target < minCalories) {
+    console.log(`[CalorieAdjustment] Target calories ${target} below minimum ${minCalories} for ${sex}, adjusting to minimum`);
+    target = minCalories;
+    adj = target - tdee; // Recalculate adjustment based on safety limit
+  }
+  
+  console.log(`[CalorieAdjustment] Goal: ${goal}, Seriousness: ${seriousnessLevel}, TDEE: ${tdee}, Adjustment: ${adj}, Target: ${target}`);
+  
   return { targetCalories: roundTo(target, 0), goalAdjustment: adj };
 }
 
@@ -68,8 +103,8 @@ export function calculateCalorieTargets(inputs: CalorieInputs): CalorieTargets {
   
   console.log(`[TDEE Calculation] BMR: ${bmr}, Activity Factor: ${activityFactor}, TDEE: ${tdee}`);
   
-  // Step 3: Adjust for body goals
-  const { targetCalories, goalAdjustment } = adjustForGoal(tdee, inputs.bodyGoal);
+  // Step 3: Adjust for body goals with seriousness level
+  const { targetCalories, goalAdjustment } = adjustForGoal(tdee, inputs.bodyGoal, inputs.seriousnessLevel, inputs.sex);
   
   return { bmr, tdee, targetCalories, activityFactor, goalAdjustment };
 }
