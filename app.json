@@ -64,17 +64,14 @@
         }
       ],
       [
-        "expo-notifications",
-        {
-          "icon": "./local/assets/notification_icon.png",
-          "color": "#ffffff",
-          "defaultChannel": "default",
-          "sounds": [
-            "./local/assets/notification_sound.wav"
-          ],
-          "enableBackgroundRemoteNotifications": false
-        }
-      ]
+"expo-notifications",
+{
+  "icon": "./assets/images/icon.png",
+  "color": "#ffffff",
+  "defaultChannel": "default",
+  "enableBackgroundRemoteNotifications": false
+}
+]
     ],
     "experiments": {
       "typedRoutes": true
