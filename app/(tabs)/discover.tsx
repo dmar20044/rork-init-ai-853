@@ -23,6 +23,8 @@ import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, App
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { LinearGradient } from 'expo-linear-gradient';
+import GrainOverlay from '@/components/GrainOverlay';
 
 interface Message {
   id: string;
@@ -1043,13 +1045,22 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+      <LinearGradient
+        testID="discover-gradient-bg"
+        colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+        locations={[0, 0.4, 0.75, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <GrainOverlay opacity={0.06} />
       <KeyboardAvoidingView 
-        style={[styles.container, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]} 
+        style={[styles.container, { backgroundColor: 'transparent' }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
       >
-        <View style={[styles.retroHeaderBanner, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}>
+        <View style={[styles.retroHeaderBanner, { backgroundColor: 'transparent' }]}>
           <View style={styles.retroGradientOverlay} />
           <View style={styles.retroHeaderContent}>
             <View style={styles.retroTitleContainer}>
@@ -1154,7 +1165,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
 
         <ScrollView 
           ref={scrollViewRef}
-          style={[styles.messagesContainer, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}
+          style={[styles.messagesContainer, { backgroundColor: 'transparent' }]}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -1512,7 +1523,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite, borderTopColor: Colors.retroSoftGray + '50' }]}>
+        <View style={[styles.inputContainer, { backgroundColor: 'transparent', borderTopColor: 'rgba(255,255,255,0.25)' }]}>
           {showSuggestions && messages.length === 0 && (
             <View style={styles.retroSuggestionChips}>
               {suggestionChips.map((chip, index) => {
@@ -1793,11 +1804,11 @@ function RecipeModal({ visible, recipe, onClose, onAddToGroceryList, isGeneratin
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.backgroundSecondary,
+    backgroundColor: 'transparent',
   },
   brandingHeader: {
     paddingHorizontal: 16,
@@ -1877,6 +1888,7 @@ const styles = StyleSheet.create({
   messagesContainer: {
     flex: 1,
     paddingHorizontal: 16,
+    backgroundColor: 'transparent',
   },
   messagesContent: {
     paddingBottom: 120,
@@ -1946,9 +1958,9 @@ const styles = StyleSheet.create({
   inputContainer: {
     padding: 16,
     paddingTop: 8,
-    backgroundColor: Colors.surface,
+    backgroundColor: 'transparent',
     borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
+    borderTopColor: 'rgba(255,255,255,0.25)',
   },
   inputWrapper: {
     flexDirection: 'row',
@@ -2667,12 +2679,12 @@ const styles = StyleSheet.create({
   
   // Retro Tech Pop Styles - Modern Magazine Aesthetic
   retroHeaderBanner: {
-    backgroundColor: Colors.retroCreamWhite,
+    backgroundColor: 'transparent',
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 28,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.retroSoftGray + '50',
+    borderBottomWidth: 0,
+    borderBottomColor: 'transparent',
     position: 'relative',
     overflow: 'hidden',
   },
