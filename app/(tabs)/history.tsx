@@ -19,6 +19,7 @@ import { useScanHistory, ScanHistoryItem } from "@/contexts/ScanHistoryContext";
 import { useUser } from "@/contexts/UserContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { LinearGradient } from "expo-linear-gradient";
+import GrainOverlay from "@/components/GrainOverlay";
 
 const getHealthGrade = (score: number): { grade: string; color: string; label: string } => {
   if (score >= 95) return { grade: 'A+', color: '#00FF00', label: 'Excellent' };
@@ -255,6 +256,7 @@ export default function HistoryScreen() {
     return (
       <View style={{ flex: 1 }}>
         {Gradient}
+      <GrainOverlay opacity={0.06} />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.brandingHeader}>
             <Text style={[styles.brandingText, { color: colors.white }]}>InIt AI</Text>
@@ -272,6 +274,7 @@ export default function HistoryScreen() {
     return (
       <View style={{ flex: 1 }}>
         {Gradient}
+      <GrainOverlay opacity={0.06} />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.brandingHeader}>
             <Text style={[styles.brandingText, { color: colors.white }]}>InIt AI</Text>
@@ -301,6 +304,7 @@ export default function HistoryScreen() {
   return (
     <View style={{ flex: 1 }}>
       {Gradient}
+      <GrainOverlay opacity={0.06} />
       <SafeAreaView style={styles.safeArea}>
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
           <View style={styles.brandingHeader}>
