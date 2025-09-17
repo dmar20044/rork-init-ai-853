@@ -125,21 +125,18 @@ export default function AskInItScreen() {
   const [buttonText, setButtonText] = useState("Talk to InIt");
 
   useEffect(() => {
+    // Remove automatic keyboard scrolling - only scroll when messages change
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       (event) => {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+        // Don't automatically scroll when keyboard shows
       }
     );
     
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+        // Don't automatically scroll when keyboard hides
       }
     );
 
@@ -473,6 +470,7 @@ Rules:
 
       setMessages(prev => [...prev, aiMessage]);
       
+      // Only scroll to end when a new message is added
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 100);
@@ -1599,14 +1597,10 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 Keyboard.dismiss();
               }}
               onFocus={() => {
-                setTimeout(() => {
-                  scrollViewRef.current?.scrollToEnd({ animated: true });
-                }, 300);
+                // Don't scroll when text input is focused
               }}
               onContentSizeChange={() => {
-                setTimeout(() => {
-                  scrollViewRef.current?.scrollToEnd({ animated: true });
-                }, 100);
+                // Don't scroll when text input content changes
               }}
             />
             <TouchableOpacity
