@@ -216,7 +216,7 @@ function HistoryCard({ item, grade, color, label, onDelete, onPress }: HistoryCa
 export default function HistoryScreen() {
   const { history, removeFromHistory, isLoading } = useScanHistory();
   const { profile } = useUser();
-  const { colors } = useTheme();
+  const { colors, isDarkMode } = useTheme();
 
   const last7Days = useMemo(() => {
     const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
@@ -244,8 +244,14 @@ export default function HistoryScreen() {
 
   const Gradient = (
     <LinearGradient
-      colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
-      locations={[0, 0.35, 0.7, 1]}
+      colors={isDarkMode 
+        ? ["#2E294E", "#4ECDC4", "#FF6B81", "#FF6B3B", "#1E1E1E"]
+        : ["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]
+      }
+      locations={isDarkMode 
+        ? [0, 0.25, 0.5, 0.75, 1]
+        : [0, 0.35, 0.7, 1]
+      }
       start={{ x: 0.5, y: 0 }}
       end={{ x: 0.5, y: 1 }}
       style={StyleSheet.absoluteFill}
