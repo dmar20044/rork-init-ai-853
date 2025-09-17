@@ -127,10 +127,19 @@ export default function AskInItScreen() {
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
+      (event) => {
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    );
+    
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
       () => {
         setTimeout(() => {
           scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 50);
+        }, 100);
       }
     );
 
@@ -176,6 +185,7 @@ export default function AskInItScreen() {
 
     return () => {
       keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
       shimmerAnimation.stop();
     };
   }, [isLoading]);
@@ -1059,7 +1069,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       <KeyboardAvoidingView 
         style={[styles.container, { backgroundColor: 'transparent' }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <View style={[styles.retroHeaderBanner, { backgroundColor: 'transparent' }]}>
           <View style={styles.retroGradientOverlay} />
@@ -1591,7 +1601,12 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
               onFocus={() => {
                 setTimeout(() => {
                   scrollViewRef.current?.scrollToEnd({ animated: true });
-                }, 150);
+                }, 300);
+              }}
+              onContentSizeChange={() => {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 100);
               }}
             />
             <TouchableOpacity
