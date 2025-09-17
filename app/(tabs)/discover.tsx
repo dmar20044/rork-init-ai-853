@@ -1055,7 +1055,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#2E294E' : '#4EC9F5' }]}>
       <View style={styles.rootLayer} testID="discover-root-layer">
       <LinearGradient
         testID="discover-gradient-bg"
