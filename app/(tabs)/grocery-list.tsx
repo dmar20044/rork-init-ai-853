@@ -463,8 +463,8 @@ export default function GroceryListScreen() {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}> 
         <LinearGradient
-          colors={isDarkMode ? ["#2E294E", "#4ECDC4", "#FF6B81", "#FF6B3B", "#1E1E1E"] : ["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
-          locations={isDarkMode ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.35, 0.7, 1]}
+          colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+          locations={[0, 0.35, 0.7, 1]}
           style={StyleSheet.absoluteFill}
         />
         <GrainOverlay opacity={0.06} />
@@ -478,8 +478,8 @@ export default function GroceryListScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}> 
       <LinearGradient
-        colors={isDarkMode ? ["#2E294E", "#4ECDC4", "#FF6B81", "#FF6B3B", "#1E1E1E"] : ["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
-        locations={isDarkMode ? [0, 0.25, 0.5, 0.75, 1] : [0, 0.35, 0.7, 1]}
+        colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+        locations={[0, 0.35, 0.7, 1]}
         style={StyleSheet.absoluteFill}
       />
       <GrainOverlay opacity={0.06} />
