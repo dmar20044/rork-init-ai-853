@@ -1045,7 +1045,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>\n      <View style={{ flex: 1 }} testID="discover-root-layer">
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+      <View style={styles.rootLayer} testID="discover-root-layer">
       <LinearGradient
         testID="discover-gradient-bg"
         colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
@@ -1179,7 +1180,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   style={styles.coachImage}
                   resizeMode="contain"
                 />
-                <Text style={[styles.coachText, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>I'm InIt, your personal nutrition coach</Text>
+                <Text style={[styles.coachText, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}>I’m InIt, your personal nutrition coach</Text>
               </View>
 
               <View style={styles.retroQuestionsGrid}>
@@ -1658,7 +1659,9 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         />
         
 
-      </KeyboardAvoidingView>\n      </View>\n    </SafeAreaView>
+      </KeyboardAvoidingView>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -1804,6 +1807,9 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: 'transparent',
+  },
+  rootLayer: {
+    flex: 1,
   },
   container: {
     flex: 1,
@@ -2693,8 +2699,8 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: `linear-gradient(135deg, ${Colors.retroNeonTurquoise}10, ${Colors.retroPink}08, ${Colors.retroDeepIndigo}12)`,
-    opacity: 0.4,
+    backgroundColor: Colors.retroNeonTurquoise,
+    opacity: 0.08,
   },
   retroHeaderContent: {
     alignItems: 'center',
@@ -2795,7 +2801,6 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     borderRadius: 25,
-    transformOrigin: 'right center', // Expand from the microphone position
   },
   retroConversationText: {
     fontSize: 14,
