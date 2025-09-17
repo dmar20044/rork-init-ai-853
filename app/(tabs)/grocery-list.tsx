@@ -13,6 +13,7 @@ import {
   PanResponder,
   Dimensions,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import {
   Plus,
   Trash2,
@@ -28,6 +29,7 @@ import {
 import { Colors } from '@/constants/colors';
 import { useGroceryList, GroceryItem } from '@/contexts/GroceryListContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import GrainOverlay from '@/components/GrainOverlay';
 
 // Retro Tech Pop Color Palette with Dark Mode Support
 const getRetroColors = (isDarkMode: boolean) => ({
@@ -136,7 +138,7 @@ function ListSummary({ groceryItems }: ListSummaryProps) {
   }, { excellent: 0, good: 0, mediocre: 0, poor: 0 });
   
   return (
-    <View style={[styles.summaryContainer, { backgroundColor: retroColors.surface }]}>
+    <View style={[styles.summaryContainer, styles.whiteSurface]}>
       <View style={styles.summaryHeader}>
         <View style={styles.summaryIconContainer}>
           <Award size={24} color={retroColors.neonTurquoise} />
@@ -293,6 +295,7 @@ function GroceryCard({ item, onDelete, onToggle, onEdit, index }: GroceryCardPro
             backgroundColor: retroColors.surface,
             opacity: item.completed ? 0.7 : 1,
           },
+          styles.whiteSurface,
         ]}
         {...panResponder.panHandlers}
       >
@@ -458,54 +461,70 @@ export default function GroceryListScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: retroColors.background }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}> 
+        <LinearGradient
+          colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+          locations={[0, 0.35, 0.7, 1]}
+          style={StyleSheet.absoluteFill}
+        />
+        <GrainOverlay opacity={0.06} />
         <View style={styles.loadingContainer}>
-          <Text style={[styles.loadingText, { color: retroColors.textSecondary }]}>Loading grocery list...</Text>
+          <Text style={[styles.loadingText, { color: retroColors.textPrimary }]}>Loading grocery list...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: retroColors.background }]}>
-      <View style={[styles.header, { backgroundColor: retroColors.background, borderBottomColor: retroColors.softGray }]}>
-        <View style={styles.headerContent}>
-          <ShoppingCart size={28} color={retroColors.neonTurquoise} />
-          <Text style={[styles.headerTitle, { color: retroColors.textPrimary }]}>Grocery List</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: 'transparent' }]}> 
+      <LinearGradient
+        colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+        locations={[0, 0.35, 0.7, 1]}
+        style={StyleSheet.absoluteFill}
+      />
+      <GrainOverlay opacity={0.06} />
+
+      <View style={styles.headerWrapper}>
+        <View style={[styles.header, styles.floatingCard]}>
+          <View style={styles.headerContent}>
+            <ShoppingCart size={28} color={retroColors.neonTurquoise} />
+            <Text style={[styles.headerTitle, { color: retroColors.charcoalBlack }]}>Grocery List</Text>
+          </View>
+          {completedItems.length > 0 && (
+            <TouchableOpacity
+              style={[styles.clearButton, { backgroundColor: retroColors.retroPink + '15' }]}
+              onPress={handleClearCompleted}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.clearButtonText, { color: retroColors.retroPink }]}>Clear Completed</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        {completedItems.length > 0 && (
-          <TouchableOpacity
-            style={[styles.clearButton, { backgroundColor: retroColors.retroPink + '15' }]}
-            onPress={handleClearCompleted}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.clearButtonText, { color: retroColors.retroPink }]}>Clear Completed</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
-      <View style={[styles.addItemContainer, { backgroundColor: retroColors.background, borderBottomColor: retroColors.softGray }]}>
-        <TextInput
-          style={[styles.addItemInput, { backgroundColor: retroColors.softGray + '20', color: retroColors.textPrimary }]}
-          placeholder="Add new item..."
-          placeholderTextColor={retroColors.textSecondary}
-          value={newItemName}
-          onChangeText={setNewItemName}
-          onSubmitEditing={handleAddItem}
-          returnKeyType="done"
-        />
-        <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: retroColors.neonTurquoise }, !newItemName.trim() && { backgroundColor: retroColors.softGray }]}
-          onPress={handleAddItem}
-          disabled={!newItemName.trim()}
-          activeOpacity={0.7}
-        >
-          <Plus size={24} color={retroColors.creamWhite} />
-        </TouchableOpacity>
+      <View style={styles.headerWrapper}>
+        <View style={[styles.addItemContainer, styles.floatingCard]}>
+          <TextInput
+            style={[styles.addItemInput, { backgroundColor: '#F1F5F9', color: retroColors.charcoalBlack }]}
+            placeholder="Add new item..."
+            placeholderTextColor={retroColors.slateGray}
+            value={newItemName}
+            onChangeText={setNewItemName}
+            onSubmitEditing={handleAddItem}
+            returnKeyType="done"
+          />
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: retroColors.neonTurquoise }, !newItemName.trim() && { backgroundColor: retroColors.softGray }]}
+            onPress={handleAddItem}
+            disabled={!newItemName.trim()}
+            activeOpacity={0.7}
+          >
+            <Plus size={24} color={retroColors.creamWhite} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* List Summary */}
         {groceryItems.length > 0 && (
           <ListSummary groceryItems={groceryItems} />
         )}
@@ -517,20 +536,19 @@ export default function GroceryListScreen() {
               style={styles.emptyIllustration}
               resizeMode="contain"
             />
-            <Text style={[styles.emptyTitle, { color: retroColors.textPrimary }]}>Your grocery list is empty</Text>
-            <Text style={[styles.emptySubtitle, { color: retroColors.textSecondary }]}>Add items to get started!</Text>
+            <Text style={[styles.emptyTitle, { color: retroColors.charcoalBlack }]}>Your grocery list is empty</Text>
+            <Text style={[styles.emptySubtitle, { color: retroColors.slateGray }]}>Add items to get started!</Text>
           </View>
         ) : (
           <>
-            {/* Pending Items */}
             {pendingItems.length > 0 && (
               <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: retroColors.textPrimary }]}>
+                <Text style={[styles.sectionTitle, { color: retroColors.charcoalBlack }]}>
                   To Buy ({pendingItems.length})
                 </Text>
                 {pendingItems.map((item, index) => (
                   editingId === item.id ? (
-                    <View key={item.id} style={[styles.itemContainer, { backgroundColor: retroColors.surface }]}>
+                    <View key={item.id} style={[styles.itemContainer, styles.whiteSurface]}>
                       <TouchableOpacity
                         style={styles.checkboxContainer}
                         onPress={() => handleToggleItem(item.id)}
@@ -543,7 +561,7 @@ export default function GroceryListScreen() {
 
                       <View style={styles.editContainer}>
                         <TextInput
-                          style={[styles.editInput, { color: retroColors.textPrimary, borderBottomColor: retroColors.neonTurquoise }]}
+                          style={[styles.editInput, { color: retroColors.charcoalBlack, borderBottomColor: retroColors.neonTurquoise }]}
                           value={editingName}
                           onChangeText={setEditingName}
                           onSubmitEditing={saveEdit}
@@ -579,10 +597,9 @@ export default function GroceryListScreen() {
               </View>
             )}
 
-            {/* Completed Items */}
             {completedItems.length > 0 && (
               <View style={styles.section}>
-                <Text style={[styles.sectionTitle, { color: retroColors.textPrimary }]}>
+                <Text style={[styles.sectionTitle, { color: retroColors.charcoalBlack }]}>
                   Completed ({completedItems.length})
                 </Text>
                 {completedItems.map((item, index) => (
@@ -608,6 +625,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -622,7 +643,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
   },
   headerContent: {
     flexDirection: 'row',
@@ -646,7 +666,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    borderBottomWidth: 1,
     gap: 12,
   },
   addItemInput: {
@@ -788,6 +807,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+  },
+  floatingCard: {
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 6,
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  whiteSurface: {
+    backgroundColor: 'rgba(255,255,255,0.95)',
   },
   cardContent: {
     flex: 1,
