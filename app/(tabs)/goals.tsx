@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Target, Trophy, ChevronRight, Settings, Bell, Heart, Zap, TrendingUp, X, UserCircle, LogOut, Flame, Calendar, Edit3, Moon, Sun, Shield, Camera, Image as ImageIcon, AlertTriangle, Plus } from "lucide-react-native";
+import GrainOverlay from '@/components/GrainOverlay';
 import { format, getDay } from 'date-fns';
 
 import { useUser, UserGoals } from "@/contexts/UserContext";
@@ -298,12 +299,21 @@ export default function GoalsScreen() {
     <SafeAreaView style={styles.safeArea}>
       {/* Retro Tech Pop Gradient Background */}
       <LinearGradient
-        colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
-        locations={[0, 0.33, 0.66, 1]}
+        colors={isDarkMode 
+          ? ["#2E294E", "#4ECDC4", "#FF6B81", "#FF6B3B", "#1E1E1E"]
+          : ["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]
+        }
+        locations={isDarkMode 
+          ? [0, 0.25, 0.5, 0.75, 1]
+          : [0, 0.33, 0.66, 1]
+        }
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
         style={styles.gradientBg}
       />
+      
+      {/* Grain Overlay */}
+      <GrainOverlay opacity={0.08} />
 
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <View style={styles.brandingHeader}>
