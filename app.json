@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.initai.initai",
+      "bundleIdentifier": "com.initai.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
         "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
@@ -27,7 +27,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.initai.initai",
+      "package": "com.initai.app",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
@@ -64,13 +64,13 @@
         }
       ],
       [
-"expo-notifications",
-{
-  "color": "#ffffff",
-  "defaultChannel": "default",
-  "enableBackgroundRemoteNotifications": false
-}
-]
+        "expo-notifications",
+        {
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
