@@ -1049,8 +1049,8 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
       <View style={styles.rootLayer} testID="discover-root-layer">
       <LinearGradient
         testID="discover-gradient-bg"
-        colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
-        locations={[0, 0.4, 0.75, 1]}
+        colors={isDarkMode ? ["#2E294E", "#4ECDC4", "#FF6B81", "#FF6B3B", "#1E1E1E"] : ["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
+        locations={isDarkMode ? [0, 0.3, 0.5, 0.8, 1] : [0, 0.4, 0.75, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFill}
