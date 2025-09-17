@@ -1045,7 +1045,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]}>\n      <View style={{ flex: 1 }} testID="discover-root-layer">
       <LinearGradient
         testID="discover-gradient-bg"
         colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
@@ -1658,8 +1658,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
         />
         
 
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </KeyboardAvoidingView>\n      </View>\n    </SafeAreaView>
   );
 }
 
