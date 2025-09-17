@@ -13,21 +13,22 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.initai.app",
-      "infoPlist": {
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos"
-      }
-    },
+   "ios": {
+"supportsTablet": true,
+"bundleIdentifier": "com.initai.app",
+"deploymentTarget": "13.0",
+"infoPlist": {
+  "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
+  "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone", 
+  "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos"
+}
+},
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.initai.app",
+      "package": "app.initai.initai",
       "permissions": [
         "CAMERA",
         "RECORD_AUDIO",
@@ -64,13 +65,13 @@
         }
       ],
       [
-        "expo-notifications",
-        {
-          "color": "#ffffff",
-          "defaultChannel": "default",
-          "enableBackgroundRemoteNotifications": false
-        }
-      ]
+"expo-notifications",
+{
+  "color": "#ffffff",
+  "defaultChannel": "default",
+  "enableBackgroundRemoteNotifications": false
+}
+]
     ],
     "experiments": {
       "typedRoutes": true
