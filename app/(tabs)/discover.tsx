@@ -19,7 +19,6 @@ import {
   Image,
 } from "react-native";
 import * as Haptics from 'expo-haptics';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Send, MessageCircle, Sparkles, Target, Zap, User, Coffee, Utensils, Apple, Volume2, ShoppingCart, Bookmark, Dumbbell, Star, Plus, Sunrise, Zap as Lightning, ArrowRight, X, Feather, Heart, Flower2, Mic, Check } from "lucide-react-native";
 import { Colors } from "@/constants/colors";
 import { useUser } from "@/contexts/UserContext";
@@ -1044,24 +1043,9 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: 'transparent' }]>
-      <View style={styles.gradientContainer} pointerEvents="none">
-        <LinearGradient
-          colors={["#4EC9F5", "#7ED9CF", "#F9BFC9", "#FF9E57"]}
-          locations={[0, 0.4, 0.72, 1]}
-          start={{ x: 0.5, y: 0 }}
-          end={{ x: 0.5, y: 1 }}
-          style={styles.gradientFill}
-        />
-        <Image
-          source={{ uri: 'https://images.unsplash.com/photo-1549880338-65ddcdfd017b?q=80&w=1600&auto=format&fit=crop' }}
-          style={styles.grainOverlay}
-          resizeMode="cover"
-        />
-      </View>
-
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}>
       <KeyboardAvoidingView 
-        style={[styles.container, { backgroundColor: 'transparent' }]} 
+        style={[styles.container, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 10 : 0}
       >
@@ -1170,7 +1154,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
 
         <ScrollView 
           ref={scrollViewRef}
-          style={[styles.messagesContainer, { backgroundColor: 'transparent' }]}
+          style={[styles.messagesContainer, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite }]}
           contentContainerStyle={styles.messagesContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -1274,7 +1258,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                   <Text style={styles.userMessageText}>{message.text}</Text>
                 </View>
               ) : (
-                <View style={[styles.aiResponseCard, { backgroundColor: Colors.white, borderColor: colors.textTertiary }]}>
+                <View style={[styles.aiResponseCard, { backgroundColor: colors.surface, borderColor: colors.textTertiary }]}>
                   {(() => {
                     // Check if this is a recipe response or general answer
                     if (message.isRecipeResponse === false) {
@@ -1459,7 +1443,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
                 </View>
                 <Text style={[styles.messageSender, { color: colors.textSecondary }]}>InIt AI</Text>
               </View>
-              <View style={[styles.loadingContainer, { backgroundColor: Colors.white }]}>
+              <View style={[styles.loadingContainer, { backgroundColor: colors.surface }]}>
                 <View style={styles.typingDotsContainer}>
                   <Animated.View
                     style={[
@@ -1528,7 +1512,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           )}
         </ScrollView>
 
-        <View style={[styles.inputContainer, { backgroundColor: 'transparent', borderTopColor: Colors.retroSoftGray + '50' }]}>
+        <View style={[styles.inputContainer, { backgroundColor: isDarkMode ? '#1E1E2E' : Colors.retroCreamWhite, borderTopColor: Colors.retroSoftGray + '50' }]}>
           {showSuggestions && messages.length === 0 && (
             <View style={styles.retroSuggestionChips}>
               {suggestionChips.map((chip, index) => {
@@ -1569,7 +1553,7 @@ Make the recipe healthy, practical, and aligned with their goals. Keep ingredien
           )}
           
           {/* Combined input bar with text input and send button */}
-          <View style={[styles.combinedInputWrapper, { backgroundColor: Colors.white, borderColor: '#E0E0E0' }]}>
+          <View style={[styles.combinedInputWrapper, { backgroundColor: isDarkMode ? '#2A2A2A' : '#F5F5F5', borderColor: isDarkMode ? '#5F5F5F' : '#E0E0E0' }]}>
             <TextInput
               ref={textInputRef}
               style={[styles.combinedTextInput, { color: isDarkMode ? '#D9D9D9' : Colors.retroCharcoalBlack }]}
@@ -1809,11 +1793,11 @@ function RecipeModal({ visible, recipe, onClose, onAddToGroceryList, isGeneratin
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.backgroundSecondary,
   },
   container: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.backgroundSecondary,
   },
   brandingHeader: {
     paddingHorizontal: 16,
@@ -1962,7 +1946,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     padding: 16,
     paddingTop: 8,
-    backgroundColor: 'transparent',
+    backgroundColor: Colors.surface,
     borderTopWidth: 1,
     borderTopColor: Colors.borderLight,
   },
@@ -2698,7 +2682,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'transparent',
+    backgroundColor: `linear-gradient(135deg, ${Colors.retroNeonTurquoise}10, ${Colors.retroPink}08, ${Colors.retroDeepIndigo}12)`,
     opacity: 0.4,
   },
   retroHeaderContent: {
@@ -3153,7 +3137,7 @@ const styles = StyleSheet.create({
   combinedInputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: '#F5F5F5',
     borderRadius: 25,
     paddingHorizontal: 4,
     paddingVertical: 4,
@@ -3217,28 +3201,5 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: Colors.white,
     fontWeight: '600',
-  },
-  gradientContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-  },
-  gradientFill: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  grainOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.12,
   },
 });
