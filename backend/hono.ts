@@ -49,10 +49,6 @@ app.post("/test-anthropic", async (c) => {
   try {
     const { message } = await c.req.json();
     
-    console.log('Testing Anthropic API with message:', message);
-    console.log('API Key available:', !!process.env.ANTHROPIC_API_KEY);
-    console.log('API Key length:', process.env.ANTHROPIC_API_KEY?.length || 0);
-    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -72,11 +68,8 @@ app.post("/test-anthropic", async (c) => {
       }),
     });
     
-    console.log('Anthropic API response status:', response.status);
-    
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Anthropic API error:', errorText);
       return c.json({ 
         success: false, 
         error: `API request failed: ${response.status}`,
@@ -85,7 +78,6 @@ app.post("/test-anthropic", async (c) => {
     }
     
     const result = await response.json();
-    console.log('Anthropic API success');
     
     return c.json({ 
       success: true, 
@@ -94,7 +86,6 @@ app.post("/test-anthropic", async (c) => {
     });
     
   } catch (error) {
-    console.error('Test Anthropic API error:', error);
     return c.json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error',
